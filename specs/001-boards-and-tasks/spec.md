@@ -4,10 +4,22 @@
 
 **Created**: 2026-10-17
 
-**Status**: Draft
+**Status**: Approved
 
 **Input**: "Tableros kanban con equipos: crear tableros con columnas, crear y mover
 tareas entre columnas, invitar miembros con roles"
+
+## Clarifications
+
+### Session 2026-10-17
+
+- **Q: ¿Dónde viven los datos?** → No hay servidor. El estado se guarda en el propio
+  navegador y sobrevive a la recarga. Añadir un backend es una especificación aparte.
+- **Q: ¿Cómo se entra a la aplicación?** → Se elige una persona de ejemplo de una lista,
+  sin contraseña. Los roles se demuestran cambiando de persona.
+- **Q: ¿Sincronización en vivo entre personas?** → No. El estado se refresca al recargar
+  o al volver al tablero. La colaboración simultánea queda fuera de alcance.
+- **Q: ¿Cómo se ordenan las tarjetas?** → Manual. El orden lo fija quien mueve la tarjeta.
 
 ## User Scenarios & Testing _(mandatory)_
 
@@ -172,17 +184,14 @@ verificando que ve el tablero pero no las acciones de edición.
 
 ## Assumptions
 
-- **Autenticación simulada en esta fase.** No hay proveedor de identidad real todavía;
-  se parte de una sesión de demostración con tres personas de ejemplo. La elección se
-  revisará en la especificación de acceso.
-- **Sin tiempo real en la primera versión.** Dos personas editando a la vez ven los
-  cambios al recargar o al volver al tablero; la sincronización en vivo queda para una
-  especificación posterior.
 - **Un único flujo por tablero.** Las columnas son parte del tablero y editables, pero
   no hay plantillas de flujo reutilizables en esta primera versión.
-- **Orden manual de tarjetas.** El orden lo decide quien arrastra, no una regla
-  automática (fecha, prioridad). El orden automático es una especificación aparte.
 - **Sin adjuntos ni comentarios.** Las tarjetas tienen título y descripción; archivos y
   conversaciones quedan fuera de alcance.
 - **Uso desde un solo tipo de dispositivo por sesión.** No se exige colaboración
   simultánea entre móvil y escritorio; el diseño debe ser usable en ambos.
+- **Los datos son locales a cada navegador.** Consecuencia de la primera aclaración: dos
+  personas en equipos distintos no ven el mismo tablero. El producto se demuestra en un
+  solo navegador hasta que exista una especificación de servidor compartido.
+- **Tres personas de ejemplo predefinidas**: una administradora, una editora y una
+  observadora, suficientes para demostrar FR-010.
