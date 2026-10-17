@@ -9,3 +9,7 @@
 /.git
 /test-results
 /playwright-report
+
+# Generado por Spec Kit — lo reescribe el CLI, no lo formateamos
+/.specify
+/.claude
