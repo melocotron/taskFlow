@@ -1,0 +1,11 @@
+# Generado o de terceros — no se formatea
+/dist
+/node_modules
+/.angular
+/coverage
+/package-lock.json
+/.npm-cache
+/.pnpm-store
+/.git
+/test-results
+/playwright-report
