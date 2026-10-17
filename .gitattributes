@@ -1,0 +1,9 @@
+# Normaliza los finales de línea a LF en el repositorio, sea cual sea el sistema.
+# Sin esto, Prettier marca los 18 archivos como "sin formatear" tras cada checkout
+# en Windows, porque git los guarda en LF y los escribe en disco como CRLF.
+* text=auto eol=lf
+
+# Los scripts de Windows sí necesitan CRLF.
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
