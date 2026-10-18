@@ -1,0 +1,40 @@
+/**
+ * SEMÁNTICOS — el vocabulario que usan los componentes.
+ *
+ * Ningún componente referencia un primitivo directamente: usa estos nombres.
+ * Así, cambiar la dirección visual es cambiar este archivo, no 40 componentes.
+ */
+@layer semanticos {
+  :root {
+    /* ── Superficies ─────────────────────────────────────────────────── */
+    --surface-canvas: var(--viruta-100);
+    --surface-raised: var(--viruta-50);
+    --surface-sunken: var(--viruta-200);
+
+    /* ── Texto: cuatro niveles, no dos ───────────────────────────────── */
+    --text-primary: var(--hierro-900);
+    --text-secondary: var(--madera-700);
+    --text-muted: var(--hierro-600);
+    --text-disabled: var(--madera-500);
+
+    /* ── Bordes ──────────────────────────────────────────────────────── */
+    --border-color: var(--border-subtle);
+    --border-color-strong: var(--border-strong);
+
+    /* ── Intención ───────────────────────────────────────────────────── */
+    --accent: var(--verde-600);
+    --accent-hover: var(--verde-700);
+    --signal: var(--cinta-500);
+    --danger: var(--lapiz-600);
+    --info: var(--tiza-600);
+
+    /* ── Foco: siempre visible, nunca negociable ─────────────────────── */
+    --focus-ring: var(--verde-600);
+    --focus-ring-width: 2px;
+    --focus-ring-offset: 2px;
+
+    /* ── Texto sobre superficies de acento ───────────────────────────── */
+    --text-on-accent: var(--viruta-50);
+    --text-on-danger: var(--viruta-50);
+  }
+}

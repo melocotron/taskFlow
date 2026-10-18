@@ -1,0 +1,47 @@
+/**
+ * COMPONENTES — medidas concretas, decididas una vez.
+ *
+ * Si dos componentes usan el mismo valor, vive aquí. Los valores están en px a
+ * propósito: son medidas de caja, no de texto, y no deben escalar con el zoom.
+ */
+@layer componentes {
+  :root {
+    /* ── Controles (button, input, select) ───────────────────────────── */
+    --control-height: 36px;
+    --control-height-lg: 44px;
+    --control-radius: var(--radius-sm);
+    --control-padding-x: var(--space-3);
+    --control-gap: var(--space-2);
+    --control-hit-area: 40px;
+
+    /* ── Tarjeta ─────────────────────────────────────────────────────── */
+    --card-padding: var(--space-3) var(--space-4);
+    --card-radius: var(--radius-md);
+    --card-gap: var(--space-2);
+    --card-min-height: 56px;
+
+    /* ── Columna ─────────────────────────────────────────────────────── */
+    --column-width: 288px;
+    --column-padding: var(--space-3);
+    --column-gap: var(--space-4);
+    --column-header-height: 32px;
+
+    /* ── Lengüeta de turno (la firma) ────────────────────────────────── */
+    --turno-width: 4px;
+    --turno-radius: 2px;
+    --turno-inset: 8px;
+    --turno-gap: 10px;
+
+    /* ── Etiquetas ───────────────────────────────────────────────────── */
+    --label-tracking: var(--tracking-label);
+    --label-weight: var(--weight-medium);
+
+    /* ── Diálogo ─────────────────────────────────────────────────────── */
+    --dialog-radius: var(--radius-lg);
+    --dialog-padding: var(--space-6);
+    --dialog-max-width: 480px;
+
+    /* ── Tablero ─────────────────────────────────────────────────────── */
+    --board-padding: var(--space-6);
+  }
+}

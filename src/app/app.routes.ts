@@ -11,6 +11,12 @@ export const routes: Routes = [
     loadComponent: () => import('@pages/home/home'),
   },
   {
+    // Banco de pruebas del design system. No es producto: no aparece en la navegación.
+    path: 'kitchen-sink',
+    title: 'Kitchen sink · TaskFlow',
+    loadComponent: () => import('@pages/kitchen-sink/kitchen-sink'),
+  },
+  {
     path: '**',
     redirectTo: '',
   },

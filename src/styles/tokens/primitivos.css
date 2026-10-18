@@ -1,0 +1,98 @@
+/**
+ * PRIMITIVOS — los únicos valores crudos del proyecto.
+ *
+ * Aquí y solo aquí pueden aparecer hexadecimales. Ningún componente ni archivo
+ * semántico decide un color: todos referencian estos tokens.
+ *
+ * Origen: .interface-design/system.md § Paleta y § Espacio y densidad.
+ */
+
+/* El orden de las capas se declara una vez, aquí. */
+@layer reset, primitivos, semanticos, componentes, base;
+
+@layer primitivos {
+  :root {
+    /* ── Papel (superficies) ─────────────────────────────────────────── */
+    --viruta-50: #fbf8f1;
+    --viruta-100: #f4eee2;
+    --viruta-200: #e9e0cf;
+
+    /* ── Madera (secundario cálido) ──────────────────────────────────── */
+    --madera-500: #b08968;
+    --madera-700: #7a5c42;
+
+    /* ── Hierro (tinta) ──────────────────────────────────────────────── */
+    --hierro-900: #23201c;
+    --hierro-600: #5a544b;
+
+    /* ── Acentos del taller ──────────────────────────────────────────── */
+    --verde-600: #4a6b52;
+    --verde-700: #3a5542;
+    --cinta-500: #d8a61c;
+    --tiza-600: #4a6e8a;
+    --lapiz-600: #a34a38;
+
+    /* ── Colores de turno (lengüeta) ─────────────────────────────────── */
+    --turno-verde: #4a6b52;
+    --turno-cinta: #c08a1e;
+    --turno-madera: #8c6444;
+    --turno-tiza: #4a6e8a;
+    --turno-lapiz: #a34a38;
+
+    /* ── Tipografía ──────────────────────────────────────────────────── */
+    --font-display: 'Fraunces Variable', Georgia, 'Times New Roman', serif;
+    --font-sans: 'IBM Plex Sans', system-ui, -apple-system, sans-serif;
+    --font-mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', monospace;
+
+    --weight-regular: 400;
+    --weight-medium: 500;
+    --weight-semibold: 600;
+
+    /* Escala 1.25 desde 14px, expresada en rem para respetar el zoom. */
+    --text-caption: 0.6875rem; /* 11px */
+    --text-body: 0.875rem; /* 14px */
+    --text-h4: 1rem; /* 16px */
+    --text-h3: 1.125rem; /* 18px */
+    --text-h2: 1.375rem; /* 22px */
+    --text-h1: 1.75rem; /* 28px */
+    --text-display: 2.75rem; /* 44px */
+
+    --leading-tight: 1.2;
+    --leading-normal: 1.5;
+
+    --tracking-tight: -0.02em;
+    --tracking-label: 0.06em;
+
+    /* ── Espacio: base 4px ───────────────────────────────────────────── */
+    --space-1: 0.25rem; /* 4 */
+    --space-2: 0.5rem; /* 8 */
+    --space-3: 0.75rem; /* 12 */
+    --space-4: 1rem; /* 16 */
+    --space-6: 1.5rem; /* 24 */
+    --space-8: 2rem; /* 32 */
+    --space-12: 3rem; /* 48 */
+    --space-16: 4rem; /* 64 */
+
+    /* ── Radios ──────────────────────────────────────────────────────── */
+    --radius-sm: 4px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    --radius-full: 999px;
+
+    /* ── Filetes: la profundidad del taller ──────────────────────────── */
+    --border-width: 1px;
+    --border-subtle: rgba(35, 32, 28, 0.12);
+    --border-strong: rgba(35, 32, 28, 0.24);
+
+    /* Los overlays flotan de verdad: son la única sombra del sistema. */
+    --shadow-overlay: 0 8px 24px rgba(35, 32, 28, 0.12);
+
+    /* ── Movimiento ──────────────────────────────────────────────────── */
+    --duration-fast: 120ms;
+    --duration-base: 160ms;
+    --duration-popover: 180ms;
+    --duration-overlay: 240ms;
+    --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+    --ease-move: cubic-bezier(0.77, 0, 0.175, 1);
+  }
+}
