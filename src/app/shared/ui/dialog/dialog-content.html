@@ -1,0 +1,12 @@
+<div class="dialogo">
+  <header class="cabecera">
+    <h2 class="titulo">{{ titulo() }}</h2>
+    <button appIconButton label="Cerrar el diálogo" (click)="cerrar()">
+      <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8" /></svg>
+    </button>
+  </header>
+
+  <div class="cuerpo">
+    <ng-container [ngTemplateOutlet]="contenido" />
+  </div>
+</div>

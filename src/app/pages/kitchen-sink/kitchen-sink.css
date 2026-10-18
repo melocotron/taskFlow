@@ -317,7 +317,8 @@ code {
 }
 
 /* Iconos lineales de 1.5px: heredan el color del botón y nunca son emoji. */
-.control-fila svg {
+.control-fila svg,
+.fila-demo svg {
   width: 16px;
   height: 16px;
   fill: none;
@@ -327,7 +328,8 @@ code {
   stroke-linejoin: round;
 }
 
-.control-fila svg circle {
+.control-fila svg circle,
+.fila-demo svg circle {
   fill: currentcolor;
   stroke: none;
 }
