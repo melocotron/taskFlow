@@ -150,4 +150,76 @@
       <div class="filete-muestra filete-overlay"><span class="rotulo">shadow-overlay</span></div>
     </div>
   </section>
+
+  <section class="seccion" aria-labelledby="botones">
+    <h2 id="botones">Botones</h2>
+    <p class="nota">
+      Cuatro variantes. El estado de carga también bloquea: es lo que evita el doble envío.
+    </p>
+
+    <ul class="controles">
+      @for (variante of variantesBoton; track variante) {
+        <li class="control-fila">
+          <span class="rotulo control-rotulo">{{ variante }}</span>
+          <button appButton [variant]="variante">Guardar tarea</button>
+          <button appButton [variant]="variante" disabled>Guardar tarea</button>
+          <button appButton [variant]="variante" [loading]="true">Guardando</button>
+        </li>
+      }
+    </ul>
+
+    <div class="control-fila">
+      <span class="rotulo control-rotulo">iconos</span>
+      <button appIconButton label="Cerrar el panel">
+        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8" /></svg>
+      </button>
+      <button appIconButton label="Añadir tarea">
+        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 3v10M3 8h10" /></svg>
+      </button>
+      <button appIconButton label="Más opciones" size="sm">
+        <svg viewBox="0 0 16 16" aria-hidden="true">
+          <circle cx="3.5" cy="8" r="1.2" />
+          <circle cx="8" cy="8" r="1.2" />
+          <circle cx="12.5" cy="8" r="1.2" />
+        </svg>
+      </button>
+      <button appIconButton label="Eliminar tarea" disabled>
+        <svg viewBox="0 0 16 16" aria-hidden="true">
+          <path d="M3 4.5h10M6.5 4.5V3h3v1.5M5 4.5l.7 8.5h4.6l.7-8.5" />
+        </svg>
+      </button>
+    </div>
+
+    <div class="control-fila">
+      <span class="rotulo control-rotulo">tamaño</span>
+      <button appButton variant="primary">Normal</button>
+      <button appButton variant="primary" size="lg">Grande</button>
+    </div>
+  </section>
+
+  <section class="seccion" aria-labelledby="formularios">
+    <h2 id="formularios">Campos</h2>
+    <p class="nota">
+      La etiqueta apunta al control y el texto de ayuda se anuncia solo: el vínculo lo resuelve
+      <code>app-field</code>, no quien escribe el formulario.
+    </p>
+
+    <div class="formularios">
+      <app-field label="Título de la tarea" hint="Máximo 80 caracteres.">
+        <input appInput type="text" placeholder="Revisar el copy de la home" />
+      </app-field>
+
+      <app-field label="Descripción" [optional]="true" hint="Contexto para quien la recoja.">
+        <textarea appInput rows="3" placeholder="Qué hay que hacer y por qué"></textarea>
+      </app-field>
+
+      <app-field label="Responsable" error="Elige a alguien del equipo para continuar.">
+        <input appInput type="text" />
+      </app-field>
+
+      <app-field label="Estado" hint="Se asigna automáticamente al mover la tarjeta.">
+        <input appInput type="text" value="En curso" disabled />
+      </app-field>
+    </div>
+  </section>
 </main>

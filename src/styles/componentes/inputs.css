@@ -1,0 +1,56 @@
+/**
+ * Estilos de los controles nativos vestidos con `appInput`.
+ *
+ * Viven en la capa global `componentes` porque una directiva no puede tener
+ * estilos propios: su única misión es añadir la clase y la semántica accesible.
+ */
+@layer componentes {
+  .app-input {
+    width: 100%;
+    min-height: var(--control-height);
+    padding: var(--space-2) var(--control-padding-x);
+    border: var(--border-width) solid var(--border-color);
+    border-radius: var(--control-radius);
+    background-color: var(--surface-raised);
+    color: var(--text-primary);
+    font-family: var(--font-sans);
+    font-size: var(--text-body);
+    line-height: var(--leading-normal);
+    transition:
+      border-color var(--duration-fast) var(--ease-out),
+      background-color var(--duration-fast) var(--ease-out);
+  }
+
+  textarea.app-input {
+    padding-top: var(--space-2);
+    resize: vertical;
+  }
+
+  .app-input::placeholder {
+    color: var(--text-disabled);
+  }
+
+  .app-input:hover:not(:disabled, :focus-visible) {
+    border-color: var(--border-color-strong);
+  }
+
+  .app-input:focus-visible {
+    border-color: var(--accent);
+  }
+
+  .app-input:disabled {
+    background-color: var(--surface-sunken);
+    color: var(--text-disabled);
+    cursor: not-allowed;
+  }
+
+  /* El error cambia el filete, no el fondo: nada de campos rojos chillones. */
+  .app-input--invalid,
+  .app-input--invalid:hover:not(:disabled) {
+    border-color: var(--danger);
+  }
+
+  .app-input[aria-invalid='true'] {
+    border-color: var(--danger);
+  }
+}

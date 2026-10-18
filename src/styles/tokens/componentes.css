@@ -7,7 +7,7 @@
 @layer componentes {
   :root {
     /* ── Controles (button, input, select) ───────────────────────────── */
-    --control-height: 36px;
+    --control-height: 40px;
     --control-height-lg: 44px;
     --control-radius: var(--radius-sm);
     --control-padding-x: var(--space-3);

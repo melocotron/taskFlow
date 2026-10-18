@@ -1,0 +1,37 @@
+:host {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  /* El área mínima de 40px no se negocia: el tamaño de "sm" reduce el glifo, no la caja. */
+  width: var(--control-hit-area);
+  height: var(--control-hit-area);
+  border: var(--border-width) solid transparent;
+  border-radius: var(--control-radius);
+  background-color: transparent;
+  color: var(--text-secondary);
+  font-size: var(--text-h4);
+  line-height: 1;
+  cursor: pointer;
+  transition:
+    background-color var(--duration-fast) var(--ease-out),
+    color var(--duration-fast) var(--ease-out),
+    transform var(--duration-fast) var(--ease-out);
+}
+
+:host(.app-icon-button--sm) {
+  font-size: var(--text-body);
+}
+
+:host(:hover:not(:disabled)) {
+  background-color: var(--surface-sunken);
+  color: var(--text-primary);
+}
+
+:host(:active:not(:disabled)) {
+  transform: scale(0.94);
+}
+
+:host(:disabled) {
+  color: var(--text-disabled);
+  cursor: not-allowed;
+}
