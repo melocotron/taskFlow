@@ -1,0 +1,27 @@
+:host {
+  position: relative;
+  display: block;
+  min-height: var(--card-min-height);
+  padding: var(--card-padding);
+  border: var(--border-width) solid var(--border-color);
+  border-radius: var(--card-radius);
+  background-color: var(--surface-raised);
+  overflow: hidden;
+  transition:
+    border-color var(--duration-fast) var(--ease-out),
+    background-color var(--duration-fast) var(--ease-out);
+}
+
+/* Sin lengüeta el contenido conserva el mismo relleno: la ausencia es un hueco. */
+:host(.app-card--con-turno) {
+  padding-left: calc(var(--space-4) + var(--turno-gap));
+}
+
+.lengueta {
+  position: absolute;
+  top: var(--turno-inset);
+  bottom: var(--turno-inset);
+  left: 0;
+  width: var(--turno-width);
+  border-radius: 0 var(--turno-radius) var(--turno-radius) 0;
+}

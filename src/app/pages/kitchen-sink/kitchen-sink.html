@@ -222,4 +222,74 @@
       </app-field>
     </div>
   </section>
+
+  <section class="seccion" aria-labelledby="superficies-ui">
+    <h2 id="superficies-ui">Tarjetas y estados</h2>
+    <p class="nota">
+      La lengüeta es parte de la tarjeta: no se puede olvidar. Y el color siempre viaja con el
+      nombre, aunque sea de forma invisible en pantalla.
+    </p>
+
+    <ul class="tablero">
+      <li>
+        <app-card turno="verde" persona="Marta">
+          <p class="tarjeta-titulo">Revisar el copy de la home</p>
+          <p class="tarjeta-meta">
+            <app-avatar nombre="Marta Ruiz" turno="verde" size="sm" />
+            <span class="tabular">vence el 24</span>
+          </p>
+        </app-card>
+      </li>
+      <li>
+        <app-card turno="cinta" persona="Iván">
+          <p class="tarjeta-titulo">Confirmar el flujo de invitación</p>
+          <p class="tarjeta-meta">
+            <app-avatar nombre="Iván" turno="cinta" size="sm" />
+            <app-badge tono="signal">En revisión</app-badge>
+          </p>
+        </app-card>
+      </li>
+      <li>
+        <app-card>
+          <p class="tarjeta-titulo">Documentar los estados vacíos</p>
+          <p class="tarjeta-meta">
+            <span class="sin-asignar">sin asignar</span>
+          </p>
+        </app-card>
+      </li>
+    </ul>
+
+    <div class="fila-demo">
+      <span class="rotulo control-rotulo">badges</span>
+      @for (tono of tonosBadge; track tono) {
+        <app-badge [tono]="tono">{{ tono }}</app-badge>
+      }
+    </div>
+
+    <div class="fila-demo">
+      <span class="rotulo control-rotulo">avatares</span>
+      <app-avatar nombre="Marta Ruiz" turno="verde" />
+      <app-avatar nombre="Iván" turno="cinta" />
+      <app-avatar nombre="Alba Sanz" turno="tiza" />
+      <app-avatar nombre="Sin turno" />
+      <app-avatar nombre="Marta Ruiz" turno="verde" size="sm" />
+    </div>
+
+    <app-divider />
+
+    <div class="fila-demo">
+      <span class="rotulo control-rotulo">cargando</span>
+      <div class="esqueleto-demo">
+        <app-skeleton [lineas]="3" anchoUltima="55%" />
+      </div>
+    </div>
+
+    <app-empty-state
+      titulo="Aún no hay tareas"
+      descripcion="Crea la primera y el tablero empieza a contar la historia del equipo."
+    >
+      <button appButton variant="primary">Añadir tarea</button>
+      <button appButton variant="ghost">Importar</button>
+    </app-empty-state>
+  </section>
 </main>
