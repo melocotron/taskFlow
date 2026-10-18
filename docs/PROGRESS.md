@@ -7,57 +7,64 @@
 
 ## ✅ Fase 0 — Cimientos (4/4)
 
-### S0.1 — Repo + Gitflow + husky + commitlint + prettier + eslint
+**S0.1** Repo + Gitflow + husky + commitlint + prettier + eslint. Hooks verificados en
+ambos sentidos (mensaje inválido rechazado, válido aceptado).
 
-`git init` · Angular 22 zoneless · husky (`pre-commit`/`commit-msg`/`pre-push`) ·
-commitlint · eslint flat config · ramas `main`/`develop`.
-**Verificado:** mensaje inválido rechazado, válido aceptado.
+**S0.2** Esqueleto FSD, aliases `@pages`/`@entities`/`@shared`, fronteras ejecutables
+con dependency-cruiser, `strict: true`, `home` lazy (chunk 764 B).
+Verificado: un import `shared → entities` fue bloqueado por el lint.
 
-### S0.2 — Esqueleto FSD + alias + boundaries
+**S0.3** Spec Kit 0.14.3, 10 skills `speckit-*` activas, constitución v1.0.0 (8
+principios), **spec 001 aprobada** con 4 historias y 13 requisitos.
 
-Carpetas por capa · aliases `@pages`/`@entities`/`@shared`/… · fronteras ejecutables
-con dependency-cruiser · `strict: true` · página `home` lazy (chunk 764 B).
-**Verificado:** un import `shared → entities` fue bloqueado por el lint.
+**S0.4** Playwright con `webServer` + smoke test por rol + GitHub Action (jobs
+`quality` y `e2e`). `npm run e2e` verde en local.
 
-### S0.3 — Spec Kit + constitución + spec 001
+---
 
-`specify` 0.14.3 · 10 skills `speckit-*` activas · constitución v1.0.0 con 8 principios
-· **spec 001 aprobada** con 4 historias, 13 requisitos y 4 aclaraciones resueltas
-(sin servidor, sin login, sin tiempo real, orden manual).
+## ✅ Fase 1 · S1.1 — Dirección visual
 
-### S0.4 — Playwright + CI
+**Elegida: A · Taller**, con **la lengüeta de turno** como elemento firma.
+Todo escrito en [.interface-design/system.md](../.interface-design/system.md):
 
-Playwright con `webServer` (un solo comando levanta `ng serve`) · smoke test por rol ·
-GitHub Action con dos jobs: `quality` (formato, lint, tests, build) y `e2e`
-(Chromium + artefacto del reporte si falla).
-**Verificado:** `npm run e2e` pasa en local (1 test, 17.6 s).
+- Paleta completa: 12 primitivos + 5 colores de turno + 14 semánticos.
+- Tipografía: Fraunces (títulos) + IBM Plex Sans (UI) + IBM Plex Mono (datos), ratio 1.25.
+- Espacio: base 4px, escala 4→64. Densidad media.
+- Profundidad: **solo filetes y tono, cero sombras** (salvo overlays).
+- Movimiento: 120–240 ms, solo transform y opacidad, sin animación en acciones repetidas.
+- Fuera de alcance: modo oscuro en v1.
+
+**Sin CSS todavía**, por diseño: los tokens se escriben en S1.2 y se ven vivos en
+`/kitchen-sink` antes de crear el primer componente.
 
 ---
 
 ## Sprint actual
 
-**Fase 1 · S1.1 — Dirección visual**
+**S1.2 — Tokens y kitchen-sink**
 
-| Tarea                                                  | Estado |
-| ------------------------------------------------------ | ------ |
-| Explorar dominio (5+ conceptos), mundo de color, firma | ⬜     |
-| Nombrar 3 defaults a rechazar                          | ⬜     |
-| Proponer 3 direcciones y elegir una                    | ⬜     |
-| Guardar la decisión en `.interface-design/system.md`   | ⬜     |
+| Tarea                                                      | Estado |
+| ---------------------------------------------------------- | ------ |
+| `src/styles/tokens/primitivos.css`                         | ⬜     |
+| `src/styles/tokens/semanticos.css`                         | ⬜     |
+| `src/styles/tokens/componentes.css`                        | ⬜     |
+| `src/styles/base.css` (reset, tipografía base, focus ring) | ⬜     |
+| Fuentes locales con `@fontsource`                          | ⬜     |
+| Ruta `/kitchen-sink` mostrando tokens (no componentes)     | ⬜     |
+| Chequeo: cero hexadecimales fuera de `tokens/`             | ⬜     |
 
-**Criterio de verde:** una dirección elegida y escrita, con paleta, tipografía,
-densidad y elemento firma justificados. **Sin CSS todavía.**
+**Criterio de verde:** `/kitchen-sink` muestra la rampa de color, la escala tipográfica,
+el espaciado, los radios y la lengüeta de turno como especimen vivo. `verify` verde.
 
 ---
 
 ## Dónde me quedé
 
-Fase 0 completa. Nada a medias: `verify` verde, `e2e` verde, CI escrito.
+S1.1 cerrado y commiteado. Nada a medias.
 
 ## Siguiente paso concreto
 
-Cargar la skill `interface-design`, hacer la exploración de dominio de TaskFlow y
-presentarte 3 direcciones visuales para que elijas.
+Escribir los tres archivos de tokens y montar `/kitchen-sink` para ver la dirección A.
 
 ---
 
@@ -77,10 +84,11 @@ Los E2E corren en CI y antes de un merge a `main`.
 
 ## Bitácora
 
-| Fecha      | Sprint | Nota                                                                     |
-| ---------- | ------ | ------------------------------------------------------------------------ |
-| 2026-10-17 | —      | Plan maestro aprobado. Shell reparada (ACL). pnpm descartado.            |
-| 2026-10-17 | S0.1   | Scaffolding Angular 22.2.3 + husky/commitlint/eslint. Hooks verificados. |
-| 2026-10-17 | S0.2   | Esqueleto FSD, alias, boundaries ejecutables. `verify` verde.            |
-| 2026-10-17 | S0.3   | Spec Kit + constitución v1.0.0 + spec 001 aprobada.                      |
-| 2026-10-17 | S0.4   | Playwright + smoke test + GitHub Action. Fase 0 cerrada.                 |
+| Fecha      | Sprint | Nota                                                              |
+| ---------- | ------ | ----------------------------------------------------------------- |
+| 2026-10-17 | —      | Plan maestro aprobado. Shell reparada (ACL). pnpm descartado.     |
+| 2026-10-17 | S0.1   | Scaffolding Angular 22.2.3 + husky/commitlint/eslint.             |
+| 2026-10-17 | S0.2   | Esqueleto FSD, alias, boundaries ejecutables.                     |
+| 2026-10-17 | S0.3   | Spec Kit + constitución v1.0.0 + spec 001 aprobada.               |
+| 2026-10-17 | S0.4   | Playwright + smoke test + CI. Fase 0 cerrada.                     |
+| 2026-10-17 | S1.1   | Dirección **A · Taller** + lengüeta de turno. system.md guardado. |
