@@ -81,31 +81,48 @@ con `currentColor`.
 
 ---
 
+## ✅ Fase 1 · S1.4 — Superficies
+
+Seis piezas nuevas en `shared/ui`, todas con test: `app-card` (con la lengüeta de turno
+**dentro** del componente), `app-badge` (5 tonos), `app-avatar` (iniciales, sin anillo
+arcoíris), `app-divider`, `app-skeleton`, `app-empty-state`.
+
+Dos decisiones que vale la pena recordar:
+
+- **La lengüeta no se puede olvidar** porque es parte de `app-card`. Y el color siempre
+  viaja con el nombre de la persona en `.visualmente-oculto`: ningún dato se transmite
+  solo por color.
+- **El esqueleto se oculta a los lectores de pantalla** (`aria-hidden`). Quien anuncia la
+  carga es el contenedor con `aria-busy`, no el adorno gris.
+
+32 tests en total. `verify` verde, árbol limpio.
+
+---
+
 ## Sprint actual
 
-**S1.4 — Superficies: Card, Panel, Badge, Avatar, Divider, Skeleton, EmptyState**
+**S1.5 — Overlays: Dialog, Menu, Tooltip, Toast**
 
-| Tarea                                               | Estado |
-| --------------------------------------------------- | ------ |
-| `shared/ui/card` (con soporte de lengüeta de turno) | ⬜     |
-| `shared/ui/badge`                                   | ⬜     |
-| `shared/ui/avatar` (iniciales, sin anillo arcoíris) | ⬜     |
-| `shared/ui/divider`, `skeleton`, `empty-state`      | ⬜     |
-| Demo en `/kitchen-sink`                             | ⬜     |
-| Tests por componente                                | ⬜     |
+| Tarea                                                           | Estado |
+| --------------------------------------------------------------- | ------ |
+| `shared/ui/dialog` sobre CDK Overlay (foco atrapado y devuelto) | ⬜     |
+| `shared/ui/menu` sobre `@angular/aria`                          | ⬜     |
+| `shared/ui/tooltip`                                             | ⬜     |
+| `shared/ui/toast` + servicio de notificaciones                  | ⬜     |
+| Demo y tests: `Esc` cierra, foco vuelve al trigger              | ⬜     |
 
-**Criterio de verde:** las siete piezas viven en `shared/ui`, la lengüeta de turno
-funciona dentro de `card`, y `verify` pasa.
+**Criterio de verde:** los cuatro overlays gestionan foco correctamente y un test lo
+demuestra (abrir, `Esc`, foco de vuelta). `verify` verde.
 
 ---
 
 ## Dónde me quedé
 
-S1.3 cerrado y mergeado. Árbol limpio.
+S1.4 cerrado y mergeado. Árbol limpio.
 
 ## Siguiente paso concreto
 
-Crear `src/app/shared/ui/card/` con la lengüeta de turno como parte del componente.
+Instalar `@angular/cdk` y `@angular/aria`, y construir `app-dialog` con foco atrapado.
 
 ---
 
