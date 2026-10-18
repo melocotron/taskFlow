@@ -141,24 +141,56 @@ deliberados. 44 tests, `verify` verde.
 
 ---
 
-## Sprint actual — Fase 2
+## ✅ Fase 2 · S2.1 — Entidad `board`
 
-**S2.1 — Entidad `board`**
+Primer slice de negocio, con la anatomía completa del plan:
 
-| Tarea                                                      | Estado |
-| ---------------------------------------------------------- | ------ |
-| `entities/board/model/board.model.ts` (tipos + branded id) | ⬜     |
-| `entities/board/model/board.store.ts` con signals          | ⬜     |
-| `entities/board/api/board.api.ts` (repositorio en memoria) | ⬜     |
-| `entities/board/index.ts` (API pública del slice)          | ⬜     |
-| Tests del store                                            | ⬜     |
+```
+entities/board/
+├── index.ts                 # API pública: solo se puede importar esto desde fuera
+├── model/board.model.ts     # tipo, id marcado, columnas por defecto, crearBoard()
+├── model/board.store.ts     # signals: estado, activos, cuantosActivos
+├── model/board.store.spec.ts
+└── api/board.repository.ts  # persistencia en localStorage
+```
 
-**Criterio de verde:** crear, renombrar y archivar un tablero desde el store, con tests
-que verifiquen comportamiento; `verify` verde y el slice exportando solo por `index.ts`.
+Decisiones que importan:
+
+- **El id lleva marca de tipo** (`BoardId = string & { [marca]: true }`). El compilador no
+  deja pasar el id de una tarjeta donde va el de un tablero.
+- **La regla de negocio vive en el modelo**, no en el store: `crearBoard()` lanza si el
+  título está vacío, así que ningún camino puede construir un tablero inválido.
+- **Un solo punto de escritura** en el store: `actualizar()` persiste y publica. Es
+  imposible guardar en un sitio y olvidar el otro.
+- **La persistencia es tolerante**: JSON corrupto, entradas sin forma de tablero o un
+  entorno sin `localStorage` no rompen la app; se arranca vacío.
+
+**Verificado que la frontera muerde:** importar `@entities/board/model/board.model` desde
+`features/` falla con `entities-through-public-api`. Solo se entra por `index.ts`.
+
+9 tests nuevos (53 en total). `verify` verde.
+
+---
+
+## Sprint actual
+
+**S2.2 — Entidad `task`**
+
+| Tarea                                                        | Estado |
+| ------------------------------------------------------------ | ------ |
+| `entities/task/model/task.model.ts` (tipo, estado, posición) | ⬜     |
+| `entities/task/model/task.store.ts` con signals              | ⬜     |
+| `entities/task/api/task.repository.ts`                       | ⬜     |
+| Tests: mover de columna, orden manual                        | ⬜     |
+
+**Criterio de verde:** mover una tarea de columna cambia su estado y su posición, con
+tests que lo demuestren; `verify` verde.
 
 ---
 
 ## Dónde me quedé
+
+S2.1 cerrado y mergeado. Árbol limpio.
 
 Fase 1 cerrada y mergeada. Árbol limpio. Build en 387 kB (subió por el CDK: overlay, menú,
 diálogo y a11y). Los presupuestos se ajustan en S4.3.
