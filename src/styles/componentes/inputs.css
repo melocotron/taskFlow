@@ -26,8 +26,10 @@
     resize: vertical;
   }
 
+  /* El placeholder también es texto que hay que poder leer: 4.5:1, no 2.7:1. */
   .app-input::placeholder {
-    color: var(--text-disabled);
+    color: var(--text-muted);
+    opacity: 1;
   }
 
   .app-input:hover:not(:disabled, :focus-visible) {

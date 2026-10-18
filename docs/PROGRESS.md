@@ -121,30 +121,51 @@ podrían verificar nada. Con CDK, la trampa de foco es código que se puede prob
 
 ---
 
-## Sprint actual
+## ✅ Fase 1 · S1.6 — Revisión de craft (Fase 1 cerrada)
 
-**S1.6 — Cierre de la Fase 1: design review**
+Los cuatro chequeos de `interface-design` pasados sobre capturas reales: escritorio,
+móvil a 390 px y una captura con `blur(6px)` para el **squint test de verdad**, no de
+palabra.
 
-| Tarea                                                            | Estado |
-| ---------------------------------------------------------------- | ------ |
-| Revisión de craft con `interface-design` (swap/squint/signature) | ⬜     |
-| Corregir lo que salga                                            | ⬜     |
-| `/kitchen-sink` completo y navegable                             | ⬜     |
-| `system.md` actualizado con todas las medidas                    | ⬜     |
+**Tres defectos encontrados y corregidos:**
 
-**Criterio de verde:** `verify` verde y la revisión de diseño aprobada sin defectos
-abiertos. Fase 1 cerrada.
+1. **`viruta-50` era invisible en su propia ficha** (la ficha usaba `surface-raised`, que
+   _es_ `viruta-50`). Añadido un rayado diagonal de 1px sobre la muestra.
+2. **Contraste 2.74:1** en "sin asignar" y en los placeholders, por usar `text-disabled`,
+   que es para controles deshabilitados. Pasaron a `text-muted` (6.48:1).
+3. **Ritmo plano**: diez secciones idénticas. Añadidos dos cortes de grupo,
+   _Fundamentos_ y _Componentes_.
+
+Contrastes **medidos** con un script, no estimados: todos ≥ 4.5:1 salvo los deshabilitados
+deliberados. 44 tests, `verify` verde.
+
+---
+
+## Sprint actual — Fase 2
+
+**S2.1 — Entidad `board`**
+
+| Tarea                                                      | Estado |
+| ---------------------------------------------------------- | ------ |
+| `entities/board/model/board.model.ts` (tipos + branded id) | ⬜     |
+| `entities/board/model/board.store.ts` con signals          | ⬜     |
+| `entities/board/api/board.api.ts` (repositorio en memoria) | ⬜     |
+| `entities/board/index.ts` (API pública del slice)          | ⬜     |
+| Tests del store                                            | ⬜     |
+
+**Criterio de verde:** crear, renombrar y archivar un tablero desde el store, con tests
+que verifiquen comportamiento; `verify` verde y el slice exportando solo por `index.ts`.
 
 ---
 
 ## Dónde me quedé
 
-S1.5 cerrado y mergeado. Árbol limpio. Build en 387 kB (subió por el CDK: overlay, menú,
+Fase 1 cerrada y mergeada. Árbol limpio. Build en 387 kB (subió por el CDK: overlay, menú,
 diálogo y a11y). Los presupuestos se ajustan en S4.3.
 
 ## Siguiente paso concreto
 
-Cargar `interface-design` y pasar la revisión de craft sobre `/kitchen-sink`.
+Crear el slice `entities/board` con modelo, store y su API pública.
 
 ---
 

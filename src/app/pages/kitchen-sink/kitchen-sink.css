@@ -32,6 +32,25 @@ code {
   font-size: var(--text-caption);
 }
 
+/* ── Cortes de grupo ────────────────────────────────────────────────────
+   Separan "fundamentos" de "componentes". Sin ellos la página es una lista
+   plana donde todo pesa lo mismo. */
+
+.corte {
+  display: flex;
+  gap: var(--space-4);
+  align-items: center;
+  margin-top: var(--space-6);
+}
+
+.corte::before,
+.corte::after {
+  flex: 1;
+  height: var(--border-width);
+  background-color: var(--border-color-strong);
+  content: '';
+}
+
 /* ── Secciones ──────────────────────────────────────────────────────── */
 
 .seccion {
@@ -66,10 +85,21 @@ code {
   background-color: var(--surface-raised);
 }
 
+/*
+ * Rayado diagonal sobre la muestra.
+ *
+ * Sin esto, `viruta-50` es invisible: la ficha también es `viruta-50`. El rayado
+ * se pinta encima del color y hace legible cualquier tono, incluido el casi blanco.
+ */
 .muestra {
   height: 48px;
   border: var(--border-width) solid var(--border-color);
   border-radius: var(--radius-sm);
+  background-image: repeating-linear-gradient(
+    45deg,
+    var(--border-color) 0 1px,
+    transparent 1px 7px
+  );
 }
 
 .ficha-nombre {
@@ -258,8 +288,9 @@ code {
   padding-left: var(--space-4);
 }
 
+/* "Sin asignar" es contenido, no un control deshabilitado: necesita 4.5:1. */
 .sin-asignar {
-  color: var(--text-disabled);
+  color: var(--text-muted);
   font-style: italic;
 }
 
