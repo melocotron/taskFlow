@@ -293,6 +293,57 @@ code {
   box-shadow: var(--shadow-overlay);
 }
 
+/* ── Controles ──────────────────────────────────────────────────────── */
+
+.controles {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.control-fila {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  align-items: center;
+  padding: var(--space-3);
+  border: var(--border-width) solid var(--border-color);
+  border-radius: var(--card-radius);
+  background-color: var(--surface-raised);
+}
+
+.control-rotulo {
+  min-width: 80px;
+  font-family: var(--font-mono);
+}
+
+/* Iconos lineales de 1.5px: heredan el color del botón y nunca son emoji. */
+.control-fila svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentcolor;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.control-fila svg circle {
+  fill: currentcolor;
+  stroke: none;
+}
+
+/* ── Formularios ────────────────────────────────────────────────────── */
+
+.formularios {
+  display: grid;
+  gap: var(--space-6);
+  max-width: 420px;
+  padding: var(--space-6);
+  border: var(--border-width) solid var(--border-color);
+  border-radius: var(--card-radius);
+  background-color: var(--surface-raised);
+}
+
 /* ── Responsive ─────────────────────────────────────────────────────── */
 
 @media (max-width: 640px) {
@@ -300,5 +351,9 @@ code {
   .espacio-fila {
     grid-template-columns: 1fr;
     gap: var(--space-1);
+  }
+
+  .control-rotulo {
+    min-width: 100%;
   }
 }

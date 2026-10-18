@@ -152,13 +152,39 @@ El foco es siempre visible: anillo de 2px `--accent` con `outline-offset: 2px`.
 - Navegación por teclado en el tablero: flechas entre columnas y tarjetas, `Enter` para
   abrir, `Espacio` para tomar y soltar.
 
+## Patrones de componentes
+
+Medidas reales, ya implementadas. Se copian de aquí, no se reinventan.
+
+| Componente      | Medidas                                                                    |
+| --------------- | -------------------------------------------------------------------------- |
+| `appButton`     | alto 40px · relleno 12px · radio 4px · 14px/500 · gap 8px · `lg` 44px      |
+| `appIconButton` | caja 40×40px fija (el tamaño `sm` reduce el glifo, no la caja) · radio 4px |
+| `appInput`      | alto mínimo 40px · relleno 8px 12px · radio 4px · filete 1px               |
+| `app-field`     | etiqueta 14px/500 · mensaje 11px · separación vertical 8px                 |
+
+Reglas que salieron de construirlos:
+
+- **Los botones se aplican sobre `<button>` nativo**, no sobre un contenedor. Teclado,
+  foco, `disabled` y envío de formularios vienen resueltos. Excepción consciente a la
+  regla de prefijo `app`, documentada en el propio archivo.
+- **El estado `loading` también deshabilita.** Es lo que evita el doble envío, que es
+  el bug real detrás de "se guardó dos veces".
+- **La accesibilidad del campo la resuelve el campo, no quien lo usa.** `app-field`
+  inyecta su contexto y el control recibe `id` y `aria-describedby` solos. Un
+  formulario hecho con estos componentes no puede quedar inaccesible por descuido.
+- **Con error, la ayuda se oculta.** Un lector de pantalla no debe oír dos mensajes
+  contradictorios; el error manda y se anuncia con `role="alert"`.
+- **Iconos: SVG de trazo 1.5px con `currentColor`.** Nunca emoji: introduce color
+  fuera de la paleta y no hereda el estado del botón.
+
 ## Fuera de alcance (por ahora)
 
 - **Modo oscuro.** No en v1. Se decidirá con tokens, no con CSS duplicado.
 - Ilustraciones y fotografía.
-- Iconografía propia: se parte de un set lineal de 1.5px de trazo.
+- Iconografía propia completa: se parte de un set lineal de 1.5px de trazo.
 
 ## Siguiente paso
 
-S1.2: escribir estos tokens en `src/styles/tokens/` y construir la ruta `/kitchen-sink`
-para verlos vivos antes de crear ningún componente.
+S1.4: superficies — `Card`, `Panel`, `Badge`, `Avatar`, `Divider`, `Skeleton`,
+`EmptyState`.

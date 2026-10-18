@@ -34,6 +34,7 @@
               "src/styles/tokens/primitivos.css",
               "src/styles/tokens/semanticos.css",
               "src/styles/tokens/componentes.css",
+              "src/styles/componentes/inputs.css",
               "src/styles/base.css"
             ]
           },

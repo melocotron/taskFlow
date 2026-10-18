@@ -1,4 +1,6 @@
 import { Component, afterNextRender, signal } from '@angular/core';
+import { Button, FormField, IconButton, TextInput } from '@shared/ui';
+import type { ButtonVariant } from '@shared/ui';
 
 interface Token {
   readonly name: string;
@@ -21,11 +23,19 @@ interface PasoEscala extends Token {
  */
 @Component({
   selector: 'app-kitchen-sink',
+  imports: [Button, FormField, IconButton, TextInput],
   templateUrl: './kitchen-sink.html',
   styleUrl: './kitchen-sink.css',
 })
 export default class KitchenSinkPage {
   protected readonly valores = signal<Record<string, string>>({});
+
+  protected readonly variantesBoton: readonly ButtonVariant[] = [
+    'primary',
+    'secondary',
+    'ghost',
+    'danger',
+  ];
 
   protected readonly primitivos: readonly Token[] = [
     { name: 'viruta-50', token: '--viruta-50', uso: 'superficie elevada' },
