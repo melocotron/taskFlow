@@ -1,0 +1,47 @@
+:host {
+  display: flex;
+  gap: var(--space-3);
+  align-items: center;
+  justify-content: space-between;
+  min-width: 280px;
+  max-width: 420px;
+  padding: var(--space-2) var(--space-2) var(--space-2) var(--space-4);
+  border: var(--border-width) solid var(--border-color-strong);
+  border-radius: var(--card-radius);
+  background-color: var(--surface-raised);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-overlay);
+  animation: entrar var(--duration-overlay) var(--ease-out);
+}
+
+:host(.app-toast--acento) {
+  border-color: var(--accent);
+  background-color: var(--accent);
+  color: var(--text-on-accent);
+}
+
+:host(.app-toast--peligro) {
+  border-color: var(--danger);
+  background-color: var(--danger);
+  color: var(--text-on-danger);
+}
+
+.mensaje {
+  font-size: var(--text-body);
+}
+
+svg {
+  width: 14px;
+  height: 14px;
+  fill: none;
+  stroke: currentcolor;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+}
+
+@keyframes entrar {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}

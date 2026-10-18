@@ -166,6 +166,8 @@ Medidas reales, ya implementadas. Se copian de aquí, no se reinventan.
 | `app-badge`     | alto 20px · relleno 0 8px · radio completo · 11px/500                      |
 | `app-avatar`    | 32px (`sm` 24px) · radio completo · iniciales 11px/600                     |
 | `app-skeleton`  | líneas de 12px · radio 4px · última línea al 60%                           |
+| `app-menu`      | panel 200px mín. · relleno 4px · radio 8px · sombra de overlay             |
+| `app-toast`     | 280–420px · relleno 8px · radio 8px · sombra de overlay                    |
 
 Reglas que salieron de construirlos:
 
@@ -186,6 +188,12 @@ Reglas que salieron de construirlos:
   `.visualmente-oculto`: ningún dato se transmite solo por color.
 - **`app-avatar` no lleva anillo.** Dos iniciales sobre el tono del turno, o fondo hundido
   si no hay turno. El anillo arcoíris quedó rechazado en la exploración inicial.
+- **Lo que el CDK renderiza en un overlay lleva estilos de componente, no globales.** Un
+  `<div class="menu">` suelto dentro de un `ng-template` no recibió los estilos del
+  archivo global: el panel salía como texto plano. `app-menu` y `app-menu-item` existen
+  precisamente para que la piel viaje con el componente.
+- **Los overlays son la única superficie con sombra.** Todo lo demás se apoya en filetes;
+  un diálogo o un menú flota de verdad y la sombra lo dice.
 
 ## Fuera de alcance (por ahora)
 

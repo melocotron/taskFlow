@@ -36,6 +36,8 @@
               "src/styles/tokens/semanticos.css",
               "src/styles/tokens/componentes.css",
               "src/styles/componentes/inputs.css",
+              "src/styles/componentes/overlays.css",
+              "src/styles/componentes/tooltip.css",
               "src/styles/base.css"
             ]
           },

@@ -1,0 +1,18 @@
+/**
+ * Estilos del panel del overlay del CDK.
+ *
+ * El contenido del diálogo se renderiza fuera del árbol del componente que lo abre,
+ * así que sus estilos de panel son globales por necesidad.
+ */
+@layer componentes {
+  .app-dialogo-panel .cdk-dialog-container {
+    padding: 0;
+    border-radius: var(--dialog-radius);
+    background: transparent;
+    box-shadow: var(--shadow-overlay);
+  }
+
+  .app-dialogo-fondo {
+    background-color: color-mix(in srgb, var(--hierro-900) 42%, transparent);
+  }
+}

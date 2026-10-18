@@ -292,4 +292,58 @@
       <button appButton variant="ghost">Importar</button>
     </app-empty-state>
   </section>
+
+  <section class="seccion" aria-labelledby="overlays">
+    <h2 id="overlays">Overlays</h2>
+    <p class="nota">
+      La trampa de foco, el <kbd>Esc</kbd> y la devolución del foco al trigger los aporta el CDK. Lo
+      nuestro es la piel.
+    </p>
+
+    <div class="fila-demo">
+      <span class="rotulo control-rotulo">diálogo</span>
+      <button appButton variant="secondary" (click)="abrirDialogo()">Renombrar tablero</button>
+    </div>
+
+    <div class="fila-demo">
+      <span class="rotulo control-rotulo">menú</span>
+      <button appButton variant="secondary" [cdkMenuTriggerFor]="menuTablero">
+        Acciones
+        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 6l4 4 4-4" /></svg>
+      </button>
+    </div>
+
+    <div class="fila-demo">
+      <span class="rotulo control-rotulo">tooltip</span>
+      <button
+        appIconButton
+        label="Eliminar la tarea"
+        [appTooltip]="'Se puede deshacer durante 10 segundos'"
+      >
+        <svg viewBox="0 0 16 16" aria-hidden="true">
+          <path d="M3 4.5h10M6.5 4.5V3h3v1.5M5 4.5l.7 8.5h4.6l.7-8.5" />
+        </svg>
+      </button>
+    </div>
+
+    <div class="fila-demo">
+      <span class="rotulo control-rotulo">avisos</span>
+      <button appButton variant="primary" (click)="avisar()">Guardar tarea</button>
+      <button appButton variant="secondary" (click)="avisarError()">Forzar el error</button>
+    </div>
+  </section>
+
+  <ng-template #menuTablero>
+    <app-menu>
+      <app-menu-item>Renombrar tablero</app-menu-item>
+      <app-menu-item>Archivar tablero</app-menu-item>
+      <app-menu-item>Duplicar tablero</app-menu-item>
+    </app-menu>
+  </ng-template>
+
+  <ng-template #contenidoDialogo>
+    <app-field label="Nombre del tablero" hint="Visible para todo el equipo.">
+      <input appInput type="text" value="Producto" />
+    </app-field>
+  </ng-template>
 </main>

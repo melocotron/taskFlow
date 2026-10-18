@@ -1,15 +1,21 @@
-import { Component, afterNextRender, signal } from '@angular/core';
+import { CdkMenuTrigger } from '@angular/cdk/menu';
+import { Component, TemplateRef, ViewChild, afterNextRender, inject, signal } from '@angular/core';
 import {
   Avatar,
   Badge,
   Button,
   Card,
+  DialogService,
   Divider,
   EmptyState,
   FormField,
   IconButton,
+  Menu,
+  MenuItem,
   Skeleton,
   TextInput,
+  ToastService,
+  Tooltip,
 } from '@shared/ui';
 import type { BadgeTono, ButtonVariant } from '@shared/ui';
 
@@ -39,18 +45,40 @@ interface PasoEscala extends Token {
     Badge,
     Button,
     Card,
+    CdkMenuTrigger,
     Divider,
     EmptyState,
     FormField,
     IconButton,
+    Menu,
+    MenuItem,
     Skeleton,
     TextInput,
+    Tooltip,
   ],
   templateUrl: './kitchen-sink.html',
   styleUrl: './kitchen-sink.css',
 })
 export default class KitchenSinkPage {
+  private readonly dialogos = inject(DialogService);
+  private readonly avisos = inject(ToastService);
+
+  @ViewChild('contenidoDialogo', { static: true })
+  private contenidoDialogo!: TemplateRef<unknown>;
+
   protected readonly valores = signal<Record<string, string>>({});
+
+  protected abrirDialogo(): void {
+    this.dialogos.abrir('Renombrar tablero', this.contenidoDialogo);
+  }
+
+  protected avisar(): void {
+    this.avisos.mostrar('Tarea guardada', 'acento');
+  }
+
+  protected avisarError(): void {
+    this.avisos.mostrar('No se pudo guardar: revisa la conexión', 'peligro');
+  }
 
   protected readonly variantesBoton: readonly ButtonVariant[] = [
     'primary',
