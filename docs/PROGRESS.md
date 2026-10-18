@@ -55,31 +55,57 @@ corregidos y re-capturados.
 
 ---
 
+## ✅ Fase 1 · S1.3 — Controles
+
+Cuatro piezas en `shared/ui`, todas con test:
+
+| Pieza                                    | Qué resuelve                                                                   |
+| ---------------------------------------- | ------------------------------------------------------------------------------ |
+| `button[appButton]`                      | 4 variantes × 2 tamaños · `loading` que además deshabilita (evita doble envío) |
+| `button[appIconButton]`                  | caja fija de 40×40 · `label` obligatorio para el nombre accesible              |
+| `input[appInput]` / `textarea[appInput]` | directiva sobre el control nativo, no un componente que lo envuelve            |
+| `app-field`                              | `label for` + `aria-describedby` + `role="alert"` resueltos solos              |
+
+**Cómo se resolvió la accesibilidad:** `app-field` se provee a sí mismo como contexto
+(`InjectionToken FIELD`) y el control inyecta ese contexto para recibir su `id`, su
+`aria-describedby` y su `aria-invalid`. Quien escribe el formulario **no repite
+identificadores**: no puede equivocarse.
+
+**Verificado visualmente.** La captura delató dos defectos que el código no mostraba:
+botones de 36px incumpliendo el mínimo de área táctil de 40px del propio sistema, y
+**emojis usados como iconos** (el 🗑 salía a color y rompía la regla de que el color
+significa algo). Ambos corregidos: `--control-height` a 40px e iconos SVG de trazo 1.5px
+con `currentColor`.
+
+16 tests en total. `verify` verde, árbol limpio.
+
+---
+
 ## Sprint actual
 
-**S1.3 — Controles: Button, IconButton, Input, Textarea, Field**
+**S1.4 — Superficies: Card, Panel, Badge, Avatar, Divider, Skeleton, EmptyState**
 
-| Tarea                                                        | Estado |
-| ------------------------------------------------------------ | ------ |
-| `shared/ui/button` con 4 variantes × 6 estados               | ⬜     |
-| `shared/ui/icon-button`                                      | ⬜     |
-| `shared/ui/input` y `textarea` con estados de error          | ⬜     |
-| `shared/ui/field` (label + hint + error, `aria-describedby`) | ⬜     |
-| Demo en `/kitchen-sink` con todos los estados                | ⬜     |
-| Tests: teclado, foco visible, nombre accesible               | ⬜     |
+| Tarea                                               | Estado |
+| --------------------------------------------------- | ------ |
+| `shared/ui/card` (con soporte de lengüeta de turno) | ⬜     |
+| `shared/ui/badge`                                   | ⬜     |
+| `shared/ui/avatar` (iniciales, sin anillo arcoíris) | ⬜     |
+| `shared/ui/divider`, `skeleton`, `empty-state`      | ⬜     |
+| Demo en `/kitchen-sink`                             | ⬜     |
+| Tests por componente                                | ⬜     |
 
-**Criterio de verde:** los cinco controles viven en `shared/ui`, el lint de fronteras y
-el guardián de tokens pasan, y cada uno tiene test de accesibilidad por rol.
+**Criterio de verde:** las siete piezas viven en `shared/ui`, la lengüeta de turno
+funciona dentro de `card`, y `verify` pasa.
 
 ---
 
 ## Dónde me quedé
 
-S1.2 cerrado y mergeado. Árbol limpio.
+S1.3 cerrado y mergeado. Árbol limpio.
 
 ## Siguiente paso concreto
 
-Crear `src/app/shared/ui/button/` con su `index.ts` y añadirlo al `/kitchen-sink`.
+Crear `src/app/shared/ui/card/` con la lengüeta de turno como parte del componente.
 
 ---
 
