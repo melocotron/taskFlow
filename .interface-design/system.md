@@ -195,6 +195,33 @@ Reglas que salieron de construirlos:
 - **Los overlays son la única superficie con sombra.** Todo lo demás se apoya en filetes;
   un diálogo o un menú flota de verdad y la sombra lo dice.
 
+## Revisión de craft (S1.6)
+
+Los cuatro chequeos de la skill, pasados sobre `/kitchen-sink` con capturas reales
+(escritorio, móvil a 390px y una captura con `blur(6px)` para el squint test).
+
+| Chequeo       | Resultado                                                                                                                                                       |
+| ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Squint**    | La jerarquía aguanta desenfocada: título, secciones y rejilla se distinguen sin leer. Ningún borde grita.                                                       |
+| **Swap**      | Cambiar Fraunces por una sans y el papel por gris dejaría una página de design system genérica. La identidad la llevan el papel cálido, la serif y la lengüeta. |
+| **Signature** | La lengüeta aparece en tres sitios del catálogo y en toda tarjeta del producto; los cinco tonos de turno están en la paleta y en los avatares.                  |
+| **Token**     | `--viruta`, `--madera`, `--hierro`, `--cinta`, `--tiza`, `--lapiz`, `--turno-*`. Leídos en voz alta pertenecen a un taller, no a cualquier proyecto.            |
+
+**Defectos encontrados y corregidos:**
+
+1. **`viruta-50` era invisible** en su propia ficha (la ficha usaba `surface-raised`, que
+   _es_ `viruta-50`). Se añadió un rayado diagonal de 1px sobre la muestra: ahora se lee
+   cualquier tono, incluido el casi blanco. Sin esto, la página mentía sobre tres colores.
+2. **Contraste 2.74:1 en "sin asignar"** y en los placeholders, por usar `text-disabled`.
+   Esa tinta es para controles deshabilitados —que WCAG exime— no para contenido. Pasaron
+   a `text-muted` (6.48:1).
+3. **Ritmo plano**: diez secciones con el mismo hueco y el mismo peso. Se añadieron dos
+   cortes de grupo —_Fundamentos_ y _Componentes_— que separan las dos mitades de la página.
+
+**Contrastes medidos** (no estimados): texto principal 14.04:1 · secundario 5.29:1 ·
+atenuado 6.48:1 · sobre acento 5.63:1 · sobre peligro 5.51:1 · sobre señal 7.25:1 ·
+sobre información 5.09:1. Todos por encima de 4.5:1.
+
 ## Fuera de alcance (por ahora)
 
 - **Modo oscuro.** No en v1. Se decidirá con tokens, no con CSS duplicado.
@@ -203,4 +230,5 @@ Reglas que salieron de construirlos:
 
 ## Siguiente paso
 
-S1.5: overlays — `Dialog`, `Menu`, `Tooltip`, `Toast` sobre CDK y `@angular/aria`.
+Fase 2: el dominio. `entities/board`, `entities/task`, `entities/member` con sus stores
+de signals y tests.
