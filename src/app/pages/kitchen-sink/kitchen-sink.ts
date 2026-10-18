@@ -1,6 +1,17 @@
 import { Component, afterNextRender, signal } from '@angular/core';
-import { Button, FormField, IconButton, TextInput } from '@shared/ui';
-import type { ButtonVariant } from '@shared/ui';
+import {
+  Avatar,
+  Badge,
+  Button,
+  Card,
+  Divider,
+  EmptyState,
+  FormField,
+  IconButton,
+  Skeleton,
+  TextInput,
+} from '@shared/ui';
+import type { BadgeTono, ButtonVariant } from '@shared/ui';
 
 interface Token {
   readonly name: string;
@@ -23,7 +34,18 @@ interface PasoEscala extends Token {
  */
 @Component({
   selector: 'app-kitchen-sink',
-  imports: [Button, FormField, IconButton, TextInput],
+  imports: [
+    Avatar,
+    Badge,
+    Button,
+    Card,
+    Divider,
+    EmptyState,
+    FormField,
+    IconButton,
+    Skeleton,
+    TextInput,
+  ],
   templateUrl: './kitchen-sink.html',
   styleUrl: './kitchen-sink.css',
 })
@@ -35,6 +57,14 @@ export default class KitchenSinkPage {
     'secondary',
     'ghost',
     'danger',
+  ];
+
+  protected readonly tonosBadge: readonly BadgeTono[] = [
+    'neutro',
+    'acento',
+    'signal',
+    'peligro',
+    'info',
   ];
 
   protected readonly primitivos: readonly Token[] = [

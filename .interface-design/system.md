@@ -162,6 +162,10 @@ Medidas reales, ya implementadas. Se copian de aquí, no se reinventan.
 | `appIconButton` | caja 40×40px fija (el tamaño `sm` reduce el glifo, no la caja) · radio 4px |
 | `appInput`      | alto mínimo 40px · relleno 8px 12px · radio 4px · filete 1px               |
 | `app-field`     | etiqueta 14px/500 · mensaje 11px · separación vertical 8px                 |
+| `app-card`      | relleno 12px 16px · radio 8px · mínimo 56px · con turno, izq. 26px         |
+| `app-badge`     | alto 20px · relleno 0 8px · radio completo · 11px/500                      |
+| `app-avatar`    | 32px (`sm` 24px) · radio completo · iniciales 11px/600                     |
+| `app-skeleton`  | líneas de 12px · radio 4px · última línea al 60%                           |
 
 Reglas que salieron de construirlos:
 
@@ -177,6 +181,11 @@ Reglas que salieron de construirlos:
   contradictorios; el error manda y se anuncia con `role="alert"`.
 - **Iconos: SVG de trazo 1.5px con `currentColor`.** Nunca emoji: introduce color
   fuera de la paleta y no hereda el estado del botón.
+- **La lengüeta vive dentro de `app-card`, no fuera.** Si se pudiera olvidar, alguien la
+  olvidaría. Y el color viaja siempre con el nombre de la persona, visible o en
+  `.visualmente-oculto`: ningún dato se transmite solo por color.
+- **`app-avatar` no lleva anillo.** Dos iniciales sobre el tono del turno, o fondo hundido
+  si no hay turno. El anillo arcoíris quedó rechazado en la exploración inicial.
 
 ## Fuera de alcance (por ahora)
 
@@ -186,5 +195,4 @@ Reglas que salieron de construirlos:
 
 ## Siguiente paso
 
-S1.4: superficies — `Card`, `Panel`, `Badge`, `Avatar`, `Divider`, `Skeleton`,
-`EmptyState`.
+S1.5: overlays — `Dialog`, `Menu`, `Tooltip`, `Toast` sobre CDK y `@angular/aria`.

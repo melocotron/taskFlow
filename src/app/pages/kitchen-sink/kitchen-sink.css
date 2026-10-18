@@ -344,6 +344,45 @@ code {
   background-color: var(--surface-raised);
 }
 
+/* ── Tarjetas y estados ─────────────────────────────────────────────── */
+
+.tablero {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: var(--card-gap);
+  align-items: start;
+}
+
+.tablero .tarjeta-titulo {
+  font-weight: var(--weight-medium);
+  line-height: var(--leading-tight);
+}
+
+.tablero .tarjeta-meta {
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
+  margin-top: var(--space-2);
+  color: var(--text-muted);
+  font-size: var(--text-caption);
+}
+
+.fila-demo {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  align-items: center;
+  padding: var(--space-3);
+  border: var(--border-width) solid var(--border-color);
+  border-radius: var(--card-radius);
+  background-color: var(--surface-raised);
+}
+
+.esqueleto-demo {
+  flex: 1;
+  max-width: 320px;
+}
+
 /* ── Responsive ─────────────────────────────────────────────────────── */
 
 @media (max-width: 640px) {
