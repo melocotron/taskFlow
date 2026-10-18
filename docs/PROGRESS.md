@@ -99,30 +99,52 @@ Dos decisiones que vale la pena recordar:
 
 ---
 
+## ✅ Fase 1 · S1.5 — Overlays
+
+`@angular/cdk` 22.2.3 instalado. Cuatro piezas nuevas:
+
+| Pieza                                  | Qué aporta                                                                                    |
+| -------------------------------------- | --------------------------------------------------------------------------------------------- |
+| `DialogService` + `app-dialog-content` | Overlay del CDK sobre un `ng-template`: trampa de foco, `Esc` y devolución del foco resueltas |
+| `app-menu` + `app-menu-item`           | Panel y acciones con navegación por teclado del CDK                                           |
+| `appTooltip`                           | Directiva que funciona con ratón **y con teclado**, vía `aria-describedby`                    |
+| `ToastService` + `app-toast-container` | Avisos efímeros con `role="status"` y `aria-live="polite"`                                    |
+
+**Tests que valen la pena:** el diálogo se abre con nombre accesible, se cierra desde su
+botón y **el foco vuelve exactamente al botón que lo abrió**. El servicio de avisos cierra
+solo, y al cerrar a mano no deja temporizadores huérfanos.
+
+**No usamos `<dialog>` nativo.** jsdom no implementa `showModal()`, así que los tests no
+podrían verificar nada. Con CDK, la trampa de foco es código que se puede probar.
+
+44 tests en total. `verify` verde.
+
+---
+
 ## Sprint actual
 
-**S1.5 — Overlays: Dialog, Menu, Tooltip, Toast**
+**S1.6 — Cierre de la Fase 1: design review**
 
-| Tarea                                                           | Estado |
-| --------------------------------------------------------------- | ------ |
-| `shared/ui/dialog` sobre CDK Overlay (foco atrapado y devuelto) | ⬜     |
-| `shared/ui/menu` sobre `@angular/aria`                          | ⬜     |
-| `shared/ui/tooltip`                                             | ⬜     |
-| `shared/ui/toast` + servicio de notificaciones                  | ⬜     |
-| Demo y tests: `Esc` cierra, foco vuelve al trigger              | ⬜     |
+| Tarea                                                            | Estado |
+| ---------------------------------------------------------------- | ------ |
+| Revisión de craft con `interface-design` (swap/squint/signature) | ⬜     |
+| Corregir lo que salga                                            | ⬜     |
+| `/kitchen-sink` completo y navegable                             | ⬜     |
+| `system.md` actualizado con todas las medidas                    | ⬜     |
 
-**Criterio de verde:** los cuatro overlays gestionan foco correctamente y un test lo
-demuestra (abrir, `Esc`, foco de vuelta). `verify` verde.
+**Criterio de verde:** `verify` verde y la revisión de diseño aprobada sin defectos
+abiertos. Fase 1 cerrada.
 
 ---
 
 ## Dónde me quedé
 
-S1.4 cerrado y mergeado. Árbol limpio.
+S1.5 cerrado y mergeado. Árbol limpio. Build en 387 kB (subió por el CDK: overlay, menú,
+diálogo y a11y). Los presupuestos se ajustan en S4.3.
 
 ## Siguiente paso concreto
 
-Instalar `@angular/cdk` y `@angular/aria`, y construir `app-dialog` con foco atrapado.
+Cargar `interface-design` y pasar la revisión de craft sobre `/kitchen-sink`.
 
 ---
 
