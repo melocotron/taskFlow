@@ -39,32 +39,47 @@ Todo escrito en [.interface-design/system.md](../.interface-design/system.md):
 
 ---
 
+## ✅ Fase 1 · S1.2 — Tokens y kitchen-sink
+
+Tres niveles de tokens (primitivos → semánticos → componentes) en `@layer`, base.css con
+reset y foco global, Fraunces + IBM Plex Sans/Mono autohospedadas con `@fontsource`.
+Ruta `/kitchen-sink` que **lee los valores en runtime** (`getComputedStyle`): si un token
+desaparece, la página muestra `—` en lugar de mentir.
+Guardián `npm run check:tokens` (falla con cualquier hex fuera de `src/styles/tokens/`),
+integrado en `verify`. Presupuesto de CSS por componente subido a 6 kB.
+
+**Verificado visualmente** con captura de Playwright. La primera captura delató dos
+errores míos: la escala tipográfica entera salía en Fraunces (el texto de interfaz debe
+ir en Plex) y seis secciones con el mismo hueco de 48 px (ritmo monótono). Ambos
+corregidos y re-capturados.
+
+---
+
 ## Sprint actual
 
-**S1.2 — Tokens y kitchen-sink**
+**S1.3 — Controles: Button, IconButton, Input, Textarea, Field**
 
-| Tarea                                                      | Estado |
-| ---------------------------------------------------------- | ------ |
-| `src/styles/tokens/primitivos.css`                         | ⬜     |
-| `src/styles/tokens/semanticos.css`                         | ⬜     |
-| `src/styles/tokens/componentes.css`                        | ⬜     |
-| `src/styles/base.css` (reset, tipografía base, focus ring) | ⬜     |
-| Fuentes locales con `@fontsource`                          | ⬜     |
-| Ruta `/kitchen-sink` mostrando tokens (no componentes)     | ⬜     |
-| Chequeo: cero hexadecimales fuera de `tokens/`             | ⬜     |
+| Tarea                                                        | Estado |
+| ------------------------------------------------------------ | ------ |
+| `shared/ui/button` con 4 variantes × 6 estados               | ⬜     |
+| `shared/ui/icon-button`                                      | ⬜     |
+| `shared/ui/input` y `textarea` con estados de error          | ⬜     |
+| `shared/ui/field` (label + hint + error, `aria-describedby`) | ⬜     |
+| Demo en `/kitchen-sink` con todos los estados                | ⬜     |
+| Tests: teclado, foco visible, nombre accesible               | ⬜     |
 
-**Criterio de verde:** `/kitchen-sink` muestra la rampa de color, la escala tipográfica,
-el espaciado, los radios y la lengüeta de turno como especimen vivo. `verify` verde.
+**Criterio de verde:** los cinco controles viven en `shared/ui`, el lint de fronteras y
+el guardián de tokens pasan, y cada uno tiene test de accesibilidad por rol.
 
 ---
 
 ## Dónde me quedé
 
-S1.1 cerrado y commiteado. Nada a medias.
+S1.2 cerrado y mergeado. Árbol limpio.
 
 ## Siguiente paso concreto
 
-Escribir los tres archivos de tokens y montar `/kitchen-sink` para ver la dirección A.
+Crear `src/app/shared/ui/button/` con su `index.ts` y añadirlo al `/kitchen-sink`.
 
 ---
 
