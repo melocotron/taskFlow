@@ -1,0 +1,153 @@
+<main class="banco">
+  <header class="cabecera">
+    <p class="rotulo">Design system · Dirección A · Taller</p>
+    <h1>Kitchen sink</h1>
+    <p class="entradilla">
+      Todo lo que hay aquí viene de <code>src/styles/tokens/</code>. Los valores se leen en tiempo
+      de ejecución: si un token desaparece, esta página lo muestra como <code>—</code>.
+    </p>
+  </header>
+
+  <section class="seccion" aria-labelledby="paleta">
+    <h2 id="paleta">Paleta primitiva</h2>
+    <p class="nota">Los únicos hexadecimales del proyecto.</p>
+    <ul class="rejilla">
+      @for (color of primitivos; track color.token) {
+        <li class="ficha">
+          <span class="muestra" [style.background-color]="'var(' + color.token + ')'"></span>
+          <span class="ficha-nombre">{{ color.name }}</span>
+          <span class="ficha-valor tabular">{{ valor(color.token) }}</span>
+          <span class="ficha-uso">{{ color.uso }}</span>
+        </li>
+      }
+    </ul>
+  </section>
+
+  <section class="seccion" aria-labelledby="turnos">
+    <h2 id="turnos">Colores de turno</h2>
+    <p class="nota">Uno por persona. Nunca son el único portador de la información.</p>
+    <ul class="rejilla">
+      @for (color of turnos; track color.token) {
+        <li class="ficha">
+          <span class="muestra" [style.background-color]="'var(' + color.token + ')'"></span>
+          <span class="ficha-nombre">{{ color.name }}</span>
+          <span class="ficha-valor tabular">{{ valor(color.token) }}</span>
+          <span class="ficha-uso">{{ color.uso }}</span>
+        </li>
+      }
+    </ul>
+  </section>
+
+  <section class="seccion" aria-labelledby="superficies">
+    <h2 id="superficies">Superficies</h2>
+    <p class="nota">La elevación es un cambio de tono y un filete. Nunca una sombra.</p>
+    <div class="apilado">
+      <div class="superficie superficie-hundida">
+        <span class="rotulo">surface-sunken</span>
+        <p>Zona hundida: fondo de columna.</p>
+      </div>
+      <div class="superficie superficie-base">
+        <span class="rotulo">surface-canvas</span>
+        <p>Lienzo: donde se apoya todo.</p>
+      </div>
+      <div class="superficie superficie-elevada">
+        <span class="rotulo">surface-raised</span>
+        <p>Elevada: tarjeta, panel.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="seccion" aria-labelledby="tipografia">
+    <h2 id="tipografia">Escala tipográfica</h2>
+    <p class="nota">Ratio 1.25 desde 14px. Fraunces para títulos, Plex para todo lo demás.</p>
+    <ul class="escala">
+      @for (paso of escala; track paso.token) {
+        <li class="escala-fila">
+          <span class="rotulo escala-rotulo">{{ paso.name }}</span>
+          <span
+            class="escala-muestra"
+            [class.escala-muestra--display]="paso.display"
+            [style.font-size]="'var(' + paso.token + ')'"
+          >
+            El trabajo se ve mejor cuando está ordenado
+          </span>
+          <span class="escala-uso tabular">{{ paso.uso }}</span>
+        </li>
+      }
+    </ul>
+  </section>
+
+  <section class="seccion" aria-labelledby="espacio">
+    <h2 id="espacio">Espaciado</h2>
+    <p class="nota">Base 4px. Solo múltiplos de la escala.</p>
+    <ul class="espacios">
+      @for (paso of espacios; track paso.token) {
+        <li class="espacio-fila">
+          <span class="rotulo espacio-rotulo">{{ paso.name }}</span>
+          <span class="barra" [style.width]="'var(' + paso.token + ')'"></span>
+          <span class="espacio-uso tabular">{{ paso.uso }}</span>
+        </li>
+      }
+    </ul>
+  </section>
+
+  <section class="seccion" aria-labelledby="radios">
+    <h2 id="radios">Radios</h2>
+    <p class="nota">Concéntricos: el radio exterior es el interior más el relleno.</p>
+    <ul class="radios">
+      @for (radio of radios; track radio.token) {
+        <li class="radio-ficha">
+          <span class="radio-caja" [style.border-radius]="'var(' + radio.token + ')'"></span>
+          <span class="ficha-nombre">{{ radio.name }}</span>
+          <span class="ficha-uso">{{ radio.uso }}</span>
+        </li>
+      }
+    </ul>
+  </section>
+
+  <section class="seccion" aria-labelledby="firma">
+    <h2 id="firma">La lengüeta de turno</h2>
+    <p class="nota">
+      La firma del producto. Sin lengüeta = sin asignar: la ausencia también informa.
+    </p>
+    <ul class="tarjetas">
+      <li class="tarjeta">
+        <span class="lengueta" [style.background-color]="'var(--turno-verde)'"></span>
+        <div class="tarjeta-cuerpo">
+          <p class="tarjeta-titulo">Revisar el copy de la home</p>
+          <p class="tarjeta-meta">
+            <span class="titular">Marta</span>
+            <span class="tabular">vence el 24</span>
+          </p>
+        </div>
+      </li>
+      <li class="tarjeta">
+        <span class="lengueta" [style.background-color]="'var(--turno-cinta)'"></span>
+        <div class="tarjeta-cuerpo">
+          <p class="tarjeta-titulo">Confirmar el flujo de invitación</p>
+          <p class="tarjeta-meta">
+            <span class="titular">Iván</span>
+            <span class="tabular">sin fecha</span>
+          </p>
+        </div>
+      </li>
+      <li class="tarjeta tarjeta-sin-turno">
+        <div class="tarjeta-cuerpo">
+          <p class="tarjeta-titulo">Documentar los estados vacíos</p>
+          <p class="tarjeta-meta">
+            <span class="sin-asignar">sin asignar</span>
+          </p>
+        </div>
+      </li>
+    </ul>
+  </section>
+
+  <section class="seccion" aria-labelledby="filetes">
+    <h2 id="filetes">Filetes y overlay</h2>
+    <div class="filetes">
+      <div class="filete-muestra filete-sutil"><span class="rotulo">border-subtle</span></div>
+      <div class="filete-muestra filete-fuerte"><span class="rotulo">border-strong</span></div>
+      <div class="filete-muestra filete-overlay"><span class="rotulo">shadow-overlay</span></div>
+    </div>
+  </section>
+</main>

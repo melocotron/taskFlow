@@ -1,0 +1,304 @@
+.banco {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+  max-width: 960px;
+  margin: 0 auto;
+  padding: var(--board-padding);
+}
+
+.cabecera {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding-bottom: var(--space-6);
+  border-bottom: var(--border-width) solid var(--border-color);
+}
+
+.cabecera h1 {
+  font-size: var(--text-display);
+}
+
+.entradilla {
+  max-width: 56ch;
+  color: var(--text-secondary);
+}
+
+code {
+  padding: 0 var(--space-1);
+  border-radius: var(--radius-sm);
+  background-color: var(--surface-sunken);
+  font-family: var(--font-mono);
+  font-size: var(--text-caption);
+}
+
+/* ── Secciones ──────────────────────────────────────────────────────── */
+
+.seccion {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.seccion h2 {
+  font-size: var(--text-h2);
+}
+
+.nota {
+  max-width: 60ch;
+  color: var(--text-muted);
+}
+
+/* ── Fichas de color ────────────────────────────────────────────────── */
+
+.rejilla {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: var(--space-3);
+}
+
+.ficha {
+  display: grid;
+  gap: var(--space-1);
+  padding: var(--space-3);
+  border: var(--border-width) solid var(--border-color);
+  border-radius: var(--card-radius);
+  background-color: var(--surface-raised);
+}
+
+.muestra {
+  height: 48px;
+  border: var(--border-width) solid var(--border-color);
+  border-radius: var(--radius-sm);
+}
+
+.ficha-nombre {
+  font-weight: var(--weight-medium);
+}
+
+.ficha-valor {
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: var(--text-caption);
+  text-transform: uppercase;
+}
+
+.ficha-uso {
+  color: var(--text-muted);
+  font-size: var(--text-caption);
+}
+
+/* ── Superficies apiladas ───────────────────────────────────────────── */
+
+.apilado {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.superficie {
+  display: grid;
+  gap: var(--space-1);
+  padding: var(--space-4);
+  border: var(--border-width) solid var(--border-color);
+  border-radius: var(--card-radius);
+}
+
+.superficie-hundida {
+  background-color: var(--surface-sunken);
+}
+
+.superficie-base {
+  background-color: var(--surface-canvas);
+}
+
+.superficie-elevada {
+  background-color: var(--surface-raised);
+}
+
+/* ── Escala tipográfica ─────────────────────────────────────────────── */
+
+.escala {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.escala-fila {
+  display: grid;
+  grid-template-columns: 96px 1fr auto;
+  align-items: baseline;
+  gap: var(--space-3);
+  padding-bottom: var(--space-3);
+  border-bottom: var(--border-width) solid var(--border-color);
+}
+
+.escala-rotulo {
+  font-family: var(--font-mono);
+}
+
+.escala-muestra {
+  font-family: var(--font-sans);
+  line-height: var(--leading-normal);
+}
+
+/* Solo los títulos van en Fraunces. El texto de interfaz es Plex. */
+.escala-muestra--display {
+  font-family: var(--font-display);
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-tight);
+}
+
+.escala-uso {
+  color: var(--text-muted);
+  font-size: var(--text-caption);
+}
+
+/* ── Espaciado ──────────────────────────────────────────────────────── */
+
+.espacios {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.espacio-fila {
+  display: grid;
+  grid-template-columns: 96px 1fr auto;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.espacio-rotulo {
+  font-family: var(--font-mono);
+}
+
+.barra {
+  height: 12px;
+  border-radius: var(--radius-sm);
+  background-color: var(--accent);
+}
+
+.espacio-uso {
+  color: var(--text-muted);
+  font-size: var(--text-caption);
+}
+
+/* ── Radios ─────────────────────────────────────────────────────────── */
+
+.radios {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+}
+
+.radio-ficha {
+  display: grid;
+  gap: var(--space-1);
+  justify-items: center;
+}
+
+.radio-caja {
+  width: 72px;
+  height: 72px;
+  border: var(--border-width) solid var(--border-color-strong);
+  background-color: var(--surface-raised);
+}
+
+/* ── La lengüeta de turno ───────────────────────────────────────────── */
+
+.tarjetas {
+  display: grid;
+  gap: var(--card-gap);
+  max-width: var(--column-width);
+}
+
+.tarjeta {
+  position: relative;
+  display: flex;
+  min-height: var(--card-min-height);
+  border: var(--border-width) solid var(--border-color);
+  border-radius: var(--card-radius);
+  background-color: var(--surface-raised);
+  overflow: hidden;
+}
+
+.lengueta {
+  position: absolute;
+  top: var(--turno-inset);
+  bottom: var(--turno-inset);
+  left: 0;
+  width: var(--turno-width);
+  border-radius: 0 var(--turno-radius) var(--turno-radius) 0;
+}
+
+.tarjeta-cuerpo {
+  display: grid;
+  gap: var(--space-1);
+  padding: var(--card-padding);
+  padding-left: calc(var(--space-4) + var(--turno-gap));
+}
+
+.tarjeta-titulo {
+  font-weight: var(--weight-medium);
+  line-height: var(--leading-tight);
+}
+
+.tarjeta-meta {
+  display: flex;
+  gap: var(--space-2);
+  color: var(--text-muted);
+  font-size: var(--text-caption);
+}
+
+.titular {
+  color: var(--text-secondary);
+  font-weight: var(--weight-medium);
+}
+
+/* Sin lengüeta: hueco, no gris. El relleno se mantiene alineado. */
+.tarjeta-sin-turno .tarjeta-cuerpo {
+  padding-left: var(--space-4);
+}
+
+.sin-asignar {
+  color: var(--text-disabled);
+  font-style: italic;
+}
+
+/* ── Filetes ────────────────────────────────────────────────────────── */
+
+.filetes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+}
+
+.filete-muestra {
+  display: grid;
+  place-items: center;
+  width: 180px;
+  height: 72px;
+  border-radius: var(--card-radius);
+  background-color: var(--surface-raised);
+}
+
+.filete-sutil {
+  border: var(--border-width) solid var(--border-color);
+}
+
+.filete-fuerte {
+  border: var(--border-width) solid var(--border-color-strong);
+}
+
+.filete-overlay {
+  border: var(--border-width) solid var(--border-color);
+  box-shadow: var(--shadow-overlay);
+}
+
+/* ── Responsive ─────────────────────────────────────────────────────── */
+
+@media (max-width: 640px) {
+  .escala-fila,
+  .espacio-fila {
+    grid-template-columns: 1fr;
+    gap: var(--space-1);
+  }
+}
