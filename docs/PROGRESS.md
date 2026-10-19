@@ -205,25 +205,57 @@ sin pisar otros campos, eliminar renumerando, e id inexistente.
 
 ---
 
+## ✅ Fase 2 · S2.3 — Entidad `member`, sesión y permisos
+
+```
+entities/member/
+├── index.ts
+├── model/member.model.ts   # Member, Rol, Accion, MIEMBROS_DEMO, puede(), etiquetaRol()
+├── model/member.store.ts   # miembros, sesión, rol, puedeEditar, puedeAdministrar
+└── model/member.store.spec.ts
+```
+
+**La decisión que define el sprint:** los permisos viven en el dominio, en una función
+pura `puede(rol, accion)`. El componente solo la consulta. Si mañana alguien esconde un
+botón pero olvida comprobar la acción, **el dominio sigue negando** — la interfaz no es
+la puerta, es el cartel.
+
+**Tres detalles que importan:**
+
+- **`switch` exhaustivo con `never`.** Si se añade un rol y no se actualiza la tabla, el
+  compilador lo delata. La seguridad no depende de que alguien recuerde.
+- **La sesión se guarda** y se recupera al recargar; si apunta a alguien que ya no existe,
+  cae a la primera persona en lugar de romperse.
+- **Un test comprueba la coherencia entre store y plantilla**: el mismo `puedeEditar()`
+  pinta el botón y lo esconde al cambiar a una persona observadora.
+
+**Desviación consciente del spec:** el rol es global a la persona, cuando el spec pide un
+rol **por tablero**. Se migrará en S3.6, cuando existan las invitaciones. Está anotado en
+el propio modelo.
+
+11 tests nuevos (76 en total). `verify` verde.
+
+---
+
 ## Sprint actual
 
-**S2.3 — Entidad `member` y roles**
+**S2.4 — Datos y estados de carga**
 
-| Tarea                                                    | Estado |
-| -------------------------------------------------------- | ------ |
-| `entities/member/model/member.model.ts` (rol y permisos) | ⬜     |
-| `entities/member/model/member.store.ts`                  | ⬜     |
-| `puedeEditar()` / `puedeAdministrar()` derivados del rol | ⬜     |
-| Tests de permisos por rol                                | ⬜     |
+| Tarea                                                | Estado |
+| ---------------------------------------------------- | ------ |
+| Latencia simulada en los repositorios                | ⬜     |
+| Estados `cargando` / `error` / `listo` en los stores | ⬜     |
+| Componente `app-skeleton` usado en una pantalla real | ⬜     |
+| Test del paso por los tres estados                   | ⬜     |
 
-**Criterio de verde:** un `viewer` no puede editar; un `editor` sí; solo quien administra
-gestiona miembros. Con tests que lo demuestren. `verify` verde.
+**Criterio de verde:** el store expone estados observables y un test recorre
+`cargando → listo` y `cargando → error`. `verify` verde.
 
 ---
 
 ## Dónde me quedé
 
-S2.2 cerrado y mergeado. Árbol limpio.
+S2.3 cerrado y mergeado. Árbol limpio.
 
 Fase 1 cerrada y mergeada. Árbol limpio. Build en 387 kB (subió por el CDK: overlay, menú,
 diálogo y a11y). Los presupuestos se ajustan en S4.3.
