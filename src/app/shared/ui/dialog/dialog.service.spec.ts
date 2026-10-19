@@ -7,6 +7,7 @@ import { DialogService } from './dialog.service';
     <button type="button" (click)="abrir()">Renombrar tablero</button>
     <ng-template #plantilla>
       <p>El nombre lo decide el equipo.</p>
+      <input aria-label="Nombre del tablero" />
     </ng-template>
   `,
 })

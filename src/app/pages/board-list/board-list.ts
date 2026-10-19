@@ -1,10 +1,12 @@
 import type { DialogRef } from '@angular/cdk/dialog';
 import { CdkMenuTrigger } from '@angular/cdk/menu';
-import { Component, TemplateRef, computed, inject, signal, viewChild } from '@angular/core';
+import { Component, TemplateRef, computed, inject, viewChild } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { BoardStore } from '@entities/board';
 import { MemberStore, etiquetaRol } from '@entities/member';
 import type { MemberId } from '@entities/member';
+import { BoardForm } from '@features/board-form';
+import type { DatosTablero } from '@features/board-form';
 import { turnoPorIndice } from '@shared/lib/turnos';
 import {
   Avatar,
@@ -12,11 +14,9 @@ import {
   Card,
   DialogService,
   EmptyState,
-  FormField,
   Menu,
   MenuItem,
   Skeleton,
-  TextInput,
   ToastService,
 } from '@shared/ui';
 import type { DialogContent } from '@shared/ui';
@@ -28,22 +28,21 @@ import type { DialogContent } from '@shared/ui';
  * carga → design system) y la puerta al detalle de cada tablero.
  *
  * El nombre del tablero se pide en un diálogo y no se inventa: un tablero llamado
- * «Tablero sin nombre» no le sirve a nadie y hay que renombrarlo igual.
+ * «Tablero sin nombre» no le sirve a nadie. Se puede cambiar después desde el detalle.
  */
 @Component({
   selector: 'app-board-list',
   imports: [
     Avatar,
+    BoardForm,
     Button,
     Card,
     CdkMenuTrigger,
     EmptyState,
-    FormField,
     Menu,
     MenuItem,
     RouterLink,
     Skeleton,
-    TextInput,
   ],
   templateUrl: './board-list.html',
   styleUrl: './board-list.css',
@@ -76,10 +75,7 @@ export default class BoardListPage {
     return turnoPorIndice(Math.max(indice, 0));
   });
 
-  /** Estado del formulario de creación; vive aquí porque el diálogo proyecta esta plantilla. */
-  protected readonly nombreNuevo = signal('');
-  protected readonly errorNombre = signal('');
-
+  /** Etiqueta legible del rol, para el menú de sesión. */
   protected etiqueta = etiquetaRol;
 
   protected turno(indice: number) {
@@ -104,33 +100,21 @@ export default class BoardListPage {
       return;
     }
 
-    this.nombreNuevo.set('');
-    this.errorNombre.set('');
     this.referencia = this.dialogos.abrir('Nuevo tablero', this.plantillaNuevo());
   }
 
-  protected alEscribir(evento: Event): void {
-    this.nombreNuevo.set((evento.target as HTMLInputElement).value);
-    this.errorNombre.set('');
-  }
-
-  protected confirmarNuevo(evento: Event): void {
-    evento.preventDefault();
-
-    const titulo = this.nombreNuevo().trim();
-
-    if (titulo.length === 0) {
-      this.errorNombre.set('Ponle un nombre al tablero para poder crearlo');
-      return;
-    }
-
+  /** Recibe el nombre ya validado y recortado por el formulario. */
+  protected crearTablero(datos: DatosTablero): void {
     try {
-      const board = this.tableros.crear(titulo);
+      const board = this.tableros.crear(datos.titulo);
 
       this.avisos.mostrar(`«${board.titulo}» creado`, 'acento');
       this.cerrarNuevo();
     } catch (fallo) {
-      this.errorNombre.set(fallo instanceof Error ? fallo.message : 'No se pudo crear el tablero');
+      this.avisos.mostrar(
+        fallo instanceof Error ? fallo.message : 'No se pudo crear el tablero',
+        'peligro',
+      );
     }
   }
 
