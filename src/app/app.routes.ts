@@ -15,7 +15,13 @@ export const routes: Routes = [
     path: '',
     title: 'TaskFlow',
     canActivate: [sesionGuard],
-    loadComponent: () => import('@pages/home/home'),
+    loadComponent: () => import('@pages/board-list/board-list'),
+  },
+  {
+    path: 'tableros/:id',
+    title: 'Tablero · TaskFlow',
+    canActivate: [sesionGuard],
+    loadComponent: () => import('@pages/board-detail/board-detail'),
   },
   {
     // Banco de pruebas del design system. No es producto: no aparece en la navegación.

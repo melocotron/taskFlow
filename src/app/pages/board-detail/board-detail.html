@@ -1,0 +1,23 @@
+<main class="detalle">
+  <a class="volver" routerLink="/">← Todos los tableros</a>
+
+  @if (cargando()) {
+    <p class="nota" aria-busy="true">Cargando el tablero…</p>
+  } @else if (tablero(); as tablero) {
+    <header class="cabecera">
+      <p class="rotulo">Tablero</p>
+      <h1>{{ tablero.titulo }}</h1>
+    </header>
+
+    <ul class="columnas">
+      @for (columna of tablero.columnas; track columna.id) {
+        <li class="columna">{{ columna.titulo }}</li>
+      }
+    </ul>
+  } @else {
+    <div class="no-encontrado" role="alert">
+      <p>No se encontró ese tablero.</p>
+      <a routerLink="/">Volver a la lista</a>
+    </div>
+  }
+</main>

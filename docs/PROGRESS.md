@@ -290,30 +290,63 @@ como Alba (solo lectura) y contar botones de crear en la página da **0**.
 
 ---
 
+## ✅ Fase 3 · S3.2 — Lista de tableros
+
+La home pasa a llamarse `board-list` (página, ruta y archivos) y el tablero deja de
+inventarse el nombre: se pide en un diálogo.
+
+- **Crear con nombre real.** `DialogService` + `app-field`/`appInput`: un nombre vacío o
+  lleno de espacios no crea nada y lo explica bajo el campo. Al crear, el diálogo se cierra
+  solo; `Cancelar` y `Esc` no dejan estado a medias.
+- **Dos rutas lazy nuevas**, con el chunk verificado en el build: `board-list` (8.5 kB
+  crudos / 2.8 kB transferidos) y `board-detail` (2.7 kB / 1.1 kB).
+- **La tarjeta entera es el enlace** al detalle (`a` + `routerLink`, no un `div` con
+  `click`): teclado, foco y semántica gratis. El filete sube de tono al pasar el ratón y al
+  enfocar, aprovechando la transición que `app-card` ya traía.
+- **`board-detail` es solo la puerta**, no el lienzo: identifica el tablero por `:id`
+  (con `withComponentInputBinding()`), avisa si no existe y lista sus columnas. Las
+  tarjetas y el arrastre llegan en S3.3 y S3.4.
+
+**Dos defectos que aparecieron por el camino:**
+
+1. **El build llevaba roto desde el renombrado a medias.** `app.routes.ts` seguía
+   apuntando a `@pages/home/home` y `board-list.ts` a `./home.html`: el sprint había
+   empezado por el renombrado y se quedó ahí, con el árbol en rojo. Se terminó entero
+   antes de seguir.
+2. **El smoke E2E estaba rojo desde S3.1.** El guard redirige `/` a `/entrar`, pero la
+   prueba seguía esperando el `h1` de TaskFlow. Ahora recorre el flujo real: sin sesión →
+   `/entrar`, elegir persona → lista, crear un tablero por diálogo → verlo en la lista →
+   abrir su detalle.
+
+97 tests (7 nuevos) y `npm run e2e` verde. Verificado con capturas: escritorio, móvil a
+390 px, hover y foco por teclado.
+
+---
+
 ## Sprint actual
 
-**S3.2 — Lista de tableros**
+**S3.3 — Detalle del tablero con sus columnas**
 
-| Tarea                                       | Estado |
-| ------------------------------------------- | ------ |
-| Página `board-list` con ruta lazy propia    | ⬜     |
-| Crear tablero con nombre real (diálogo)     | ⬜     |
-| Navegación a `board-detail/:id`             | ⬜     |
-| Tests de la lista y del diálogo de creación | ⬜     |
+| Tarea                               | Estado |
+| ----------------------------------- | ------ |
+| Lienzo con las columnas del tablero | ⬜     |
+| Tarjetas dentro de su columna       | ⬜     |
+| Recuento y estado vacío por columna | ⬜     |
+| Tests del detalle                   | ⬜     |
 
-**Criterio de verde:** crear un tablero con nombre desde un diálogo, verlo en la lista y
-navegar a su detalle. `verify` verde.
+**Criterio de verde:** se ve el tablero con sus columnas y las tarjetas de cada una.
+`verify` verde.
 
 ---
 
 ## Dónde me quedé
 
-S3.1 cerrado y mergeado. Árbol limpio. 90 tests.
+S3.2 terminado en `feature/S3.2-lista-tableros`. 97 tests, `verify` y `e2e` verdes.
 
 ## Siguiente paso concreto
 
-Convertir la home en `board-list` con diálogo de creación real (reutilizando `DialogService`)
-y ruta al detalle.
+Construir el lienzo de `board-detail`: las columnas con sus tarjetas (el `TaskStore` ya
+agrupa por columna con `deColumna()`) y quitar el listado plano de columnas.
 
 ---
 
@@ -341,3 +374,4 @@ Los E2E corren en CI y antes de un merge a `main`.
 | 2026-10-17 | S0.3   | Spec Kit + constitución v1.0.0 + spec 001 aprobada.               |
 | 2026-10-17 | S0.4   | Playwright + smoke test + CI. Fase 0 cerrada.                     |
 | 2026-10-17 | S1.1   | Dirección **A · Taller** + lengüeta de turno. system.md guardado. |
+| 2026-10-18 | S3.2   | Lista de tableros, diálogo de creación y ruta al detalle.         |
