@@ -1,0 +1,46 @@
+<main class="home">
+  <header class="cabecera">
+    <div>
+      <p class="rotulo">Tableros</p>
+      <h1>TaskFlow</h1>
+    </div>
+
+    @if (!cargando() && !conFallo()) {
+      <button appButton variant="primary" (click)="crearTablero()">Nuevo tablero</button>
+    }
+  </header>
+
+  @if (cargando()) {
+    <div class="cargando" aria-busy="true" aria-live="polite">
+      <p class="rotulo">Cargando tableros</p>
+      @for (marca of [1, 2, 3]; track marca) {
+        <div class="hueso">
+          <app-skeleton [lineas]="2" anchoUltima="40%" />
+        </div>
+      }
+    </div>
+  } @else if (conFallo()) {
+    <div class="fallo" role="alert">
+      <p>{{ error() }}</p>
+      <button appButton variant="secondary" (click)="reintentar()">Reintentar</button>
+    </div>
+  } @else if (cuantos() === 0) {
+    <app-empty-state
+      titulo="Todavía no hay tableros"
+      descripcion="Un tablero reúne el trabajo del equipo en columnas. Crea el primero para empezar."
+    >
+      <button appButton variant="primary" (click)="crearTablero()">Crear el primer tablero</button>
+    </app-empty-state>
+  } @else {
+    <ul class="lista">
+      @for (board of activos(); track board.id) {
+        <li>
+          <app-card>
+            <p class="titulo">{{ board.titulo }}</p>
+            <p class="meta tabular">{{ board.columnas.length }} columnas</p>
+          </app-card>
+        </li>
+      }
+    </ul>
+  }
+</main>
