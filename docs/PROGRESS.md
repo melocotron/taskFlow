@@ -172,25 +172,58 @@ Decisiones que importan:
 
 ---
 
+## ✅ Fase 2 · S2.2 — Entidad `task`
+
+Slice completo con la operación que define el producto: **mover**.
+
+```
+entities/task/
+├── index.ts
+├── model/task.model.ts      # Task, TaskId marcado, crearTask, porPosicion, renumerar
+├── model/task.store.ts      # crear, mover, editar, eliminar, deColumna
+├── model/task.store.spec.ts
+└── api/task.repository.ts
+```
+
+**Cómo funciona el orden manual.** Cada tarjeta guarda `columnaId` + `posicion` entera.
+Mover no es cambiar un campo: es sacar la tarjeta, insertarla en el índice pedido,
+renumerar de 0 a n-1 **la columna de destino y la de origen**. Renumerar solo el destino
+deja huecos en el origen y el siguiente movimiento se vuelve impredecible.
+
+**Decisiones:**
+
+- **Índice recortado, no rechazado.** Pedir la posición 99 en una columna de 3 la deja al
+  final. Un arrastre nunca debe fallar por un índice fuera de rango.
+- **Computeds cacheados por columna.** `deColumna()` devuelve un `computed` memoizado en un
+  `Map`; crear uno nuevo en cada llamada multiplicaría las suscripciones sin avisar.
+- **La persistencia se extrajo a `shared/lib/almacenamiento.ts`** (`leerLista`/`escribirLista`)
+  para no duplicar el manejo de JSON corrupto entre los dos repositorios.
+
+12 tests nuevos (65 en total). Cubren: crear al final, mover entre columnas, renumerar el
+origen, recortar índices, reordenar dentro de la misma columna, subir a primera, editar
+sin pisar otros campos, eliminar renumerando, e id inexistente.
+
+---
+
 ## Sprint actual
 
-**S2.2 — Entidad `task`**
+**S2.3 — Entidad `member` y roles**
 
-| Tarea                                                        | Estado |
-| ------------------------------------------------------------ | ------ |
-| `entities/task/model/task.model.ts` (tipo, estado, posición) | ⬜     |
-| `entities/task/model/task.store.ts` con signals              | ⬜     |
-| `entities/task/api/task.repository.ts`                       | ⬜     |
-| Tests: mover de columna, orden manual                        | ⬜     |
+| Tarea                                                    | Estado |
+| -------------------------------------------------------- | ------ |
+| `entities/member/model/member.model.ts` (rol y permisos) | ⬜     |
+| `entities/member/model/member.store.ts`                  | ⬜     |
+| `puedeEditar()` / `puedeAdministrar()` derivados del rol | ⬜     |
+| Tests de permisos por rol                                | ⬜     |
 
-**Criterio de verde:** mover una tarea de columna cambia su estado y su posición, con
-tests que lo demuestren; `verify` verde.
+**Criterio de verde:** un `viewer` no puede editar; un `editor` sí; solo quien administra
+gestiona miembros. Con tests que lo demuestren. `verify` verde.
 
 ---
 
 ## Dónde me quedé
 
-S2.1 cerrado y mergeado. Árbol limpio.
+S2.2 cerrado y mergeado. Árbol limpio.
 
 Fase 1 cerrada y mergeada. Árbol limpio. Build en 387 kB (subió por el CDK: overlay, menú,
 diálogo y a11y). Los presupuestos se ajustan en S4.3.
