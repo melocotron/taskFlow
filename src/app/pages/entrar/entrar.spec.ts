@@ -29,13 +29,14 @@ describe('EntrarPage', () => {
     localStorage.clear();
   });
 
-  it('lista a las tres personas del equipo con su rol', () => {
+  it('lista a las tres personas del equipo sin anunciar un rol global', () => {
     const { elemento } = montar();
 
     expect(elemento.textContent).toContain('Marta Ruiz');
     expect(elemento.textContent).toContain('Iván Soto');
     expect(elemento.textContent).toContain('Alba Sanz');
-    expect(elemento.textContent).toContain('Solo lectura');
+    expect(elemento.textContent).toContain('Los permisos dependen de cada tablero');
+    expect(elemento.textContent).not.toContain('Solo lectura');
   });
 
   it('elegir persona abre la sesión y navega al tablero', () => {

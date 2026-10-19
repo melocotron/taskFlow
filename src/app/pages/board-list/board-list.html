@@ -6,9 +6,7 @@
     </div>
 
     <div class="acciones">
-      @if (puedeEditar()) {
-        <button appButton variant="primary" (click)="nuevoTablero()">Nuevo tablero</button>
-      }
+      <button appButton variant="primary" (click)="nuevoTablero()">Nuevo tablero</button>
 
       <button appButton variant="ghost" [cdkMenuTriggerFor]="menuSesion">
         <app-avatar [nombre]="sesion().nombre" [turno]="turnoActual()" size="sm" />
@@ -33,27 +31,25 @@
     </div>
   } @else if (cuantos() === 0) {
     <app-empty-state
-      titulo="Todavía no hay tableros"
-      descripcion="Un tablero reúne el trabajo del equipo en columnas."
+      titulo="No tienes tableros todavía"
+      descripcion="Crea el primero: entrarás como administrador y podrás invitar a quien quieras. Si alguien ya te invitó, cambia de persona o pídele acceso."
     >
-      @if (puedeEditar()) {
-        <button appButton variant="primary" (click)="nuevoTablero()">
-          Crear el primer tablero
-        </button>
-      } @else {
-        <p class="aviso-rol">
-          Con tu rol puedes ver el trabajo, pero no crear tableros. Pídeselo a quien administra.
-        </p>
-      }
+      <button appButton variant="primary" (click)="nuevoTablero()">Crear mi primer tablero</button>
     </app-empty-state>
   } @else {
     <ul class="lista">
-      @for (board of activos(); track board.id) {
+      @for (board of misTableros(); track board.id) {
         <li>
           <a class="enlace-tablero" [routerLink]="['/tableros', board.id]">
             <app-card>
               <p class="titulo">{{ board.titulo }}</p>
-              <p class="meta tabular">{{ board.columnas.length }} columnas</p>
+              <p class="meta tabular">
+                {{ board.columnas.length }} columnas · {{ board.miembros.length }}
+                {{ board.miembros.length === 1 ? 'persona' : 'personas' }}
+              </p>
+              @if (rolDe(board); as rol) {
+                <p class="meta">Tu rol: {{ etiqueta(rol) }}</p>
+              }
             </app-card>
           </a>
         </li>
@@ -70,7 +66,7 @@
   <app-menu>
     @for (persona of miembros(); track persona.id) {
       <button appMenuItem (click)="cambiarSesion(persona.id)">
-        {{ persona.nombre }} · {{ etiqueta(persona.rol) }}
+        {{ persona.nombre }}
       </button>
     }
     <button appMenuItem (click)="salir()">Salir</button>

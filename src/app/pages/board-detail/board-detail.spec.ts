@@ -6,12 +6,15 @@ import { MemberStore, comoMemberId } from '@entities/member';
 import { TaskStore } from '@entities/task';
 import BoardDetailPage from './board-detail';
 
+const MARTA = comoMemberId('marta');
+const ALBA = comoMemberId('alba');
+
 describe('BoardDetailPage', () => {
   /** Con `crear` se monta un tablero de verdad; sin él, la ruta apunta a la nada. */
   async function montar(
     opciones: {
       crear?: string;
-      rol?: 'admin' | 'viewer';
+      rol?: 'admin' | 'viewer' | 'ninguno';
       q?: string;
       persona?: string;
     } = {},
@@ -21,13 +24,19 @@ describe('BoardDetailPage', () => {
       providers: [provideRouter([])],
     });
 
-    if (opciones.rol === 'viewer') {
-      TestBed.inject(MemberStore).cambiarSesion(comoMemberId('alba'));
-    }
-
     const store = TestBed.inject(BoardStore);
     await store.listo;
-    const board = opciones.crear ? store.crear(opciones.crear) : null;
+
+    // El tablero siempre lo crea Marta; el rol decide qué hace la sesión con él.
+    const board = opciones.crear ? store.crear(opciones.crear, MARTA) : null;
+
+    if (board && opciones.rol === 'viewer') {
+      store.invitar(board.id, MARTA, ALBA, 'viewer');
+    }
+
+    if (opciones.rol === 'viewer' || opciones.rol === 'ninguno') {
+      TestBed.inject(MemberStore).cambiarSesion(ALBA);
+    }
 
     // El lienzo pinta las columnas, pero sus tarjetas llegan con la carga del otro store.
     const tareas = TestBed.inject(TaskStore);
@@ -46,6 +55,12 @@ describe('BoardDetailPage', () => {
     const botones = Array.from(elemento.querySelectorAll('button'));
 
     return botones.find((boton) => boton.textContent?.trim() === 'Renombrar') ?? null;
+  }
+
+  function botonPersonas(elemento: HTMLElement): HTMLButtonElement | null {
+    const botones = Array.from(elemento.querySelectorAll('button'));
+
+    return botones.find((boton) => boton.textContent?.includes('Personas')) ?? null;
   }
 
   function dialogo(): HTMLElement | null {
@@ -69,6 +84,35 @@ describe('BoardDetailPage', () => {
     const { elemento } = await montar();
 
     expect(elemento.textContent).toContain('No se encontró ese tablero');
+  });
+
+  it('quien no es miembro no entra ni por URL directa', async () => {
+    const { elemento } = await montar({ crear: 'Producto', rol: 'ninguno' });
+
+    expect(elemento.textContent).toContain('No tienes acceso a este tablero');
+    expect(elemento.querySelectorAll('.columna').length).toBe(0);
+    expect(elemento.querySelector('h1')).toBeNull();
+  });
+
+  it('quien observa ve el trabajo y las personas, pero no las acciones de edición', async () => {
+    const { elemento } = await montar({ crear: 'Producto', rol: 'viewer' });
+
+    expect(elemento.querySelector('h1')?.textContent).toContain('Producto');
+    expect(elemento.querySelectorAll('.columna').length).toBe(3);
+    expect(botonRenombrar(elemento)).toBeNull();
+    expect(botonPersonas(elemento)?.textContent).toContain('Personas (2)');
+    expect(elemento.textContent).not.toContain('Añadir tarjeta');
+  });
+
+  it('abre el panel de personas desde el encabezado', async () => {
+    const { fixture, elemento } = await montar({ crear: 'Producto' });
+
+    botonPersonas(elemento)!.click();
+    fixture.detectChanges();
+
+    expect(dialogo()?.getAttribute('aria-label')).toBe('Personas del tablero');
+    expect(dialogo()?.textContent).toContain('Marta Ruiz');
+    expect(dialogo()?.textContent).toContain('Administración');
   });
 
   describe('renombrar el tablero', () => {

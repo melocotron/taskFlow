@@ -1,14 +1,18 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
+import type { MemberId, Rol } from '@entities/member';
 import { EstadoCarga } from '@shared/lib/estado-carga';
 import { nuevoId } from '@shared/lib/id';
 import { BoardRepository } from '../api/board.repository';
-import { Board, BoardId, crearBoard } from './board.model';
+import { Board, BoardId, crearBoard, puedeEn } from './board.model';
 
 /**
  * Estado de los tableros.
  *
  * Una sola fuente de verdad con signals: leer es barato, derivar es gratis y no hay
  * suscripciones que olvidar. Toda mutación persiste antes de publicar el cambio.
+ *
+ * Quién puede hacer qué no es global: se pregunta al tablero concreto. Invitar o
+ * cambiar un rol exige administrarlo, y esa comprobación vive aquí, no solo en la UI.
  */
 @Injectable({ providedIn: 'root' })
 export class BoardStore {
@@ -56,8 +60,9 @@ export class BoardStore {
     return this.estado().find((board) => board.id === id);
   }
 
-  crear(titulo: string, ahora = new Date()): Board {
-    const board = crearBoard(titulo, nuevoId(), ahora.toISOString());
+  /** Quien crea el tablero entra como administrador. */
+  crear(titulo: string, creador: MemberId, ahora = new Date()): Board {
+    const board = crearBoard(titulo, nuevoId(), ahora.toISOString(), creador);
 
     this.actualizar([...this.estado(), board]);
 
@@ -76,10 +81,89 @@ export class BoardStore {
     );
   }
 
+  /**
+   * Invita a una persona con un rol concreto.
+   *
+   * El actor se pasa desde fuera y se comprueba aquí: esconder el botón no es la
+   * puerta. Tampoco se puede invitar dos veces a la misma persona.
+   */
+  invitar(id: BoardId, actor: MemberId, nuevo: MemberId, rol: Rol): void {
+    const board = this.exigirTablero(id);
+    this.exigirAdministracion(board, actor);
+
+    if (board.miembros.some((miembro) => miembro.memberId === nuevo)) {
+      throw new Error('Esa persona ya está en el tablero');
+    }
+
+    this.actualizar(
+      this.estado().map((candidato) =>
+        candidato.id === id
+          ? { ...candidato, miembros: [...candidato.miembros, { memberId: nuevo, rol }] }
+          : candidato,
+      ),
+    );
+  }
+
+  /**
+   * Cambia el rol de alguien que ya está en el tablero.
+   *
+   * Se impide dejar el tablero sin administración: sería un callejón sin salida para
+   * invitar, cambiar roles o, en el futuro, archivar.
+   */
+  cambiarRol(id: BoardId, actor: MemberId, memberId: MemberId, rol: Rol): void {
+    const board = this.exigirTablero(id);
+    this.exigirAdministracion(board, actor);
+
+    const actual = board.miembros.find((miembro) => miembro.memberId === memberId);
+
+    if (!actual) {
+      throw new Error('Esa persona no está en el tablero');
+    }
+
+    if (actual.rol === rol) {
+      return;
+    }
+
+    const administradores = board.miembros.filter((miembro) => miembro.rol === 'admin').length;
+
+    if (actual.rol === 'admin' && administradores === 1) {
+      throw new Error('El tablero necesita al menos una persona que lo administre');
+    }
+
+    this.actualizar(
+      this.estado().map((candidato) =>
+        candidato.id === id
+          ? {
+              ...candidato,
+              miembros: candidato.miembros.map((miembro) =>
+                miembro.memberId === memberId ? { ...miembro, rol } : miembro,
+              ),
+            }
+          : candidato,
+      ),
+    );
+  }
+
   archivar(id: BoardId): void {
     this.actualizar(
       this.estado().map((board) => (board.id === id ? { ...board, archivado: true } : board)),
     );
+  }
+
+  private exigirTablero(id: BoardId): Board {
+    const board = this.buscar(id);
+
+    if (!board) {
+      throw new Error('Ese tablero no existe');
+    }
+
+    return board;
+  }
+
+  private exigirAdministracion(board: Board, actor: MemberId): void {
+    if (!puedeEn(board, actor, 'administrar')) {
+      throw new Error('Solo quien administra puede gestionar las personas del tablero');
+    }
   }
 
   /** Único punto de escritura: así es imposible guardar en un sitio y olvidar el otro. */

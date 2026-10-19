@@ -1,4 +1,3 @@
-import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { MemberStore } from './member.store';
 import { comoMemberId, puede } from '../model/member.model';
@@ -44,27 +43,16 @@ describe('MemberStore', () => {
     const store = montar();
 
     expect(store.sesion().nombre).toBe('Marta Ruiz');
-    expect(store.puedeEditar()).toBe(true);
-    expect(store.puedeAdministrar()).toBe(true);
+    expect(store.haySesion()).toBe(false);
   });
 
-  it('al cambiar a una persona observadora se apagan los permisos de escritura', () => {
+  it('cambiar de persona abre la sesión: el rol ya no es global', () => {
     const store = montar();
 
     store.cambiarSesion(comoMemberId('alba'));
 
-    expect(store.rol()).toBe('viewer');
-    expect(store.puedeEditar()).toBe(false);
-    expect(store.puedeAdministrar()).toBe(false);
-  });
-
-  it('al cambiar a una persona editora se permite editar pero no administrar', () => {
-    const store = montar();
-
-    store.cambiarSesion(comoMemberId('ivan'));
-
-    expect(store.puedeEditar()).toBe(true);
-    expect(store.puedeAdministrar()).toBe(false);
+    expect(store.sesion().nombre).toBe('Alba Sanz');
+    expect(store.haySesion()).toBe(true);
   });
 
   it('recuerda la sesión entre recargas', () => {
@@ -92,36 +80,5 @@ describe('MemberStore', () => {
     store.cambiarSesion(comoMemberId('nadie'));
 
     expect(store.sesion().nombre).toBe('Marta Ruiz');
-  });
-});
-
-describe('MemberStore en un componente', () => {
-  it('los permisos se leen igual desde la plantilla que desde el store', () => {
-    @Component({
-      selector: 'app-prueba-permisos',
-      template: `
-        @if (miembros.puedeEditar()) {
-          <button type="button">Editar</button>
-        } @else {
-          <p>Sin permiso de edición</p>
-        }
-      `,
-    })
-    class PruebaPermisos {
-      readonly miembros = TestBed.inject(MemberStore);
-    }
-
-    TestBed.configureTestingModule({ imports: [PruebaPermisos] });
-    const fixture = TestBed.createComponent(PruebaPermisos);
-    fixture.detectChanges();
-
-    const store = TestBed.inject(MemberStore);
-
-    expect(fixture.nativeElement.textContent).toContain('Editar');
-
-    store.cambiarSesion(comoMemberId('alba'));
-    fixture.detectChanges();
-
-    expect(fixture.nativeElement.textContent).toContain('Sin permiso de edición');
   });
 });

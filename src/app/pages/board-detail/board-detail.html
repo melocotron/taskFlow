@@ -4,20 +4,35 @@
   @if (cargando()) {
     <p class="nota" aria-busy="true">Cargando el tablero…</p>
   } @else if (tablero(); as tablero) {
-    <header class="cabecera">
-      <div class="identidad">
-        <p class="rotulo">Tablero</p>
-        <h1>{{ tablero.titulo }}</h1>
-      </div>
+    @if (!tieneAcceso()) {
+      <app-empty-state
+        titulo="No tienes acceso a este tablero"
+        descripcion="Pídeselo a quien lo administre: desde Personas puede invitarte con el rol que necesites."
+      >
+        <a class="volver" routerLink="/">Volver a mis tableros</a>
+      </app-empty-state>
+    } @else {
+      <header class="cabecera">
+        <div class="identidad">
+          <p class="rotulo">Tablero</p>
+          <h1>{{ tablero.titulo }}</h1>
+        </div>
 
-      @if (puedeEditar()) {
-        <button appButton variant="ghost" (click)="renombrar()">Renombrar</button>
-      }
-    </header>
+        <div class="acciones">
+          <button appButton variant="ghost" (click)="abrirMiembros()">
+            Personas ({{ tablero.miembros.length }})
+          </button>
 
-    <app-board-filters [filtro]="filtro()" (cambios)="aplicarFiltro($event)" />
+          @if (puedeEditar()) {
+            <button appButton variant="ghost" (click)="renombrar()">Renombrar</button>
+          }
+        </div>
+      </header>
 
-    <app-board-canvas [board]="tablero" [filtro]="filtro()" />
+      <app-board-filters [filtro]="filtro()" (cambios)="aplicarFiltro($event)" />
+
+      <app-board-canvas [board]="tablero" [filtro]="filtro()" />
+    }
   } @else {
     <div class="no-encontrado" role="alert">
       <p>No se encontró ese tablero.</p>
@@ -33,4 +48,10 @@
     (guardado)="guardarNombre($event)"
     (cancelado)="cerrarRenombrar()"
   />
+</ng-template>
+
+<ng-template #plantillaMiembros>
+  @if (tablero(); as tablero) {
+    <app-board-members [board]="tablero" />
+  }
 </ng-template>
