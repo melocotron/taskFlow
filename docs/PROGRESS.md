@@ -443,6 +443,34 @@ recargar otra vez. También comprueba que sin título no se guarda y el diálogo
 
 ---
 
+## ✅ Fase 3 · S3.5b — Renombrar el tablero
+
+Salió al usarlo, no de un test: no había forma de cambiar el nombre de un tablero. El
+store sabía hacerlo desde S2.1 (`renombrar()`, con test), pero **nunca se le puso puerta**:
+la lista solo tenía «Nuevo tablero» y el detalle solo enseñaba el `h1`. El spec tampoco lo
+pedía —FR-003 es crear—, así que no era un fallo de S3.5: era un hueco entre el dominio y
+las pantallas, y quedó cerrado aquí.
+
+- **Renombrar desde el detalle**, junto al título, con `puedeEditar()` y la comprobación
+  repetida en el método. El diálogo abre con el nombre actual **seleccionado**: escribir
+  sustituye en vez de obligar a borrar.
+- **Una sola validación del nombre.** El formulario de tablero pasa a `features/board-form`
+  con Signal Forms y lo usan crear y renombrar. Antes la creación validaba a mano dentro
+  de la página; ahora hay una regla y dos puertas.
+- **El foco entra por el campo, no por la X.** El botón de cerrar iba antes que el
+  contenido en el DOM, así que `first-tabbable` lo enfocaba a él. Pasa al final del DOM y
+  se coloca con posición absoluta: quien abre un diálogo empieza en el primer control, y
+  el recorrido de teclado empieza por el dato.
+
+139 tests (11 nuevos) y 10 E2E (3 nuevos: renombrar y recargar, nombre vacío y rol de solo
+lectura).
+
+**Anotado en IDEAS:** archivar tableros. `archivar()` existe igual que `renombrar()` y
+tampoco tiene interfaz; para exponerlo hace falta una vista de archivados, o el tablero
+desaparece sin vuelta.
+
+---
+
 ## Sprint siguiente
 
 **S3.6 — Filtros y búsqueda con `linkedSignal` + estado en la URL.** El filtro tiene que
@@ -452,8 +480,9 @@ sobrevivir a la recarga; hasta ahora todo el estado de la vista vive en memoria.
 
 ## Dónde me quedé
 
-S3.5 terminado en `feature/S3.5-tarjetas`: formulario de tarjeta con Signal Forms, crear
-desde la columna y editar desde el menú de la tarjeta. 128 tests, `verify` y `e2e` verdes.
+S3.5b terminado en `feature/S3.5b-renombrar`: formulario de tarjeta con Signal Forms,
+crear desde la columna, editar desde el menú y renombrar el tablero desde su detalle.
+139 tests, `verify` y `e2e` verdes.
 
 ## Siguiente paso concreto
 
@@ -491,3 +520,4 @@ Los E2E corren en CI y antes de un merge a `main`.
 | 2026-10-19 | S3.3   | Lienzo del tablero: widget `board-canvas` con columnas y tarjetas.                     |
 | 2026-10-19 | S3.4   | Mover tarjetas con arrastre y con menú; el menú del sistema no ejecutaba sus acciones. |
 | 2026-10-19 | S3.5   | Formulario de tarjeta con Signal Forms: crear desde la columna y editar desde el menú. |
+| 2026-10-19 | S3.5b  | Renombrar el tablero desde el detalle; el formulario de tablero pasa a `features`.     |
