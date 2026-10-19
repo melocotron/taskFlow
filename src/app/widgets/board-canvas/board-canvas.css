@@ -75,6 +75,29 @@
   justify-content: space-between;
 }
 
+/*
+ * Los iconos del widget se dibujan con trazo, como manda el sistema. Sin esta regla
+ * el navegador rellena el path y las flechas salen como triángulos sueltos.
+ */
+svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentcolor;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.puntos circle {
+  fill: currentcolor;
+  stroke: none;
+}
+
+.anadir-tarjeta {
+  width: 100%;
+}
+
 .tarjeta-titulo {
   flex: 1 1 auto;
   min-width: 0;

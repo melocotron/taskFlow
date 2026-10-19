@@ -9,9 +9,10 @@ import { FIELD } from '../form-field/form-field-context';
  *
  *   <input appInput type="text" />
  *   <textarea appInput rows="3"></textarea>
+ *   <select appInput>…</select>
  */
 @Directive({
-  selector: 'input[appInput], textarea[appInput]',
+  selector: 'input[appInput], textarea[appInput], select[appInput]',
   host: {
     class: 'app-input',
     '[attr.id]': 'idDelCampo()',

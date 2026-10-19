@@ -5,7 +5,12 @@
   </div>
 } @else {
   @if (!cargando() && total() === 0) {
-    <p class="aviso-vacio">Este tablero todavía no tiene tarjetas.</p>
+    <p class="aviso-vacio">
+      Este tablero todavía no tiene tarjetas.
+      @if (puedeEditar()) {
+        Elige una columna y pulsa «Añadir tarjeta».
+      }
+    </p>
   }
 
   <div class="columnas" cdkDropListGroup>
@@ -56,11 +61,13 @@
                       <button
                         appIconButton
                         size="sm"
-                        [label]="'Mover ' + tarea.titulo + ' a otra columna'"
-                        [cdkMenuTriggerFor]="menuMover"
+                        [label]="'Acciones de ' + tarea.titulo"
+                        [cdkMenuTriggerFor]="menuTarjeta"
                       >
-                        <svg viewBox="0 0 16 16" aria-hidden="true">
-                          <path d="M2.5 8h11M5.5 4.5 2 8l3.5 3.5M10.5 4.5 14 8l-3.5 3.5" />
+                        <svg class="puntos" viewBox="0 0 16 16" aria-hidden="true">
+                          <circle cx="3.5" cy="8" r="1.4" />
+                          <circle cx="8" cy="8" r="1.4" />
+                          <circle cx="12.5" cy="8" r="1.4" />
                         </svg>
                       </button>
                     }
@@ -78,8 +85,9 @@
                   }
                 </app-card>
 
-                <ng-template #menuMover>
+                <ng-template #menuTarjeta>
                   <app-menu>
+                    <button appMenuItem (click)="editarTarjeta(tarea)">Editar tarjeta</button>
                     @for (destino of board().columnas; track destino.id) {
                       @if (destino.id !== columna.id) {
                         <button appMenuItem (click)="moverA(tarea, destino.id)">
@@ -97,7 +105,27 @@
             <p class="columna-vacia">Sin tarjetas</p>
           }
         }
+
+        @if (!cargando() && puedeEditar()) {
+          <button
+            appButton
+            variant="secondary"
+            class="anadir-tarjeta"
+            (click)="nuevaTarjeta(columna.id)"
+          >
+            Añadir tarjeta
+          </button>
+        }
       </section>
     }
   </div>
 }
+
+<ng-template #plantillaTarjeta>
+  <app-task-form
+    [modo]="modoFormulario()"
+    [inicial]="datosIniciales()"
+    (guardado)="guardarTarjeta($event)"
+    (cancelado)="cerrarFormulario()"
+  />
+</ng-template>

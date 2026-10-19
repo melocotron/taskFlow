@@ -26,6 +26,12 @@
     resize: vertical;
   }
 
+  /* El desplegable conserva su flecha nativa: es la única que existe en todos los sistemas. */
+  select.app-input {
+    padding-right: var(--space-3);
+    cursor: pointer;
+  }
+
   /* El placeholder también es texto que hay que poder leer: 4.5:1, no 2.7:1. */
   .app-input::placeholder {
     color: var(--text-muted);

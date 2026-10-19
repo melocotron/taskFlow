@@ -1,0 +1,39 @@
+<form class="formulario" [formRoot]="formulario">
+  <app-field label="Título" [hint]="ayudaTitulo" [error]="errorTitulo()">
+    <input
+      appInput
+      type="text"
+      [formField]="formulario.titulo"
+      autocomplete="off"
+      placeholder="Revisar el copy del onboarding"
+    />
+  </app-field>
+
+  <app-field
+    label="Descripción"
+    hint="Para qué sirve o qué falta. Se puede dejar vacía."
+    [error]="errorDescripcion()"
+    optional
+  >
+    <textarea
+      appInput
+      rows="3"
+      [formField]="formulario.descripcion"
+      placeholder="Detalles que ayuden a quien la recoja"
+    ></textarea>
+  </app-field>
+
+  <app-field label="Responsable" hint="Se puede cambiar más adelante." optional>
+    <select appInput [formField]="formulario.responsable">
+      <option value="">Sin asignar</option>
+      @for (persona of miembros(); track persona.id) {
+        <option [value]="persona.nombre">{{ persona.nombre }}</option>
+      }
+    </select>
+  </app-field>
+
+  <div class="acciones">
+    <button appButton type="button" variant="ghost" (click)="cancelado.emit()">Cancelar</button>
+    <button appButton type="submit" variant="primary">{{ etiquetaGuardar() }}</button>
+  </div>
+</form>
