@@ -13,7 +13,12 @@ describe('BoardListPage', () => {
   async function montar(rol: 'admin' | 'editor' | 'viewer' = 'admin') {
     TestBed.configureTestingModule({
       imports: [BoardListPage],
-      providers: [provideRouter([{ path: 'tableros/:id', component: DestinoVacio }])],
+      providers: [
+        provideRouter([
+          { path: 'tableros/:id', component: DestinoVacio },
+          { path: 'entrar', component: DestinoVacio },
+        ]),
+      ],
     });
 
     const equipo = TestBed.inject(MemberStore);
@@ -166,5 +171,42 @@ describe('BoardListPage', () => {
     await fixture.whenStable();
 
     expect(TestBed.inject(Router).url).toBe(`/tableros/${board.id}`);
+  });
+
+  describe('el menú de sesión', () => {
+    function abrirMenu(elemento: HTMLElement, fixture: { detectChanges(): void }) {
+      const disparador = elemento.querySelector(
+        'button[aria-haspopup="menu"]',
+      ) as HTMLButtonElement;
+      disparador.click();
+      fixture.detectChanges();
+
+      return Array.from(document.querySelectorAll('[role="menuitem"]')) as HTMLButtonElement[];
+    }
+
+    it('cambia de persona y la sesión queda guardada', async () => {
+      const { fixture, equipo, elemento } = await montar();
+      // El menú es del CDK y se abre en un overlay: hay que detectar cambios tras cada paso.
+      const opciones = abrirMenu(elemento, fixture);
+      const alba = opciones.find((opcion) => opcion.textContent?.includes('Alba Sanz'))!;
+
+      alba.click();
+      fixture.detectChanges();
+
+      expect(equipo.sesion().nombre).toBe('Alba Sanz');
+      expect(equipo.puedeEditar()).toBe(false);
+    });
+
+    it('salir cierra la sesión y saca de la aplicación', async () => {
+      const { fixture, equipo, elemento } = await montar();
+      const opciones = abrirMenu(elemento, fixture);
+      const salir = opciones.find((opcion) => opcion.textContent?.includes('Salir'))!;
+
+      salir.click();
+      await fixture.whenStable();
+
+      expect(equipo.haySesion()).toBe(false);
+      expect(TestBed.inject(Router).url).toBe('/entrar');
+    });
   });
 });

@@ -1,7 +1,7 @@
 import type { DialogRef } from '@angular/cdk/dialog';
 import { CdkMenuTrigger } from '@angular/cdk/menu';
 import { Component, TemplateRef, computed, inject, signal, viewChild } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { BoardStore } from '@entities/board';
 import { MemberStore, etiquetaRol } from '@entities/member';
 import type { MemberId } from '@entities/member';
@@ -53,6 +53,7 @@ export default class BoardListPage {
   private readonly avisos = inject(ToastService);
   private readonly equipo = inject(MemberStore);
   private readonly dialogos = inject(DialogService);
+  private readonly rutas = inject(Router);
 
   /** Referencia al diálogo abierto, para poder cerrarlo desde su propio contenido. */
   private referencia: DialogRef<unknown, DialogContent> | null = null;
@@ -89,8 +90,10 @@ export default class BoardListPage {
     this.equipo.cambiarSesion(id);
   }
 
+  /** Salir deja de tener sentido si te deja dentro: se cierra la sesión y se sale. */
   protected salir(): void {
     this.equipo.salir();
+    void this.rutas.navigate(['/entrar']);
   }
 
   protected nuevoTablero(): void {

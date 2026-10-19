@@ -8,9 +8,11 @@
     <p class="aviso-vacio">Este tablero todavía no tiene tarjetas.</p>
   }
 
-  <div class="columnas">
+  <div class="columnas" cdkDropListGroup>
     @for (columna of board().columnas; track columna.id) {
       @let tarjetas = tareasDe(columna.id)();
+      @let cuantas = tarjetas.length;
+      @let etiqueta = cuantas === 1 ? 'tarjeta' : 'tarjetas';
 
       <section class="columna" [attr.aria-labelledby]="'columna-' + columna.id">
         <header class="columna-cabecera">
@@ -18,7 +20,7 @@
 
           @if (!cargando()) {
             <span class="cuenta tabular">
-              {{ tarjetas.length }}<span class="visualmente-oculto"> tarjetas</span>
+              {{ cuantas }}<span class="visualmente-oculto"> {{ etiqueta }}</span>
             </span>
           }
         </header>
@@ -31,14 +33,38 @@
               </div>
             }
           </div>
-        } @else if (tarjetas.length === 0) {
-          <p class="columna-vacia">Sin tarjetas</p>
         } @else {
-          <ul class="tarjetas">
+          <ul
+            class="tarjetas"
+            cdkDropList
+            [cdkDropListData]="columna.id"
+            [cdkDropListDisabled]="!puedeEditar()"
+            (cdkDropListDropped)="soltar($event)"
+          >
             @for (tarea of tarjetas; track tarea.id) {
-              <li>
+              <li
+                class="tarjeta-item"
+                cdkDrag
+                [cdkDragData]="tarea"
+                [cdkDragDisabled]="!puedeEditar()"
+              >
                 <app-card [turno]="turnoDe(tarea.responsable)" [persona]="tarea.responsable ?? ''">
-                  <p class="tarjeta-titulo">{{ tarea.titulo }}</p>
+                  <div class="tarjeta-cabecera">
+                    <p class="tarjeta-titulo">{{ tarea.titulo }}</p>
+
+                    @if (puedeEditar()) {
+                      <button
+                        appIconButton
+                        size="sm"
+                        [label]="'Mover ' + tarea.titulo + ' a otra columna'"
+                        [cdkMenuTriggerFor]="menuMover"
+                      >
+                        <svg viewBox="0 0 16 16" aria-hidden="true">
+                          <path d="M2.5 8h11M5.5 4.5 2 8l3.5 3.5M10.5 4.5 14 8l-3.5 3.5" />
+                        </svg>
+                      </button>
+                    }
+                  </div>
 
                   @if (tarea.descripcion) {
                     <p class="tarjeta-descripcion">{{ tarea.descripcion }}</p>
@@ -51,9 +77,25 @@
                     </p>
                   }
                 </app-card>
+
+                <ng-template #menuMover>
+                  <app-menu>
+                    @for (destino of board().columnas; track destino.id) {
+                      @if (destino.id !== columna.id) {
+                        <button appMenuItem (click)="moverA(tarea, destino.id)">
+                          Mover a {{ destino.titulo }}
+                        </button>
+                      }
+                    }
+                  </app-menu>
+                </ng-template>
               </li>
             }
           </ul>
+
+          @if (tarjetas.length === 0) {
+            <p class="columna-vacia">Sin tarjetas</p>
+          }
         }
       </section>
     }

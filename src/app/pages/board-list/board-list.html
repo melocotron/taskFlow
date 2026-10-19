@@ -91,10 +91,10 @@
 <ng-template #menuSesion>
   <app-menu>
     @for (persona of miembros(); track persona.id) {
-      <app-menu-item (click)="cambiarSesion(persona.id)">
+      <button appMenuItem (click)="cambiarSesion(persona.id)">
         {{ persona.nombre }} · {{ etiqueta(persona.rol) }}
-      </app-menu-item>
+      </button>
     }
-    <app-menu-item (click)="salir()">Salir</app-menu-item>
+    <button appMenuItem (click)="salir()">Salir</button>
   </app-menu>
 </ng-template>
