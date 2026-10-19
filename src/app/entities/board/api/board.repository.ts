@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { escribirLista, leerLista } from '@shared/lib/almacenamiento';
 import { Board } from '../model/board.model';
 
 const CLAVE = 'taskflow.tableros';
@@ -11,53 +12,27 @@ const CLAVE = 'taskflow.tableros';
  */
 @Injectable({ providedIn: 'root' })
 export class BoardRepository {
-  /** Devuelve `[]` ante cualquier problema: un dato corrupto no debe impedir abrir la app. */
   cargar(): readonly Board[] {
-    const crudo = this.almacen()?.getItem(CLAVE);
-
-    if (!crudo) {
-      return [];
-    }
-
-    try {
-      const datos: unknown = JSON.parse(crudo);
-
-      if (!Array.isArray(datos)) {
-        return [];
-      }
-
-      return datos.filter((item): item is Board => this.esTablero(item));
-    } catch {
-      return [];
-    }
+    return leerLista(CLAVE, esTablero);
   }
 
   guardar(tableros: readonly Board[]): void {
-    this.almacen()?.setItem(CLAVE, JSON.stringify(tableros));
+    escribirLista(CLAVE, tableros);
+  }
+}
+
+function esTablero(valor: unknown): valor is Board {
+  if (typeof valor !== 'object' || valor === null) {
+    return false;
   }
 
-  /** El acceso va envuelto: en un entorno sin `localStorage` la app sigue funcionando. */
-  private almacen(): Storage | null {
-    try {
-      return globalThis.localStorage ?? null;
-    } catch {
-      return null;
-    }
-  }
+  const candidato = valor as Record<string, unknown>;
 
-  private esTablero(valor: unknown): valor is Board {
-    if (typeof valor !== 'object' || valor === null) {
-      return false;
-    }
-
-    const candidato = valor as Record<string, unknown>;
-
-    return (
-      typeof candidato['id'] === 'string' &&
-      typeof candidato['titulo'] === 'string' &&
-      Array.isArray(candidato['columnas']) &&
-      typeof candidato['archivado'] === 'boolean' &&
-      typeof candidato['creadoEn'] === 'string'
-    );
-  }
+  return (
+    typeof candidato['id'] === 'string' &&
+    typeof candidato['titulo'] === 'string' &&
+    Array.isArray(candidato['columnas']) &&
+    typeof candidato['archivado'] === 'boolean' &&
+    typeof candidato['creadoEn'] === 'string'
+  );
 }
