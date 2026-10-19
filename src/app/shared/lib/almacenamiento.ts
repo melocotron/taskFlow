@@ -45,3 +45,12 @@ export function leerLista<T>(
 export function escribirLista(clave: string, valor: unknown): void {
   almacen()?.setItem(clave, JSON.stringify(valor));
 }
+
+/** Para valores sueltos que no son listas (por ejemplo, la sesión elegida). */
+export function leerTexto(clave: string): string | null {
+  return almacen()?.getItem(clave) ?? null;
+}
+
+export function escribirTexto(clave: string, valor: string): void {
+  almacen()?.setItem(clave, valor);
+}
