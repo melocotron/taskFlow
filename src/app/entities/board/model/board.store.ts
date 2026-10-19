@@ -1,4 +1,5 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
+import { EstadoCarga } from '@shared/lib/estado-carga';
 import { nuevoId } from '@shared/lib/id';
 import { BoardRepository } from '../api/board.repository';
 import { Board, BoardId, crearBoard } from './board.model';
@@ -13,8 +14,18 @@ import { Board, BoardId, crearBoard } from './board.model';
 export class BoardStore {
   private readonly repositorio = inject(BoardRepository);
   private readonly estado = signal<readonly Board[]>([]);
+  private readonly estadoCarga = signal<EstadoCarga>('cargando');
+  private readonly motivoFallo = signal<string | null>(null);
+
+  /** Se resuelve cuando termina la primera carga. Los tests la esperan. */
+  readonly listo: Promise<void>;
 
   readonly tableros = this.estado.asReadonly();
+  readonly carga = this.estadoCarga.asReadonly();
+  readonly error = this.motivoFallo.asReadonly();
+
+  readonly cargando = computed(() => this.estadoCarga() === 'cargando');
+  readonly conFallo = computed(() => this.estadoCarga() === 'error');
 
   /** Lo que se ve en la lista: los archivados siguen existiendo, pero no se muestran. */
   readonly activos = computed(() => this.estado().filter((board) => !board.archivado));
@@ -22,7 +33,23 @@ export class BoardStore {
   readonly cuantosActivos = computed(() => this.activos().length);
 
   constructor() {
-    this.estado.set(this.repositorio.cargar());
+    this.listo = this.cargar();
+  }
+
+  /** Carga (o recarga) desde el repositorio. Un fallo deja la app usable, no en blanco. */
+  async cargar(): Promise<void> {
+    this.estadoCarga.set('cargando');
+    this.motivoFallo.set(null);
+
+    try {
+      this.estado.set(await this.repositorio.cargar());
+      this.estadoCarga.set('listo');
+    } catch (fallo) {
+      this.motivoFallo.set(
+        fallo instanceof Error ? fallo.message : 'No se pudieron cargar los tableros',
+      );
+      this.estadoCarga.set('error');
+    }
   }
 
   buscar(id: BoardId): Board | undefined {

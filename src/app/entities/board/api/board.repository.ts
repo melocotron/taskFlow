@@ -1,5 +1,6 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { escribirLista, leerLista } from '@shared/lib/almacenamiento';
+import { LATENCIA_SIMULADA, esperar } from '@shared/lib/estado-carga';
 import { Board } from '../model/board.model';
 
 const CLAVE = 'taskflow.tableros';
@@ -12,7 +13,11 @@ const CLAVE = 'taskflow.tableros';
  */
 @Injectable({ providedIn: 'root' })
 export class BoardRepository {
-  cargar(): readonly Board[] {
+  private readonly latencia = inject(LATENCIA_SIMULADA);
+
+  async cargar(): Promise<readonly Board[]> {
+    await esperar(this.latencia);
+
     return leerLista(CLAVE, esTablero);
   }
 

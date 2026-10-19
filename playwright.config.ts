@@ -31,7 +31,9 @@ export default defineConfig({
   webServer: {
     command: 'npm start -- --port 4200',
     url: 'http://localhost:4200',
-    reuseExistingServer: !process.env['CI'],
+    // Siempre un servidor nuevo. Reutilizar uno viejo sirvió un bundle obsoleto y me
+    // hizo diagnosticar un bug de CSS que no existía: mejor 5 s más de arranque.
+    reuseExistingServer: false,
     timeout: 120_000,
   },
 });

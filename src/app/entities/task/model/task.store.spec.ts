@@ -5,9 +5,13 @@ import { TaskStore } from './task.store';
 const TABLERO = 'tablero-1';
 
 describe('TaskStore', () => {
-  function montar() {
+  async function montar() {
     TestBed.configureTestingModule({});
-    return TestBed.inject(TaskStore);
+    const store = TestBed.inject(TaskStore);
+
+    await store.listo;
+
+    return store;
   }
 
   function titulos(tareas: readonly Task[]): string[] {
@@ -19,8 +23,8 @@ describe('TaskStore', () => {
   });
 
   describe('crear', () => {
-    it('añade la tarjeta al final de su columna', () => {
-      const store = montar();
+    it('añade la tarjeta al final de su columna', async () => {
+      const store = await montar();
 
       store.crear(TABLERO, 'por-hacer', 'Primera');
       store.crear(TABLERO, 'por-hacer', 'Segunda');
@@ -31,14 +35,14 @@ describe('TaskStore', () => {
       expect(columna.map((t) => t.posicion)).toEqual([0, 1]);
     });
 
-    it('se niega a crear una tarjeta sin título', () => {
-      const store = montar();
+    it('se niega a crear una tarjeta sin título', async () => {
+      const store = await montar();
 
       expect(() => store.crear(TABLERO, 'por-hacer', '  ')).toThrow(/necesita un título/);
     });
 
-    it('guarda descripción y responsable opcionales', () => {
-      const store = montar();
+    it('guarda descripción y responsable opcionales', async () => {
+      const store = await montar();
 
       const tarea = store.crear(TABLERO, 'por-hacer', 'Revisar copy', {
         descripcion: 'El de la home',
@@ -51,8 +55,8 @@ describe('TaskStore', () => {
   });
 
   describe('mover entre columnas', () => {
-    it('cambia de columna y deja la posición pedida', () => {
-      const store = montar();
+    it('cambia de columna y deja la posición pedida', async () => {
+      const store = await montar();
       const a = store.crear(TABLERO, 'por-hacer', 'A');
       store.crear(TABLERO, 'en-curso', 'B');
       store.crear(TABLERO, 'en-curso', 'C');
@@ -64,8 +68,8 @@ describe('TaskStore', () => {
       expect(titulos(destino)).toEqual(['B', 'A', 'C']);
     });
 
-    it('renumera la columna de origen sin dejar huecos', () => {
-      const store = montar();
+    it('renumera la columna de origen sin dejar huecos', async () => {
+      const store = await montar();
       const a = store.crear(TABLERO, 'por-hacer', 'A');
       store.crear(TABLERO, 'por-hacer', 'B');
       store.crear(TABLERO, 'por-hacer', 'C');
@@ -78,8 +82,8 @@ describe('TaskStore', () => {
       expect(origen.map((t) => t.posicion)).toEqual([0, 1]);
     });
 
-    it('recorta un índice fuera de rango en vez de romperse', () => {
-      const store = montar();
+    it('recorta un índice fuera de rango en vez de romperse', async () => {
+      const store = await montar();
       const a = store.crear(TABLERO, 'por-hacer', 'A');
       store.crear(TABLERO, 'hecho', 'B');
 
@@ -90,8 +94,8 @@ describe('TaskStore', () => {
       expect(titulos(destino)).toEqual(['B', 'A']);
     });
 
-    it('ignora un id que no existe', () => {
-      const store = montar();
+    it('ignora un id que no existe', async () => {
+      const store = await montar();
       store.crear(TABLERO, 'por-hacer', 'A');
 
       expect(() => store.mover('no-existe' as never, 'hecho', 0)).not.toThrow();
@@ -100,8 +104,8 @@ describe('TaskStore', () => {
   });
 
   describe('mover dentro de la misma columna', () => {
-    it('reordena sin tocar las demás columnas', () => {
-      const store = montar();
+    it('reordena sin tocar las demás columnas', async () => {
+      const store = await montar();
       const a = store.crear(TABLERO, 'por-hacer', 'A');
       store.crear(TABLERO, 'por-hacer', 'B');
       store.crear(TABLERO, 'por-hacer', 'C');
@@ -116,8 +120,8 @@ describe('TaskStore', () => {
       expect(store.tareas().find((t) => t.id === otra.id)?.posicion).toBe(0);
     });
 
-    it('subir a la primera posición funciona', () => {
-      const store = montar();
+    it('subir a la primera posición funciona', async () => {
+      const store = await montar();
       store.crear(TABLERO, 'por-hacer', 'A');
       store.crear(TABLERO, 'por-hacer', 'B');
       const c = store.crear(TABLERO, 'por-hacer', 'C');
@@ -131,8 +135,8 @@ describe('TaskStore', () => {
   });
 
   describe('editar y eliminar', () => {
-    it('edita solo los campos indicados', () => {
-      const store = montar();
+    it('edita solo los campos indicados', async () => {
+      const store = await montar();
       const tarea = store.crear(TABLERO, 'por-hacer', 'A', { descripcion: 'Original' });
 
       store.editar(tarea.id, { titulo: 'A revisada' });
@@ -142,8 +146,8 @@ describe('TaskStore', () => {
       expect(actualizada?.descripcion).toBe('Original');
     });
 
-    it('al eliminar renumera la columna', () => {
-      const store = montar();
+    it('al eliminar renumera la columna', async () => {
+      const store = await montar();
       const a = store.crear(TABLERO, 'por-hacer', 'A');
       store.crear(TABLERO, 'por-hacer', 'B');
       store.crear(TABLERO, 'por-hacer', 'C');
@@ -157,17 +161,30 @@ describe('TaskStore', () => {
     });
   });
 
-  it('persiste los movimientos: un store nuevo recupera el orden', () => {
-    const store = montar();
+  it('persiste los movimientos: un store nuevo recupera el orden', async () => {
+    const store = await montar();
     const a = store.crear(TABLERO, 'por-hacer', 'A');
     store.mover(a.id, 'hecho', 0);
 
     TestBed.resetTestingModule();
     TestBed.configureTestingModule({});
     const recargado = TestBed.inject(TaskStore);
+    await recargado.listo;
 
     const enHecho = TestBed.runInInjectionContext(() => recargado.deColumna(TABLERO, 'hecho')());
 
     expect(titulos(enHecho)).toEqual(['A']);
+  });
+
+  it('expone el estado de carga y termina en listo', async () => {
+    TestBed.configureTestingModule({});
+    const store = TestBed.inject(TaskStore);
+
+    expect(store.cargando()).toBe(true);
+
+    await store.listo;
+
+    expect(store.carga()).toBe('listo');
+    expect(store.error()).toBeNull();
   });
 });

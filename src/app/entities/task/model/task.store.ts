@@ -1,4 +1,5 @@
 import { Injectable, Signal, computed, inject, signal } from '@angular/core';
+import { EstadoCarga } from '@shared/lib/estado-carga';
 import { nuevoId } from '@shared/lib/id';
 import { TaskRepository } from '../api/task.repository';
 import { DatosTask, Task, TaskId, crearTask, porPosicion, renumerar } from '../model/task.model';
@@ -13,14 +14,38 @@ import { DatosTask, Task, TaskId, crearTask, porPosicion, renumerar } from '../m
 export class TaskStore {
   private readonly repositorio = inject(TaskRepository);
   private readonly estado = signal<readonly Task[]>([]);
+  private readonly estadoCarga = signal<EstadoCarga>('cargando');
+  private readonly motivoFallo = signal<string | null>(null);
 
   /** Caché de computeds por columna: crear uno nuevo en cada llamada los multiplicaría. */
   private readonly columnas = new Map<string, Signal<readonly Task[]>>();
 
+  /** Se resuelve cuando termina la primera carga. Los tests la esperan. */
+  readonly listo: Promise<void>;
+
   readonly tareas = this.estado.asReadonly();
+  readonly carga = this.estadoCarga.asReadonly();
+  readonly error = this.motivoFallo.asReadonly();
+  readonly cargando = computed(() => this.estadoCarga() === 'cargando');
 
   constructor() {
-    this.estado.set(this.repositorio.cargar());
+    this.listo = this.cargar();
+  }
+
+  /** Carga (o recarga) desde el repositorio. Un fallo deja la app usable, no en blanco. */
+  async cargar(): Promise<void> {
+    this.estadoCarga.set('cargando');
+    this.motivoFallo.set(null);
+
+    try {
+      this.estado.set(await this.repositorio.cargar());
+      this.estadoCarga.set('listo');
+    } catch (fallo) {
+      this.motivoFallo.set(
+        fallo instanceof Error ? fallo.message : 'No se pudieron cargar las tarjetas',
+      );
+      this.estadoCarga.set('error');
+    }
   }
 
   /** Tarjetas de una columna, ya ordenadas por posición. */
