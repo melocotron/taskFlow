@@ -237,32 +237,57 @@ el propio modelo.
 
 ---
 
-## Sprint actual
+## ✅ Fase 2 · S2.4 — Datos, estados de carga y primera pantalla (Fase 2 cerrada)
 
-**S2.4 — Datos y estados de carga**
+**Estados de carga reales**, no decorativos: los repositorios son `async` con latencia
+simulada de 350 ms (token `LATENCIA_SIMULADA`, sobrescrito a 0 en los tests vía
+`src/test-providers.ts`). Los stores exponen `carga`, `cargando`, `conFallo`, `error` y
+una promesa `listo` que los tests esperan.
 
-| Tarea                                                | Estado |
-| ---------------------------------------------------- | ------ |
-| Latencia simulada en los repositorios                | ⬜     |
-| Estados `cargando` / `error` / `listo` en los stores | ⬜     |
-| Componente `app-skeleton` usado en una pantalla real | ⬜     |
-| Test del paso por los tres estados                   | ⬜     |
+**Primera pantalla real** (`/`): lista de tableros con cuatro estados —
 
-**Criterio de verde:** el store expone estados observables y un test recorre
-`cargando → listo` y `cargando → error`. `verify` verde.
+| Estado    | Qué se ve                                          |
+| --------- | -------------------------------------------------- |
+| Cargando  | Tres esqueletos con `aria-busy` y `aria-live`      |
+| Vacío     | `app-empty-state` con la acción de crear           |
+| Error     | Mensaje en `role="alert"` con botón de reintentar  |
+| Con datos | Una tarjeta por tablero, con su número de columnas |
+
+Crear un tablero desde la pantalla lo persiste y muestra un aviso. Es la primera
+rebanada vertical completa: store → estados → design system.
+
+**Lección cara:** dos capturas seguidas mostraron código viejo. La causa no era CSS ni
+Angular: un `ng serve` zombi seguía escuchando en el puerto 4200 y `reuseExistingServer`
+lo reutilizaba. Perdí una hora persiguiendo un bug de estilos que no existía. Arreglado
+con `reuseExistingServer: false` en `playwright.config.ts`: siempre servidor nuevo.
+
+83 tests en total. `verify` verde.
+
+---
+
+## Sprint actual — Fase 3
+
+**S3.1 — Sesión y protección de rutas**
+
+| Tarea                                            | Estado |
+| ------------------------------------------------ | ------ |
+| Selector de persona en la cabecera               | ⬜     |
+| `sesionGuard` funcional protegiendo rutas        | ⬜     |
+| La UI respeta `puedeEditar` / `puedeAdministrar` | ⬜     |
+| Tests del guard y del selector                   | ⬜     |
+
+**Criterio de verde:** sin sesión se redirige; con sesión se entra; un `viewer` no ve las
+acciones de edición. `verify` verde.
 
 ---
 
 ## Dónde me quedé
 
-S2.3 cerrado y mergeado. Árbol limpio.
-
-Fase 1 cerrada y mergeada. Árbol limpio. Build en 387 kB (subió por el CDK: overlay, menú,
-diálogo y a11y). Los presupuestos se ajustan en S4.3.
+Fase 2 cerrada y mergeada. Árbol limpio. 83 tests.
 
 ## Siguiente paso concreto
 
-Crear el slice `entities/board` con modelo, store y su API pública.
+Añadir el selector de persona a la cabecera y el guard de sesión.
 
 ---
 
