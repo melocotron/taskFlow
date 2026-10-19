@@ -63,29 +63,7 @@
 </main>
 
 <ng-template #plantillaNuevo>
-  <form class="formulario" (submit)="confirmarNuevo($event)">
-    <app-field
-      label="Nombre del tablero"
-      hint="Con este nombre lo verá todo el equipo."
-      [error]="errorNombre()"
-    >
-      <input
-        appInput
-        type="text"
-        name="titulo"
-        maxlength="60"
-        autocomplete="off"
-        placeholder="Producto, Marketing…"
-        [value]="nombreNuevo()"
-        (input)="alEscribir($event)"
-      />
-    </app-field>
-
-    <div class="acciones-formulario">
-      <button appButton type="button" variant="ghost" (click)="cerrarNuevo()">Cancelar</button>
-      <button appButton type="submit" variant="primary">Crear tablero</button>
-    </div>
-  </form>
+  <app-board-form (guardado)="crearTablero($event)" (cancelado)="cerrarNuevo()" />
 </ng-template>
 
 <ng-template #menuSesion>

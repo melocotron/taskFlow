@@ -15,7 +15,10 @@
 
 .cabecera {
   display: flex;
-  flex-direction: column;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  align-items: flex-end;
+  justify-content: space-between;
   padding-bottom: var(--space-4);
   border-bottom: var(--border-width) solid var(--border-color);
 }

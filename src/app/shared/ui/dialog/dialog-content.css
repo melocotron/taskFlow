@@ -1,4 +1,5 @@
 .dialogo {
+  position: relative;
   display: flex;
   flex-direction: column;
   max-width: var(--dialog-max-width);
@@ -12,8 +13,16 @@
   gap: var(--space-3);
   align-items: center;
   justify-content: space-between;
-  padding: var(--space-4) var(--space-4) var(--space-3);
+  /* Hueco para la X, que ya no ocupa sitio en la fila. */
+  padding: var(--space-4) calc(var(--control-hit-area) + var(--space-3)) var(--space-3)
+    var(--space-4);
   border-bottom: var(--border-width) solid var(--border-color);
+}
+
+.cerrar {
+  position: absolute;
+  top: var(--space-3);
+  right: var(--space-3);
 }
 
 .titulo {
