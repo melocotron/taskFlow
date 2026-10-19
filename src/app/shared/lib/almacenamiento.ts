@@ -54,3 +54,7 @@ export function leerTexto(clave: string): string | null {
 export function escribirTexto(clave: string, valor: string): void {
   almacen()?.setItem(clave, valor);
 }
+
+export function borrarTexto(clave: string): void {
+  almacen()?.removeItem(clave);
+}

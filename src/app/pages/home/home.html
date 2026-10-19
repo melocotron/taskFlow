@@ -5,9 +5,16 @@
       <h1>TaskFlow</h1>
     </div>
 
-    @if (!cargando() && !conFallo()) {
-      <button appButton variant="primary" (click)="crearTablero()">Nuevo tablero</button>
-    }
+    <div class="acciones">
+      @if (puedeEditar()) {
+        <button appButton variant="primary" (click)="crearTablero()">Nuevo tablero</button>
+      }
+
+      <button appButton variant="ghost" [cdkMenuTriggerFor]="menuSesion">
+        <app-avatar [nombre]="sesion().nombre" [turno]="turnoActual()" size="sm" />
+        <span class="nombre-sesion">{{ sesion().nombre }}</span>
+      </button>
+    </div>
   </header>
 
   @if (cargando()) {
@@ -27,9 +34,17 @@
   } @else if (cuantos() === 0) {
     <app-empty-state
       titulo="Todavía no hay tableros"
-      descripcion="Un tablero reúne el trabajo del equipo en columnas. Crea el primero para empezar."
+      descripcion="Un tablero reúne el trabajo del equipo en columnas."
     >
-      <button appButton variant="primary" (click)="crearTablero()">Crear el primer tablero</button>
+      @if (puedeEditar()) {
+        <button appButton variant="primary" (click)="crearTablero()">
+          Crear el primer tablero
+        </button>
+      } @else {
+        <p class="aviso-rol">
+          Con tu rol puedes ver el trabajo, pero no crear tableros. Pídeselo a quien administra.
+        </p>
+      }
     </app-empty-state>
   } @else {
     <ul class="lista">
@@ -44,3 +59,14 @@
     </ul>
   }
 </main>
+
+<ng-template #menuSesion>
+  <app-menu>
+    @for (persona of miembros(); track persona.id) {
+      <app-menu-item (click)="cambiarSesion(persona.id)">
+        {{ persona.nombre }} · {{ etiqueta(persona.rol) }}
+      </app-menu-item>
+    }
+    <app-menu-item (click)="salir()">Salir</app-menu-item>
+  </app-menu>
+</ng-template>

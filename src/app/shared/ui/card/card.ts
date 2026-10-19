@@ -1,6 +1,8 @@
 import { Component, computed, input } from '@angular/core';
+import type { Turno } from '@shared/lib/turnos';
 
-export type Turno = 'verde' | 'cinta' | 'madera' | 'tiza' | 'lapiz';
+/** El tipo vive en `shared/lib/turnos`: lo comparten tarjeta, avatar y selector. */
+export type { Turno };
 
 /**
  * Tarjeta del sistema.
