@@ -1,0 +1,61 @@
+@if (fallo()) {
+  <div class="fallo" role="alert">
+    <p>{{ error() }}</p>
+    <button appButton variant="secondary" (click)="reintentar()">Reintentar</button>
+  </div>
+} @else {
+  @if (!cargando() && total() === 0) {
+    <p class="aviso-vacio">Este tablero todavía no tiene tarjetas.</p>
+  }
+
+  <div class="columnas">
+    @for (columna of board().columnas; track columna.id) {
+      @let tarjetas = tareasDe(columna.id)();
+
+      <section class="columna" [attr.aria-labelledby]="'columna-' + columna.id">
+        <header class="columna-cabecera">
+          <h2 class="rotulo" [id]="'columna-' + columna.id">{{ columna.titulo }}</h2>
+
+          @if (!cargando()) {
+            <span class="cuenta tabular">
+              {{ tarjetas.length }}<span class="visualmente-oculto"> tarjetas</span>
+            </span>
+          }
+        </header>
+
+        @if (cargando()) {
+          <div class="huesos">
+            @for (hueco of [1, 2, 3]; track hueco) {
+              <div class="hueso">
+                <app-skeleton [lineas]="2" anchoUltima="50%" />
+              </div>
+            }
+          </div>
+        } @else if (tarjetas.length === 0) {
+          <p class="columna-vacia">Sin tarjetas</p>
+        } @else {
+          <ul class="tarjetas">
+            @for (tarea of tarjetas; track tarea.id) {
+              <li>
+                <app-card [turno]="turnoDe(tarea.responsable)" [persona]="tarea.responsable ?? ''">
+                  <p class="tarjeta-titulo">{{ tarea.titulo }}</p>
+
+                  @if (tarea.descripcion) {
+                    <p class="tarjeta-descripcion">{{ tarea.descripcion }}</p>
+                  }
+
+                  @if (tarea.responsable; as persona) {
+                    <p class="tarjeta-responsable">
+                      <app-avatar [nombre]="persona" [turno]="turnoDe(persona)" size="sm" />
+                      <span>{{ persona }}</span>
+                    </p>
+                  }
+                </app-card>
+              </li>
+            }
+          </ul>
+        }
+      </section>
+    }
+  </div>
+}

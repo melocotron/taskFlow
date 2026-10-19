@@ -25,6 +25,8 @@
     --column-padding: var(--space-3);
     --column-gap: var(--space-4);
     --column-header-height: 32px;
+    /* Alto máximo de la lista de tarjetas: cada columna se desplaza por su cuenta. */
+    --column-max-height: 60dvh;
 
     /* ── Lengüeta de turno (la firma) ────────────────────────────────── */
     --turno-width: 4px;
