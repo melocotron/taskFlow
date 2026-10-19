@@ -22,7 +22,8 @@ export class DialogService {
   abrir(titulo: string, contenido: TemplateRef<unknown>, opciones: OpcionesDialogo = {}) {
     return this.cdk.open(DialogContent, {
       data: { titulo, contenido },
-      width: opciones.ancho ?? '480px',
+      // En móvil el diálogo no debe tocar los bordes: 480px o el ancho menos un margen.
+      width: opciones.ancho ?? 'min(480px, calc(100vw - 2 * var(--space-4)))',
       autoFocus: 'first-tabbable',
       restoreFocus: true,
       // El diálogo necesita nombre accesible; sin esto un lector anuncia "diálogo" y nada más.

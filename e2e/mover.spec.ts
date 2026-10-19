@@ -8,8 +8,9 @@ import type { Page } from '@playwright/test';
  * ratón de verdad y, sobre todo, se comprueba lo que pide el sprint: que el movimiento
  * **sobreviva a la recarga**.
  *
- * Todavía no hay forma de crear tarjetas desde la interfaz (llega en S3.5), así que el
- * tablero se siembra en el almacenamiento del navegador.
+ * Todavía se siembra el tablero en el almacenamiento: aquí interesa el arrastre sobre
+ * tarjetas ya colocadas, no el camino de creación, que tiene su propio recorrido en
+ * `crear.spec.ts`.
  */
 async function sembrarTablero(page: Page): Promise<void> {
   await page.addInitScript(() => {
@@ -76,7 +77,7 @@ test('mover con el menú y seguir movida tras recargar', async ({ page }) => {
   const enCurso = page.getByRole('region', { name: 'En curso' });
   const tarjeta = porHacer.locator('li', { hasText: 'Preparar la demo del viernes' });
 
-  await tarjeta.getByRole('button', { name: /^Mover / }).click();
+  await tarjeta.getByRole('button', { name: /^Acciones de / }).click();
   await page.getByRole('menuitem', { name: 'Mover a En curso' }).click();
 
   await expect(enCurso.getByText('Preparar la demo del viernes')).toBeVisible();
