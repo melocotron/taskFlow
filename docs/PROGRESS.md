@@ -471,24 +471,64 @@ desaparece sin vuelta.
 
 ---
 
-## Sprint siguiente
+## ✅ Fase 3 · S3.6 — Filtros y búsqueda con el estado en la URL
 
-**S3.6 — Filtros y búsqueda con `linkedSignal` + estado en la URL.** El filtro tiene que
-sobrevivir a la recarga; hasta ahora todo el estado de la vista vive en memoria.
+El tablero ya se puede mirar por partes: texto libre (título y descripción, sin acentos) y
+persona responsable. **El filtro no vive en la pantalla: vive en la URL.**
+
+- **`linkedSignal` es exactamente la pieza.** El filtro se deriva de `?q=` y `?persona=`
+  —los query params llegan como inputs por `withComponentInputBinding()`— y además se
+  puede escribir desde la barra. Un `computed` no dejaría teclear; un `signal` normal
+  dejaría de obedecer a la URL al recargar o al compartir el enlace.
+- **La URL se escribe con `replaceUrl`.** Sin él, cada tecla sería un paso de historial;
+  con él, atrás vuelve a la pantalla anterior y el enlace se puede compartir.
+- **La barra es un componente controlado** (`features/board-filters`): recibe el filtro y
+  emite el siguiente, sin saber de rutas. La página es la única que escribe en la URL.
+- **El lienzo filtra con un solo `computed`** para todas las columnas, no dentro de la
+  plantilla: recorrer 200 tarjetas en cada detección de cambios se nota. La búsqueda
+  normaliza (minúsculas y sin acentos) en los dos lados, así «revision» encuentra
+  «Revisión».
+- **Los estados no mienten:** con filtro se anuncia «1 de 4 tarjetas» en `role="status"`;
+  si nada coincide se dice eso y no «este tablero no tiene tarjetas»; y un tablero vacío
+  sigue explicando cómo empezar aunque haya filtro.
+- **Con filtro puesto no se arrastra.** El CDK devuelve el índice de la lista **visible** y
+  la columna real tiene huecos escondidos: soltar ahí mentiría sobre el orden. El menú
+  «mover a…» sigue disponible porque no depende del índice.
+
+**Dos cosas que salieron al montarlo:**
+
+1. **`undefined` en los query params.** El router pone `undefined` en los inputs que la URL
+   no trae; el filtro arrancaba con `undefined` y el lienzo intentaba recortar un texto que
+   no existía. La página se quedaba sin columnas y sin etiquetas. Se arregla en el origen:
+   `?? ''`.
+2. **La X azul del buscador.** Chromium pinta su propio botón de limpiar en los
+   `input[type=search]`, en un azul que no es un token. Se oculta: el filtro ya tiene
+   «Quitar filtro» al lado, que sí es un control del sistema.
+
+156 tests (17 nuevos) y 15 E2E (5 nuevos). Capturas: barra en reposo, filtro activo, sin
+resultados y móvil a 390 px.
+
+---
+
+## Siguiente fase
+
+**Fase 4 — Calidad.** S4.1: los recorridos del spec como E2E, uno por historia, con
+`npm run e2e` verde en CI.
 
 ---
 
 ## Dónde me quedé
 
-S3.5b terminado en `feature/S3.5b-renombrar`: formulario de tarjeta con Signal Forms,
-crear desde la columna, editar desde el menú y renombrar el tablero desde su detalle.
-139 tests, `verify` y `e2e` verdes.
+S3.6 terminado en `feature/S3.6-filtros`: filtro por texto y persona con el estado en la
+URL, y el lienzo pintando solo lo que coincide. 156 tests, `verify` y `e2e` verdes. Con
+esto se cierra la Fase 3.
 
 ## Siguiente paso concreto
 
-Empezar S3.6 en una rama nueva: filtrar el lienzo por texto y por persona, con
-`linkedSignal` para que el estado derivado no se desincronice, y con el filtro escrito en
-la URL para que recargar no lo pierda.
+Antes de S4.1 hay que decidir qué pasa con la historia 4 del spec (invitar personas y rol
+por tablero): es la única de las cuatro que no tiene implementación, así que hoy los
+«cuatro journeys» de S4.1 serían tres. O se construye (un S3.7) o S4.1 cubre tres
+recorridos y la deuda queda anotada.
 
 ---
 
@@ -521,3 +561,4 @@ Los E2E corren en CI y antes de un merge a `main`.
 | 2026-10-19 | S3.4   | Mover tarjetas con arrastre y con menú; el menú del sistema no ejecutaba sus acciones. |
 | 2026-10-19 | S3.5   | Formulario de tarjeta con Signal Forms: crear desde la columna y editar desde el menú. |
 | 2026-10-19 | S3.5b  | Renombrar el tablero desde el detalle; el formulario de tablero pasa a `features`.     |
+| 2026-10-19 | S3.6   | Filtro por texto y persona con el estado en la URL; `linkedSignal` y columna filtrada. |
