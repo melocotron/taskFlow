@@ -9,11 +9,7 @@
       <h1>{{ tablero.titulo }}</h1>
     </header>
 
-    <ul class="columnas">
-      @for (columna of tablero.columnas; track columna.id) {
-        <li class="columna">{{ columna.titulo }}</li>
-      }
-    </ul>
+    <app-board-canvas [board]="tablero" />
   } @else {
     <div class="no-encontrado" role="alert">
       <p>No se encontró ese tablero.</p>

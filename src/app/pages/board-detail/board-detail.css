@@ -25,20 +25,6 @@
   font-size: var(--text-display);
 }
 
-.columnas {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: var(--card-gap);
-}
-
-.columna {
-  padding: var(--space-4);
-  border: var(--border-width) solid var(--border-color);
-  border-radius: var(--card-radius);
-  background-color: var(--surface-raised);
-  font-weight: var(--weight-medium);
-}
-
 .nota {
   color: var(--text-muted);
 }

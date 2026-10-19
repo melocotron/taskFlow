@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { BoardStore } from '@entities/board';
+import { TaskStore } from '@entities/task';
 import BoardDetailPage from './board-detail';
 
 describe('BoardDetailPage', () => {
@@ -14,6 +15,9 @@ describe('BoardDetailPage', () => {
     const store = TestBed.inject(BoardStore);
     await store.listo;
     const board = opciones.crear ? store.crear(opciones.crear) : null;
+
+    // El lienzo pinta las columnas, pero sus tarjetas llegan con la carga del otro store.
+    await TestBed.inject(TaskStore).listo;
 
     const fixture = TestBed.createComponent(BoardDetailPage);
     fixture.componentRef.setInput('id', board?.id ?? 'no-existe');
@@ -32,6 +36,7 @@ describe('BoardDetailPage', () => {
     expect(elemento.querySelector('h1')?.textContent).toContain('Producto');
     expect(elemento.textContent).toContain('Por hacer');
     expect(elemento.textContent).toContain('Hecho');
+    expect(elemento.querySelectorAll('.columna').length).toBe(3);
   });
 
   it('avisa cuando el tablero no existe', async () => {

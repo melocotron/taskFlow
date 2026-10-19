@@ -1,0 +1,120 @@
+:host {
+  display: block;
+}
+
+/* El lienzo se desplaza en horizontal; las columnas miden lo que dice el sistema. */
+.columnas {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: var(--column-width);
+  gap: var(--column-gap);
+  align-items: start;
+  overflow-x: auto;
+  padding-bottom: var(--space-2);
+}
+
+.columna {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--column-padding);
+  border: var(--border-width) solid var(--border-color);
+  border-radius: var(--card-radius);
+  background-color: var(--surface-sunken);
+}
+
+.columna-cabecera {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  min-height: var(--column-header-height);
+}
+
+.cuenta {
+  color: var(--text-secondary);
+  font-size: var(--text-body);
+  font-weight: var(--weight-medium);
+}
+
+/* ── Tarjetas ────────────────────────────────────────────────────────── */
+
+.tarjetas {
+  display: flex;
+  flex-direction: column;
+  gap: var(--card-gap);
+  max-height: var(--column-max-height);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-right: var(--space-1);
+}
+
+.tarjeta-titulo {
+  font-weight: var(--weight-medium);
+  line-height: var(--leading-tight);
+}
+
+.tarjeta-descripcion {
+  display: -webkit-box;
+  margin-top: var(--space-1);
+  overflow: hidden;
+  color: var(--text-muted);
+  font-size: var(--text-caption);
+  line-height: var(--leading-normal);
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.tarjeta-responsable {
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
+  margin-top: var(--space-2);
+  color: var(--text-secondary);
+  font-size: var(--text-caption);
+}
+
+/* ── Estados ─────────────────────────────────────────────────────────── */
+
+/*
+ * El esqueleto suelto se pierde sobre la superficie hundida de la columna: cada hueco
+ * lleva el mismo fondo elevado que la tarjeta que va a sustituir.
+ */
+.huesos {
+  display: flex;
+  flex-direction: column;
+  gap: var(--card-gap);
+}
+
+.hueso {
+  padding: var(--card-padding);
+  border: var(--border-width) solid var(--border-color);
+  border-radius: var(--card-radius);
+  background-color: var(--surface-raised);
+}
+
+.columna-vacia {
+  padding: var(--space-4) var(--space-2);
+  color: var(--text-muted);
+  font-size: var(--text-caption);
+  text-align: center;
+}
+
+.aviso-vacio {
+  margin-bottom: var(--space-3);
+  color: var(--text-muted);
+  font-size: var(--text-caption);
+}
+
+.fallo {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-4);
+  border: var(--border-width) solid var(--danger);
+  border-radius: var(--card-radius);
+  background-color: var(--surface-raised);
+  color: var(--danger);
+}

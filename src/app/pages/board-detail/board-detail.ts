@@ -1,16 +1,17 @@
 import { Component, computed, inject, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { BoardStore, comoBoardId } from '@entities/board';
+import { BoardCanvas } from '@widgets/board-canvas';
 
 /**
  * Pantalla de un tablero.
  *
- * En S3.2 solo resuelve la navegación: se entra por `tableros/:id` y se identifica
- * el tablero. El lienzo con las columnas y sus tarjetas llega en el sprint siguiente.
+ * Resuelve la navegación por `tableros/:id` y compone el lienzo. Todo el trabajo
+ * de pintar columnas y tarjetas vive en `board-canvas`.
  */
 @Component({
   selector: 'app-board-detail',
-  imports: [RouterLink],
+  imports: [BoardCanvas, RouterLink],
   templateUrl: './board-detail.html',
   styleUrl: './board-detail.css',
 })

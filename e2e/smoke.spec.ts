@@ -32,5 +32,6 @@ test('entrar, crear un tablero y abrir su detalle', async ({ page }) => {
 
   await expect(page).toHaveURL(/\/tableros\//);
   await expect(page.getByRole('heading', { level: 1, name: 'Producto' })).toBeVisible();
-  await expect(page.getByRole('listitem').filter({ hasText: 'Por hacer' })).toBeVisible();
+  await expect(page.getByRole('region', { name: 'Por hacer' })).toBeVisible();
+  await expect(page.getByText('Este tablero todavía no tiene tarjetas')).toBeVisible();
 });
