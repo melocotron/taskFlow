@@ -267,27 +267,53 @@ con `reuseExistingServer: false` en `playwright.config.ts`: siempre servidor nue
 
 ## Sprint actual — Fase 3
 
-**S3.1 — Sesión y protección de rutas**
+## ✅ Fase 3 · S3.1 — Entrada, guard de sesión y permisos en la interfaz
 
-| Tarea                                            | Estado |
-| ------------------------------------------------ | ------ |
-| Selector de persona en la cabecera               | ⬜     |
-| `sesionGuard` funcional protegiendo rutas        | ⬜     |
-| La UI respeta `puedeEditar` / `puedeAdministrar` | ⬜     |
-| Tests del guard y del selector                   | ⬜     |
+**Pantalla `/entrar`**: se elige persona de las tres del equipo, con su rol a la vista.
+La sesión se guarda y no se vuelve a preguntar.
 
-**Criterio de verde:** sin sesión se redirige; con sesión se entra; un `viewer` no ve las
-acciones de edición. `verify` verde.
+**`sesionGuard`** protege la raíz. Para que sirviera de algo hubo que añadir una
+distinción que antes no existía: `MemberStore.haySesion`, que es `true` **solo** si
+alguien eligió persona. Sin eso, el store siempre cae en la primera y el guard sería
+decoración.
+
+**Los permisos, en tres capas** (y las tres se prueban):
+
+1. La interfaz esconde el botón (`@if (puedeEditar())`).
+2. El método comprueba el permiso y avisa: si alguien lo invoca desde la consola, no pasa.
+3. El dominio (`puede(rol, accion)`) sigue negando por debajo.
+
+**Verificado en navegador, no solo en tests:** `goto('/')` redirige a `/entrar`; entrar
+como Alba (solo lectura) y contar botones de crear en la página da **0**.
+
+90 tests en total. `verify` verde.
+
+---
+
+## Sprint actual
+
+**S3.2 — Lista de tableros**
+
+| Tarea                                       | Estado |
+| ------------------------------------------- | ------ |
+| Página `board-list` con ruta lazy propia    | ⬜     |
+| Crear tablero con nombre real (diálogo)     | ⬜     |
+| Navegación a `board-detail/:id`             | ⬜     |
+| Tests de la lista y del diálogo de creación | ⬜     |
+
+**Criterio de verde:** crear un tablero con nombre desde un diálogo, verlo en la lista y
+navegar a su detalle. `verify` verde.
 
 ---
 
 ## Dónde me quedé
 
-Fase 2 cerrada y mergeada. Árbol limpio. 83 tests.
+S3.1 cerrado y mergeado. Árbol limpio. 90 tests.
 
 ## Siguiente paso concreto
 
-Añadir el selector de persona a la cabecera y el guard de sesión.
+Convertir la home en `board-list` con diálogo de creación real (reutilizando `DialogService`)
+y ruta al detalle.
 
 ---
 
