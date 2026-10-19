@@ -106,7 +106,7 @@ Dos decisiones que vale la pena recordar:
 | Pieza                                  | Qué aporta                                                                                    |
 | -------------------------------------- | --------------------------------------------------------------------------------------------- |
 | `DialogService` + `app-dialog-content` | Overlay del CDK sobre un `ng-template`: trampa de foco, `Esc` y devolución del foco resueltas |
-| `app-menu` + `app-menu-item`           | Panel y acciones con navegación por teclado del CDK                                           |
+| `app-menu` + `button[appMenuItem]`     | Panel y acciones con navegación por teclado del CDK                                           |
 | `appTooltip`                           | Directiva que funciona con ratón **y con teclado**, vía `aria-describedby`                    |
 | `ToastService` + `app-toast-container` | Avisos efímeros con `role="status"` y `aria-live="polite"`                                    |
 
@@ -355,32 +355,67 @@ eso llega en S3.5, cuando exista la acción de crear.
 
 ---
 
+## ✅ Fase 3 · S3.4 — Mover tarjetas
+
+Mover una tarjeta tiene **dos caminos y una sola operación de dominio**. El arrastre del
+CDK y el menú «mover a…» de cada tarjeta llaman al mismo `TaskStore.mover()`: lo que se
+prueba en el store vale para los dos, y las dos columnas se renumeran igual.
+
+- **Arrastrar:** `cdkDropListGroup` sobre el lienzo y un `cdkDropList` por columna, con el
+  id de la columna como dato. Al soltar se pide el índice al CDK y decide el store, que es
+  quien sabe recortar índices y renumerar origen y destino. Reordenar dentro de la misma
+  columna es el mismo camino con otro índice.
+- **Sin ratón:** el arrastre no existe para el teclado, así que cada tarjeta lleva un menú
+  con las columnas (todas menos la suya). Es visible, se descubre solo y el aviso que
+  aparece al mover es lo que oye quien no ve la pantalla.
+- **Quien solo observa** no ve el menú y no puede arrastrar: el CDK queda desactivado, no
+  solo escondido. El método lo vuelve a comprobar, como al crear un tablero.
+- **La vista previa del arrastre** flota con la sombra de overlay, la única que el sistema
+  permite. Su sombra vive en `overlays.css` porque el CDK la saca del componente.
+
+**El defecto que salió al probarlo en un navegador de verdad:** pulsar una opción de
+cualquier menú **no ejecutaba nada**. El CDK cierra el menú al pulsar, y cerrarlo destruye
+la vista del overlay: una escucha `(click)` puesta _por encima_ del botón se va con esa
+vista antes de que el clic termine de propagarse. La acción no corría y no avisaba de nada.
+Afectaba también a «cambiar de persona» y «Salir» de la lista de tableros, que nunca
+hicieron nada. Arreglado en el sistema: `app-menu-item` pasa a ser `button[appMenuItem]`,
+un componente sobre el `<button>` nativo, igual que `appButton` y `appIconButton`.
+`menu.spec.ts` vigila que no vuelva.
+
+Dos cosas más que salieron al mirar de cerca: el recuento decía «1 tarjetas», y «Salir»
+cerraba la sesión pero dejaba dentro (ahora navega a `/entrar`).
+
+114 tests y `npm run e2e` verde, con un recorrido nuevo que arrastra con ratón de verdad:
+el CDK mide píxeles y eso en jsdom no se puede probar. Capturas: menú de mover, arrastre en
+curso, tablero tras mover y móvil a 390 px.
+
+---
+
 ## Sprint actual
 
-**S3.4 — Mover tarjetas con el ratón y con el teclado**
+**S3.5 — Crear y editar tarjetas con Signal Forms**
 
-| Tarea                                  | Estado |
-| -------------------------------------- | ------ |
-| Arrastrar con `@angular/cdk/drag-drop` | ⬜     |
-| Reordenar dentro de la misma columna   | ⬜     |
-| Alternativa por teclado para mover     | ⬜     |
-| El movimiento sobrevive a la recarga   | ⬜     |
-| Tests de mover                         | ⬜     |
+| Tarea                                              | Estado |
+| -------------------------------------------------- | ------ |
+| Formulario de tarjeta con `@angular/forms/signals` | ⬜     |
+| Validación y errores junto al campo                | ⬜     |
+| Crear desde la columna y editar desde la tarjeta   | ⬜     |
+| Tests del formulario                               | ⬜     |
 
-**Criterio de verde:** mover una tarjeta cambia de columna, se guarda y se puede repetir
-sin ratón. `verify` verde.
+**Criterio de verde:** crear y editar una tarjeta deja el tablero coherente. `verify`
+verde.
 
 ---
 
 ## Dónde me quedé
 
-S3.3 terminado en `feature/S3.3-lienzo`: el lienzo con columnas y tarjetas. 105 tests,
-`verify` y `e2e` verdes.
+S3.4 terminado en `feature/S3.4-arrastre`: mover tarjetas con ratón y con teclado, y el
+arreglo del menú del sistema de diseño. 114 tests, `verify` y `e2e` verdes.
 
 ## Siguiente paso concreto
 
-Construir el arrastre de tarjetas entre columnas con `@angular/cdk/drag-drop` y su
-alternativa por teclado (el `TaskStore.mover()` ya renombra las dos columnas).
+Construir el formulario de tarjeta (crear y editar) con Signal Forms, que es lo que
+además cierra el pendiente de S3.3: hoy no hay forma de añadir la primera tarjeta.
 
 ---
 
@@ -400,13 +435,14 @@ Los E2E corren en CI y antes de un merge a `main`.
 
 ## Bitácora
 
-| Fecha      | Sprint | Nota                                                               |
-| ---------- | ------ | ------------------------------------------------------------------ |
-| 2026-10-17 | —      | Plan maestro aprobado. Shell reparada (ACL). pnpm descartado.      |
-| 2026-10-17 | S0.1   | Scaffolding Angular 22.2.3 + husky/commitlint/eslint.              |
-| 2026-10-17 | S0.2   | Esqueleto FSD, alias, boundaries ejecutables.                      |
-| 2026-10-17 | S0.3   | Spec Kit + constitución v1.0.0 + spec 001 aprobada.                |
-| 2026-10-17 | S0.4   | Playwright + smoke test + CI. Fase 0 cerrada.                      |
-| 2026-10-17 | S1.1   | Dirección **A · Taller** + lengüeta de turno. system.md guardado.  |
-| 2026-10-18 | S3.2   | Lista de tableros, diálogo de creación y ruta al detalle.          |
-| 2026-10-19 | S3.3   | Lienzo del tablero: widget `board-canvas` con columnas y tarjetas. |
+| Fecha      | Sprint | Nota                                                                                   |
+| ---------- | ------ | -------------------------------------------------------------------------------------- |
+| 2026-10-17 | —      | Plan maestro aprobado. Shell reparada (ACL). pnpm descartado.                          |
+| 2026-10-17 | S0.1   | Scaffolding Angular 22.2.3 + husky/commitlint/eslint.                                  |
+| 2026-10-17 | S0.2   | Esqueleto FSD, alias, boundaries ejecutables.                                          |
+| 2026-10-17 | S0.3   | Spec Kit + constitución v1.0.0 + spec 001 aprobada.                                    |
+| 2026-10-17 | S0.4   | Playwright + smoke test + CI. Fase 0 cerrada.                                          |
+| 2026-10-17 | S1.1   | Dirección **A · Taller** + lengüeta de turno. system.md guardado.                      |
+| 2026-10-18 | S3.2   | Lista de tableros, diálogo de creación y ruta al detalle.                              |
+| 2026-10-19 | S3.3   | Lienzo del tablero: widget `board-canvas` con columnas y tarjetas.                     |
+| 2026-10-19 | S3.4   | Mover tarjetas con arrastre y con menú; el menú del sistema no ejecutaba sus acciones. |

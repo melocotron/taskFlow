@@ -15,4 +15,14 @@
   .app-dialogo-fondo {
     background-color: color-mix(in srgb, var(--hierro-900) 42%, transparent);
   }
+
+  /*
+   * Vista previa del arrastre. Como el panel del diálogo, el CDK la mueve fuera del
+   * componente, así que su sombra tiene que ser global. El resto de la tarjeta sí
+   * conserva sus estilos, porque el clon viaja con sus atributos de encapsulación.
+   */
+  .cdk-drag-preview {
+    border-radius: var(--card-radius);
+    box-shadow: var(--shadow-overlay);
+  }
 }

@@ -9,7 +9,7 @@ import { Component } from '@angular/core';
  * de forma fiable, los del componente sí.
  *
  *   <app-menu>
- *     <app-menu-item (click)="renombrar()">Renombrar</app-menu-item>
+ *     <button appMenuItem (click)="renombrar()">Renombrar</button>
  *   </app-menu>
  */
 @Component({

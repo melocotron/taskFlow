@@ -190,8 +190,13 @@ Reglas que salieron de construirlos:
   si no hay turno. El anillo arcoíris quedó rechazado en la exploración inicial.
 - **Lo que el CDK renderiza en un overlay lleva estilos de componente, no globales.** Un
   `<div class="menu">` suelto dentro de un `ng-template` no recibió los estilos del
-  archivo global: el panel salía como texto plano. `app-menu` y `app-menu-item` existen
-  precisamente para que la piel viaje con el componente.
+  archivo global: el panel salía como texto plano. `app-menu` y `button[appMenuItem]`
+  existen precisamente para que la piel viaje con el componente.
+- **La acción de un menú escucha en el propio `<button>`, nunca por encima.** El CDK cierra
+  el menú al pulsar, y cerrarlo destruye la vista del overlay. Un `(click)` en un elemento
+  que envuelva al botón se va con esa vista antes de que el clic acabe de propagarse: la
+  acción no se ejecuta, sin error ni aviso. Por eso `appMenuItem` se aplica al `<button>`
+  nativo, igual que `appButton` y `appIconButton`.
 - **Los overlays son la única superficie con sombra.** Todo lo demás se apoya en filetes;
   un diálogo o un menú flota de verdad y la sombra lo dice.
 

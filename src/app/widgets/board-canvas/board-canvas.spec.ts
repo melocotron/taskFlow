@@ -1,7 +1,9 @@
 import { TestBed } from '@angular/core/testing';
 import { COLUMNAS_POR_DEFECTO, comoBoardId } from '@entities/board';
 import type { Board } from '@entities/board';
+import { MemberStore, comoMemberId } from '@entities/member';
 import { TaskStore } from '@entities/task';
+import { ToastService } from '@shared/ui';
 import { BoardCanvas } from './board-canvas';
 
 const TABLERO: Board = {
@@ -20,8 +22,12 @@ interface TareaDePrueba {
 }
 
 describe('BoardCanvas', () => {
-  async function montar(tareas: readonly TareaDePrueba[] = []) {
+  async function montar(tareas: readonly TareaDePrueba[] = [], rol: 'admin' | 'viewer' = 'admin') {
     TestBed.configureTestingModule({ imports: [BoardCanvas] });
+
+    if (rol === 'viewer') {
+      TestBed.inject(MemberStore).cambiarSesion(comoMemberId('alba'));
+    }
 
     const store = TestBed.inject(TaskStore);
     await store.listo;
@@ -53,6 +59,24 @@ describe('BoardCanvas', () => {
   /** Texto del contador, con el espacio del texto oculto normalizado. */
   function contadorDe(columna: HTMLElement): string {
     return (columna.querySelector('.cuenta')?.textContent ?? '').replace(/\s+/g, ' ').trim();
+  }
+
+  function botonMover(elemento: HTMLElement): HTMLButtonElement | null {
+    return elemento.querySelector('button[aria-label^="Mover "]');
+  }
+
+  function abrirMenuDeMover(elemento: HTMLElement): void {
+    botonMover(elemento)?.click();
+  }
+
+  function opcionesDelMenu(): HTMLElement[] {
+    return Array.from(document.querySelectorAll('[role="menuitem"]'));
+  }
+
+  function avisos(): string[] {
+    return TestBed.inject(ToastService)
+      .avisos()
+      .map((aviso) => aviso.mensaje);
   }
 
   beforeEach(() => {
@@ -89,6 +113,12 @@ describe('BoardCanvas', () => {
 
     expect(contadorDe(columna(elemento, 0))).toBe('2 tarjetas');
     expect(contadorDe(columna(elemento, 1))).toBe('0 tarjetas');
+  });
+
+  it('cuenta en singular cuando solo hay una', async () => {
+    const { elemento } = await montar([{ columna: 'por-hacer', titulo: 'Revisar el copy' }]);
+
+    expect(contadorDe(columna(elemento, 0))).toBe('1 tarjeta');
   });
 
   it('avisa en la columna que no tiene nada', async () => {
@@ -132,5 +162,73 @@ describe('BoardCanvas', () => {
     const descripcion = columna(elemento, 0).querySelector('.tarjeta-descripcion') as HTMLElement;
 
     expect(descripcion.textContent).toContain('Una explicación larguísima');
+  });
+
+  describe('mover una tarjeta sin ratón', () => {
+    it('el menú ofrece las demás columnas y ninguna más', async () => {
+      const { fixture, elemento } = await montar([
+        { columna: 'por-hacer', titulo: 'Revisar el copy' },
+      ]);
+
+      abrirMenuDeMover(elemento);
+      fixture.detectChanges();
+
+      expect(opcionesDelMenu().map((opcion) => opcion.textContent?.trim())).toEqual([
+        'Mover a En curso',
+        'Mover a Hecho',
+      ]);
+    });
+
+    it('mover desde el menú cambia la tarjeta de columna', async () => {
+      const { fixture, elemento } = await montar([
+        { columna: 'por-hacer', titulo: 'Revisar el copy' },
+      ]);
+
+      abrirMenuDeMover(elemento);
+      fixture.detectChanges();
+      opcionesDelMenu()[0]!.click();
+      fixture.detectChanges();
+
+      expect(titulosDe(columna(elemento, 0))).toEqual([]);
+      expect(titulosDe(columna(elemento, 1))).toEqual(['Revisar el copy']);
+    });
+
+    it('la tarjeta va al final de la columna de destino', async () => {
+      const { fixture, elemento } = await montar([
+        { columna: 'por-hacer', titulo: 'Revisar el copy' },
+        { columna: 'en-curso', titulo: 'Migrar el buscador' },
+      ]);
+
+      abrirMenuDeMover(elemento);
+      fixture.detectChanges();
+      opcionesDelMenu()[0]!.click();
+      fixture.detectChanges();
+
+      expect(titulosDe(columna(elemento, 1))).toEqual(['Migrar el buscador', 'Revisar el copy']);
+    });
+
+    it('avisa de dónde fue la tarjeta, que es lo que oye quien no lo ve', async () => {
+      const { fixture, elemento } = await montar([
+        { columna: 'por-hacer', titulo: 'Revisar el copy' },
+      ]);
+
+      abrirMenuDeMover(elemento);
+      fixture.detectChanges();
+      opcionesDelMenu()[0]!.click();
+      fixture.detectChanges();
+
+      expect(avisos()).toContain('«Revisar el copy» a En curso');
+    });
+
+    it('quien solo observa no ve el menú ni puede arrastrar', async () => {
+      const { elemento } = await montar(
+        [{ columna: 'por-hacer', titulo: 'Revisar el copy' }],
+        'viewer',
+      );
+
+      expect(botonMover(elemento)).toBeNull();
+      expect(elemento.querySelectorAll('.cdk-drag-disabled').length).toBe(1);
+      expect(elemento.querySelectorAll('.cdk-drop-list-disabled').length).toBe(3);
+    });
   });
 });
