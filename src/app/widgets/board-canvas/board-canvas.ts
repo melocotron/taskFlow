@@ -17,6 +17,8 @@ import { TaskStore } from '@entities/task';
 import type { Task } from '@entities/task';
 import { TaskForm } from '@features/task-form';
 import type { DatosTarjeta } from '@features/task-form';
+import { SIN_FILTRO, filtroActivo, normalizar } from '@features/board-filters';
+import type { FiltroTablero } from '@features/board-filters';
 import { turnoPorIndice } from '@shared/lib/turnos';
 import type { Turno } from '@shared/lib/turnos';
 import {
@@ -48,6 +50,10 @@ import type { DialogContent } from '@shared/ui';
  *
  * Crear y editar viven en `features/task-form`: este widget solo abre el diálogo, le
  * pasa los datos de partida y aplica lo que devuelve. La validación no se duplica aquí.
+ *
+ * Con un filtro puesto, el arrastre se desactiva: el CDK devuelve el índice de la lista
+ * **visible** y la columna real tiene huecos escondidos, así que soltar ahí mentiría
+ * sobre el orden. El menú «mover a…» sigue disponible y no depende del índice.
  */
 @Component({
   selector: 'app-board-canvas',
@@ -75,6 +81,9 @@ export class BoardCanvas {
   private readonly dialogos = inject(DialogService);
 
   readonly board = input.required<Board>();
+
+  /** Lo que se está buscando; vacío significa «todo». */
+  readonly filtro = input<FiltroTablero>(SIN_FILTRO);
 
   /** Diálogo del formulario, para poder cerrarlo desde sus propios botones. */
   private referencia: DialogRef<unknown, DialogContent> | null = null;
@@ -110,6 +119,60 @@ export class BoardCanvas {
     () => this.tareas.tareas().filter((tarea) => tarea.boardId === this.board().id).length,
   );
 
+  protected readonly hayFiltro = computed(() => filtroActivo(this.filtro()));
+
+  /**
+   * Columnas con sus tarjetas ya filtradas.
+   *
+   * Un computed para todo el lienzo: filtrar dentro de la plantilla recorrería las
+   * tarjetas otra vez en cada detección de cambios, y con 200 tarjetas se nota.
+   */
+  protected readonly columnas = computed(() => {
+    const { texto, persona } = this.filtro();
+    const buscado = normalizar(texto.trim());
+    const nombre = this.nombreFiltrado(persona);
+
+    return this.board().columnas.map((columna) => ({
+      id: columna.id,
+      titulo: columna.titulo,
+      tarjetas: this.tareas
+        .deColumna(this.board().id, columna.id)()
+        .filter((tarea) => this.coincide(tarea, buscado, nombre)),
+    }));
+  });
+
+  protected readonly visibles = computed(() =>
+    this.columnas().reduce((cuantas, columna) => cuantas + columna.tarjetas.length, 0),
+  );
+
+  /**
+   * Nombre de quien se está filtrando.
+   *
+   * `null` = sin filtro de persona. `undefined` = el id no es de nadie del equipo:
+   * entonces no coincide ninguna tarjeta, que es más honesto que enseñarlas todas.
+   */
+  private nombreFiltrado(persona: string): string | null | undefined {
+    if (persona.length === 0) {
+      return null;
+    }
+
+    return this.equipo.miembros().find((miembro) => miembro.id === persona)?.nombre;
+  }
+
+  private coincide(tarea: Task, buscado: string, nombre: string | null | undefined): boolean {
+    if (nombre !== null) {
+      if (nombre === undefined || tarea.responsable !== nombre) {
+        return false;
+      }
+    }
+
+    if (buscado.length === 0) {
+      return true;
+    }
+
+    return normalizar(`${tarea.titulo} ${tarea.descripcion}`).includes(buscado);
+  }
+
   /** El store cachea una señal por columna: pedirla en cada render no crea basura. */
   protected tareasDe(columnaId: string): Signal<readonly Task[]> {
     return this.tareas.deColumna(this.board().id, columnaId);
@@ -128,6 +191,11 @@ export class BoardCanvas {
 
   /** Suelta lo que venía arrastrado: la columna destino la dice la lista que lo recibe. */
   protected soltar(evento: CdkDragDrop<string, string, Task>): void {
+    // Con filtro, el índice visible no es el de la columna: mover sería una mentira.
+    if (this.hayFiltro()) {
+      return;
+    }
+
     this.moverA(evento.item.data, evento.container.data, evento.currentIndex);
   }
 

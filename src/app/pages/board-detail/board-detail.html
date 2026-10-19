@@ -15,7 +15,9 @@
       }
     </header>
 
-    <app-board-canvas [board]="tablero" />
+    <app-board-filters [filtro]="filtro()" (cambios)="aplicarFiltro($event)" />
+
+    <app-board-canvas [board]="tablero" [filtro]="filtro()" />
   } @else {
     <div class="no-encontrado" role="alert">
       <p>No se encontró ese tablero.</p>

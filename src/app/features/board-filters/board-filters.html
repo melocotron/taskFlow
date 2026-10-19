@@ -1,0 +1,31 @@
+<section class="filtros" aria-label="Buscar y filtrar tarjetas">
+  <app-field label="Buscar" class="campo-texto">
+    <input
+      appInput
+      type="search"
+      [value]="filtro().texto"
+      (input)="cambiarTexto($event)"
+      autocomplete="off"
+      placeholder="Título o descripción"
+    />
+  </app-field>
+
+  <app-field label="Responsable" class="campo-persona">
+    <!--
+      La selección va en cada `<option>`, no en el `[value]` del `<select>`: ese binding
+      se aplica antes de que existan las opciones y el navegador lo descarta.
+    -->
+    <select appInput (change)="cambiarPersona($event)">
+      <option value="" [selected]="filtro().persona === ''">Todas las personas</option>
+      @for (persona of miembros(); track persona.id) {
+        <option [value]="persona.id" [selected]="persona.id === filtro().persona">
+          {{ persona.nombre }}
+        </option>
+      }
+    </select>
+  </app-field>
+
+  @if (filtrando()) {
+    <button appButton variant="ghost" (click)="limpiar()">Quitar filtro</button>
+  }
+</section>
