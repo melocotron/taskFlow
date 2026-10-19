@@ -323,30 +323,64 @@ inventarse el nombre: se pide en un diálogo.
 
 ---
 
+## ✅ Fase 3 · S3.3 — Lienzo del tablero
+
+Llega el primer **widget**: `widgets/board-canvas`. Es la capa que faltaba por estrenar
+del §3.1, y se estrena en el sitio previsto: la página `board-detail` solo resuelve la
+ruta y compone; el trabajo de pintar columnas y tarjetas vive en el widget.
+
+- **Columnas de ancho fijo** (`--column-width` 288px) con desplazamiento horizontal, y
+  **cada columna se desplaza por su cuenta** (`--column-max-height`, token nuevo): mover
+  una no mueve las demás, que es el escenario 3 de la historia 1.
+- **La estructura se pinta antes que los datos.** Las columnas y sus rótulos aparecen ya
+  durante la carga; lo que llega tarde son las tarjetas, con esqueletos con forma de
+  tarjeta dentro de cada columna.
+- **Accesibilidad:** cada columna es una `region` con su nombre (`aria-labelledby` sobre
+  el `h2`), y el recuento lleva el texto «tarjetas» oculto para quien no ve la pantalla.
+  El color del turno nunca va solo: acompaña al nombre.
+- **La tarjeta:** lengüeta de turno (la firma, ahora con el color de cada persona),
+  título, descripción recortada a dos líneas y, si la tiene, quien la tiene con su avatar.
+- **Vacío de verdad:** «Sin tarjetas» en cada columna y una sola línea de tablero entero
+  sin trabajo.
+
+**El defecto que salió en la captura:** los esqueletos sueltos desaparecían sobre la
+superficie hundida de la columna (`viruta-200`). Ahora cada hueco lleva el mismo fondo
+elevado que la tarjeta que va a sustituir, y el estado de carga se ve de un vistazo.
+
+105 tests (8 nuevos) y `npm run e2e` verde. Capturas: lienzo con tarjetas, carga,
+tablero vacío y móvil a 390 px.
+
+**Pendiente consciente:** la historia 1 pide explicar _cómo añadir la primera tarjeta_;
+eso llega en S3.5, cuando exista la acción de crear.
+
+---
+
 ## Sprint actual
 
-**S3.3 — Detalle del tablero con sus columnas**
+**S3.4 — Mover tarjetas con el ratón y con el teclado**
 
-| Tarea                               | Estado |
-| ----------------------------------- | ------ |
-| Lienzo con las columnas del tablero | ⬜     |
-| Tarjetas dentro de su columna       | ⬜     |
-| Recuento y estado vacío por columna | ⬜     |
-| Tests del detalle                   | ⬜     |
+| Tarea                                  | Estado |
+| -------------------------------------- | ------ |
+| Arrastrar con `@angular/cdk/drag-drop` | ⬜     |
+| Reordenar dentro de la misma columna   | ⬜     |
+| Alternativa por teclado para mover     | ⬜     |
+| El movimiento sobrevive a la recarga   | ⬜     |
+| Tests de mover                         | ⬜     |
 
-**Criterio de verde:** se ve el tablero con sus columnas y las tarjetas de cada una.
-`verify` verde.
+**Criterio de verde:** mover una tarjeta cambia de columna, se guarda y se puede repetir
+sin ratón. `verify` verde.
 
 ---
 
 ## Dónde me quedé
 
-S3.2 terminado en `feature/S3.2-lista-tableros`. 97 tests, `verify` y `e2e` verdes.
+S3.3 terminado en `feature/S3.3-lienzo`: el lienzo con columnas y tarjetas. 105 tests,
+`verify` y `e2e` verdes.
 
 ## Siguiente paso concreto
 
-Construir el lienzo de `board-detail`: las columnas con sus tarjetas (el `TaskStore` ya
-agrupa por columna con `deColumna()`) y quitar el listado plano de columnas.
+Construir el arrastre de tarjetas entre columnas con `@angular/cdk/drag-drop` y su
+alternativa por teclado (el `TaskStore.mover()` ya renombra las dos columnas).
 
 ---
 
@@ -366,12 +400,13 @@ Los E2E corren en CI y antes de un merge a `main`.
 
 ## Bitácora
 
-| Fecha      | Sprint | Nota                                                              |
-| ---------- | ------ | ----------------------------------------------------------------- |
-| 2026-10-17 | —      | Plan maestro aprobado. Shell reparada (ACL). pnpm descartado.     |
-| 2026-10-17 | S0.1   | Scaffolding Angular 22.2.3 + husky/commitlint/eslint.             |
-| 2026-10-17 | S0.2   | Esqueleto FSD, alias, boundaries ejecutables.                     |
-| 2026-10-17 | S0.3   | Spec Kit + constitución v1.0.0 + spec 001 aprobada.               |
-| 2026-10-17 | S0.4   | Playwright + smoke test + CI. Fase 0 cerrada.                     |
-| 2026-10-17 | S1.1   | Dirección **A · Taller** + lengüeta de turno. system.md guardado. |
-| 2026-10-18 | S3.2   | Lista de tableros, diálogo de creación y ruta al detalle.         |
+| Fecha      | Sprint | Nota                                                               |
+| ---------- | ------ | ------------------------------------------------------------------ |
+| 2026-10-17 | —      | Plan maestro aprobado. Shell reparada (ACL). pnpm descartado.      |
+| 2026-10-17 | S0.1   | Scaffolding Angular 22.2.3 + husky/commitlint/eslint.              |
+| 2026-10-17 | S0.2   | Esqueleto FSD, alias, boundaries ejecutables.                      |
+| 2026-10-17 | S0.3   | Spec Kit + constitución v1.0.0 + spec 001 aprobada.                |
+| 2026-10-17 | S0.4   | Playwright + smoke test + CI. Fase 0 cerrada.                      |
+| 2026-10-17 | S1.1   | Dirección **A · Taller** + lengüeta de turno. system.md guardado.  |
+| 2026-10-18 | S3.2   | Lista de tableros, diálogo de creación y ruta al detalle.          |
+| 2026-10-19 | S3.3   | Lienzo del tablero: widget `board-canvas` con columnas y tarjetas. |
