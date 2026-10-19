@@ -1,0 +1,15 @@
+.filtros {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  align-items: flex-end;
+}
+
+/* La búsqueda se lleva el espacio; la persona tiene un ancho predecible. */
+.campo-texto {
+  flex: 1 1 260px;
+}
+
+.campo-persona {
+  flex: 0 1 220px;
+}

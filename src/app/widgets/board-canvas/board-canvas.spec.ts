@@ -3,6 +3,7 @@ import { COLUMNAS_POR_DEFECTO, comoBoardId } from '@entities/board';
 import type { Board } from '@entities/board';
 import { MemberStore, comoMemberId } from '@entities/member';
 import { TaskStore } from '@entities/task';
+import type { FiltroTablero } from '@features/board-filters';
 import { ToastService } from '@shared/ui';
 import { BoardCanvas } from './board-canvas';
 
@@ -22,7 +23,11 @@ interface TareaDePrueba {
 }
 
 describe('BoardCanvas', () => {
-  async function montar(tareas: readonly TareaDePrueba[] = [], rol: 'admin' | 'viewer' = 'admin') {
+  async function montar(
+    tareas: readonly TareaDePrueba[] = [],
+    rol: 'admin' | 'viewer' = 'admin',
+    filtro?: FiltroTablero,
+  ) {
     TestBed.configureTestingModule({ imports: [BoardCanvas] });
 
     if (rol === 'viewer') {
@@ -41,6 +46,11 @@ describe('BoardCanvas', () => {
 
     const fixture = TestBed.createComponent(BoardCanvas);
     fixture.componentRef.setInput('board', TABLERO);
+
+    if (filtro) {
+      fixture.componentRef.setInput('filtro', filtro);
+    }
+
     fixture.detectChanges();
 
     return { fixture, store, elemento: fixture.nativeElement as HTMLElement };
@@ -336,6 +346,103 @@ describe('BoardCanvas', () => {
 
       expect(botonAcciones(elemento)).toBeNull();
       expect(botonAnadir(elemento, 0)).toBeNull();
+      expect(elemento.querySelectorAll('.cdk-drag-disabled').length).toBe(1);
+      expect(elemento.querySelectorAll('.cdk-drop-list-disabled').length).toBe(3);
+    });
+  });
+
+  describe('filtrar tarjetas', () => {
+    const TARJETAS: TareaDePrueba[] = [
+      { columna: 'por-hacer', titulo: 'Revisar el copy', responsable: 'Marta Ruiz' },
+      { columna: 'por-hacer', titulo: 'Preparar la demo', responsable: 'Iván Soto' },
+      {
+        columna: 'en-curso',
+        titulo: 'Migrar el buscador',
+        descripcion: 'Revisión de los textos',
+        responsable: 'Iván Soto',
+      },
+      { columna: 'hecho', titulo: 'Cerrar el sprint' },
+    ];
+
+    function estadoDeFiltro(elemento: HTMLElement): string {
+      return (elemento.querySelector('.estado-filtro')?.textContent ?? '')
+        .replace(/\s+/g, ' ')
+        .trim();
+    }
+
+    it('solo enseña las tarjetas cuyo título contiene el texto', async () => {
+      const { elemento } = await montar(TARJETAS, 'admin', {
+        texto: 'copy',
+        persona: '',
+      });
+
+      expect(titulosDe(columna(elemento, 0))).toEqual(['Revisar el copy']);
+      expect(titulosDe(columna(elemento, 1))).toEqual([]);
+      expect(titulosDe(columna(elemento, 2))).toEqual([]);
+    });
+
+    it('busca también en la descripción y sin acentos', async () => {
+      const { elemento } = await montar(TARJETAS, 'admin', {
+        texto: 'revision',
+        persona: '',
+      });
+
+      expect(titulosDe(columna(elemento, 1))).toEqual(['Migrar el buscador']);
+    });
+
+    it('filtra por persona responsable', async () => {
+      const { elemento } = await montar(TARJETAS, 'admin', {
+        texto: '',
+        persona: 'ivan',
+      });
+
+      expect(titulosDe(columna(elemento, 0))).toEqual(['Preparar la demo']);
+      expect(titulosDe(columna(elemento, 1))).toEqual(['Migrar el buscador']);
+      expect(titulosDe(columna(elemento, 2))).toEqual([]);
+    });
+
+    it('cuenta lo que se ve sobre lo que hay', async () => {
+      const { elemento } = await montar(TARJETAS, 'admin', {
+        texto: 'copy',
+        persona: '',
+      });
+
+      expect(estadoDeFiltro(elemento)).toBe('1 de 4 tarjetas');
+    });
+
+    it('avisa cuando nada coincide, sin decir que el tablero está vacío', async () => {
+      const { elemento } = await montar(TARJETAS, 'admin', {
+        texto: 'zzzz',
+        persona: '',
+      });
+
+      expect(estadoDeFiltro(elemento)).toBe('0 de 4 tarjetas');
+      expect(elemento.textContent).toContain('Ninguna tarjeta coincide con el filtro');
+      expect(elemento.textContent).not.toContain('Este tablero todavía no tiene tarjetas');
+    });
+
+    it('un tablero vacío sigue explicando cómo empezar aunque haya filtro', async () => {
+      const { elemento } = await montar([], 'admin', { texto: 'copy', persona: '' });
+
+      expect(elemento.textContent).toContain('Este tablero todavía no tiene tarjetas');
+      expect(elemento.textContent).not.toContain('Ninguna tarjeta coincide');
+    });
+
+    it('un id de persona que no existe no coincide con nada', async () => {
+      const { elemento } = await montar(TARJETAS, 'admin', {
+        texto: '',
+        persona: 'desconocida',
+      });
+
+      expect(estadoDeFiltro(elemento)).toBe('0 de 4 tarjetas');
+    });
+
+    it('con filtro puesto no se arrastra: el índice visible no es el de la columna', async () => {
+      const { elemento } = await montar(TARJETAS, 'admin', {
+        texto: 'copy',
+        persona: '',
+      });
+
       expect(elemento.querySelectorAll('.cdk-drag-disabled').length).toBe(1);
       expect(elemento.querySelectorAll('.cdk-drop-list-disabled').length).toBe(3);
     });

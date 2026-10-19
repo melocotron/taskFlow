@@ -11,11 +11,19 @@
         Elige una columna y pulsa «Añadir tarjeta».
       }
     </p>
+  } @else if (!cargando() && hayFiltro()) {
+    <p class="estado-filtro" role="status">{{ visibles() }} de {{ total() }} tarjetas</p>
+
+    @if (visibles() === 0) {
+      <p class="aviso-vacio">
+        Ninguna tarjeta coincide con el filtro. Prueba con otras palabras o con otra persona.
+      </p>
+    }
   }
 
   <div class="columnas" cdkDropListGroup>
-    @for (columna of board().columnas; track columna.id) {
-      @let tarjetas = tareasDe(columna.id)();
+    @for (columna of columnas(); track columna.id) {
+      @let tarjetas = columna.tarjetas;
       @let cuantas = tarjetas.length;
       @let etiqueta = cuantas === 1 ? 'tarjeta' : 'tarjetas';
 
@@ -43,7 +51,7 @@
             class="tarjetas"
             cdkDropList
             [cdkDropListData]="columna.id"
-            [cdkDropListDisabled]="!puedeEditar()"
+            [cdkDropListDisabled]="!puedeEditar() || hayFiltro()"
             (cdkDropListDropped)="soltar($event)"
           >
             @for (tarea of tarjetas; track tarea.id) {
@@ -51,7 +59,7 @@
                 class="tarjeta-item"
                 cdkDrag
                 [cdkDragData]="tarea"
-                [cdkDragDisabled]="!puedeEditar()"
+                [cdkDragDisabled]="!puedeEditar() || hayFiltro()"
               >
                 <app-card [turno]="turnoDe(tarea.responsable)" [persona]="tarea.responsable ?? ''">
                   <div class="tarjeta-cabecera">

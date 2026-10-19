@@ -32,6 +32,14 @@
     cursor: pointer;
   }
 
+  /*
+   * El navegador pinta su propia X azul dentro de los buscadores. Se quita: el azul no
+   * es un token del sistema y el filtro ya tiene su «Quitar filtro» al lado.
+   */
+  .app-input[type='search']::-webkit-search-cancel-button {
+    appearance: none;
+  }
+
   /* El placeholder también es texto que hay que poder leer: 4.5:1, no 2.7:1. */
   .app-input::placeholder {
     color: var(--text-muted);

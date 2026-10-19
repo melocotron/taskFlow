@@ -1,5 +1,6 @@
 import { TestBed } from '@angular/core/testing';
-import { provideRouter } from '@angular/router';
+import { Router, provideRouter } from '@angular/router';
+import { vi } from 'vitest';
 import { BoardStore } from '@entities/board';
 import { MemberStore, comoMemberId } from '@entities/member';
 import { TaskStore } from '@entities/task';
@@ -7,7 +8,14 @@ import BoardDetailPage from './board-detail';
 
 describe('BoardDetailPage', () => {
   /** Con `crear` se monta un tablero de verdad; sin él, la ruta apunta a la nada. */
-  async function montar(opciones: { crear?: string; rol?: 'admin' | 'viewer' } = {}) {
+  async function montar(
+    opciones: {
+      crear?: string;
+      rol?: 'admin' | 'viewer';
+      q?: string;
+      persona?: string;
+    } = {},
+  ) {
     TestBed.configureTestingModule({
       imports: [BoardDetailPage],
       providers: [provideRouter([])],
@@ -22,13 +30,16 @@ describe('BoardDetailPage', () => {
     const board = opciones.crear ? store.crear(opciones.crear) : null;
 
     // El lienzo pinta las columnas, pero sus tarjetas llegan con la carga del otro store.
-    await TestBed.inject(TaskStore).listo;
+    const tareas = TestBed.inject(TaskStore);
+    await tareas.listo;
 
     const fixture = TestBed.createComponent(BoardDetailPage);
     fixture.componentRef.setInput('id', board?.id ?? 'no-existe');
+    fixture.componentRef.setInput('q', opciones.q ?? '');
+    fixture.componentRef.setInput('persona', opciones.persona ?? '');
     fixture.detectChanges();
 
-    return { fixture, store, elemento: fixture.nativeElement as HTMLElement };
+    return { fixture, store, tareas, elemento: fixture.nativeElement as HTMLElement };
   }
 
   function botonRenombrar(elemento: HTMLElement): HTMLButtonElement | null {
@@ -116,5 +127,56 @@ describe('BoardDetailPage', () => {
     const { elemento } = await montar({ crear: 'Producto', rol: 'viewer' });
 
     expect(botonRenombrar(elemento)).toBeNull();
+  });
+
+  describe('el filtro vive en la URL', () => {
+    function campoBuscar(elemento: HTMLElement): HTMLInputElement {
+      return elemento.querySelector('app-board-filters input') as HTMLInputElement;
+    }
+
+    function botonLimpiar(elemento: HTMLElement): HTMLButtonElement | null {
+      const botones = Array.from(elemento.querySelectorAll('button'));
+
+      return botones.find((boton) => boton.textContent?.trim() === 'Quitar filtro') ?? null;
+    }
+
+    it('siembra el filtro desde los query params', async () => {
+      const { fixture, store, tareas, elemento } = await montar({ crear: 'Producto', q: 'copy' });
+      const board = store.activos()[0]!;
+
+      tareas.crear(board.id, 'por-hacer', 'Revisar el copy');
+      tareas.crear(board.id, 'por-hacer', 'Preparar la demo');
+      fixture.detectChanges();
+
+      expect(campoBuscar(elemento).value).toBe('copy');
+
+      const titulos = Array.from(elemento.querySelectorAll('.tarjeta-titulo')).map((nodo) =>
+        nodo.textContent?.trim(),
+      );
+
+      expect(titulos).toEqual(['Revisar el copy']);
+      expect(elemento.textContent).toContain('1 de 2 tarjetas');
+    });
+
+    it('escribe el texto en la URL al buscar', async () => {
+      const { fixture, elemento } = await montar({ crear: 'Producto' });
+
+      const campo = campoBuscar(elemento);
+      campo.value = 'copy';
+      campo.dispatchEvent(new Event('input'));
+      fixture.detectChanges();
+
+      await vi.waitFor(() => expect(TestBed.inject(Router).url).toContain('q=copy'));
+    });
+
+    it('quitar el filtro deja la URL sin parámetros', async () => {
+      const { fixture, elemento } = await montar({ crear: 'Producto', q: 'copy' });
+
+      botonLimpiar(elemento)!.click();
+      fixture.detectChanges();
+
+      await vi.waitFor(() => expect(TestBed.inject(Router).url).not.toContain('q='));
+      expect(campoBuscar(elemento).value).toBe('');
+    });
   });
 });
