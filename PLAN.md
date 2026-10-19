@@ -375,16 +375,18 @@ Nada más. Un E2E que no representa un journey es un unit test lento.
 | **S2.3** | Entity `member` + roles/permissions                                                       | Un `viewer` no puede editar (test)                |
 | **S2.4** | API mock: `httpResource`, interceptores, manejo de errores, estados `loading/error/empty` | `resource()` con estados reales en el UI          |
 
-### Fase 3 — Features (6 sprints)
+### Fase 3 — Features (8 sprints)
 
-| #        | Objetivo                                            | Verde cuando                                     |
-| -------- | --------------------------------------------------- | ------------------------------------------------ |
-| **S3.1** | Auth mock + guards funcionales + ruta protegida     | Sin sesión redirige; con sesión entra            |
-| **S3.2** | Página `board-list` + routing lazy                  | Lazy chunk verificado en el build                |
-| **S3.3** | Página `board-detail` + columnas                    | Se ve el tablero con sus columnas                |
-| **S3.4** | Drag & drop con `@angular/cdk/drag-drop`            | Mover reordena y persiste; accesible por teclado |
-| **S3.5** | Crear/editar tarea con **Signal Forms**             | Validación + errores + submit, con tests         |
-| **S3.6** | Filtros/búsqueda con `linkedSignal` + estado en URL | Recargar mantiene el filtro                      |
+| #         | Objetivo                                            | Verde cuando                                     |
+| --------- | --------------------------------------------------- | ------------------------------------------------ |
+| **S3.1**  | Auth mock + guards funcionales + ruta protegida     | Sin sesión redirige; con sesión entra            |
+| **S3.2**  | Página `board-list` + routing lazy                  | Lazy chunk verificado en el build                |
+| **S3.3**  | Página `board-detail` + columnas                    | Se ve el tablero con sus columnas                |
+| **S3.4**  | Drag & drop con `@angular/cdk/drag-drop`            | Mover reordena y persiste; accesible por teclado |
+| **S3.5**  | Crear/editar tarea con **Signal Forms**             | Validación + errores + submit, con tests         |
+| **S3.5b** | Renombrar el tablero; formulario en `features`      | Nombre nuevo persistido y validado               |
+| **S3.6**  | Filtros/búsqueda con `linkedSignal` + estado en URL | Recargar mantiene el filtro                      |
+| **S3.7**  | Invitaciones y rol **por tablero** (historia 4)     | Observador ve sin acciones; URL ajena se niega   |
 
 ### Fase 4 — Calidad (4 sprints)
 
@@ -403,7 +405,7 @@ Nada más. Un E2E que no representa un journey es un unit test lento.
 | **S5.2** | WebMCP experimental (exponer los tableros como tools)          |
 | **S5.3** | CI avanzado + changelog + release `1.0.0` con Gitflow completo |
 
-**Total: ~27 sprints ≈ 22–27 horas de trabajo real.** A 1 sprint por día, un mes suave.
+**Total: ~29 sprints ≈ 24–29 horas de trabajo real.** A 1 sprint por día, un mes suave.
 A 2 por día, dos semanas.
 
 ---

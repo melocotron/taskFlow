@@ -3,8 +3,8 @@
     <p class="rotulo">TaskFlow</p>
     <h1>¿Quién eres?</h1>
     <p class="nota">
-      Elige una persona para entrar. Cada una tiene un rol distinto, así se ve cómo cambia lo que se
-      puede hacer.
+      Elige una persona para entrar. Los permisos dependen de cada tablero: la misma persona puede
+      administrar uno y solo mirar otro.
     </p>
   </header>
 
@@ -17,9 +17,6 @@
               <app-avatar [nombre]="persona.nombre" [turno]="turno(i)" />
               <div class="datos">
                 <p class="nombre">{{ persona.nombre }}</p>
-                <app-badge [tono]="persona.rol === 'admin' ? 'acento' : 'neutro'">
-                  {{ etiqueta(persona.rol) }}
-                </app-badge>
               </div>
             </div>
           </app-card>

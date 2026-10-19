@@ -11,6 +11,7 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
+import { puedeEn } from '@entities/board';
 import type { Board } from '@entities/board';
 import { MemberStore } from '@entities/member';
 import { TaskStore } from '@entities/task';
@@ -113,7 +114,11 @@ export class BoardCanvas {
   protected readonly cargando = this.tareas.cargando;
   protected readonly fallo = computed(() => this.tareas.carga() === 'error');
   protected readonly error = this.tareas.error;
-  protected readonly puedeEditar = this.equipo.puedeEditar;
+
+  /** El permiso es de este tablero, no de la persona en abstracto. */
+  protected readonly puedeEditar = computed(() =>
+    puedeEn(this.board(), this.equipo.sesion().id, 'editar'),
+  );
 
   protected readonly total = computed(
     () => this.tareas.tareas().filter((tarea) => tarea.boardId === this.board().id).length,

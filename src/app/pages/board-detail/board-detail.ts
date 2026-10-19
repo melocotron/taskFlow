@@ -10,13 +10,14 @@ import {
   viewChild,
 } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { BoardStore, comoBoardId } from '@entities/board';
+import { BoardStore, comoBoardId, esMiembro, puedeEn } from '@entities/board';
 import { MemberStore } from '@entities/member';
 import { BoardFilters } from '@features/board-filters';
 import type { FiltroTablero } from '@features/board-filters';
 import { BoardForm } from '@features/board-form';
 import type { DatosTablero } from '@features/board-form';
-import { Button, DialogService, ToastService } from '@shared/ui';
+import { BoardMembers } from '@features/board-members';
+import { Button, DialogService, EmptyState, ToastService } from '@shared/ui';
 import type { DialogContent } from '@shared/ui';
 import { BoardCanvas } from '@widgets/board-canvas';
 
@@ -26,8 +27,9 @@ import { BoardCanvas } from '@widgets/board-canvas';
  * Resuelve la navegación por `tableros/:id` y compone el lienzo. Todo el trabajo
  * de pintar columnas y tarjetas vive en `board-canvas`.
  *
- * El nombre del tablero se puede cambiar desde aquí: el store sabía renombrar desde
- * S2.1, pero hasta ahora no había ninguna puerta en la interfaz.
+ * El acceso se decide **por tablero**: si la sesión no aparece en su lista de
+ * personas, la URL directa no basta. Quien entra como observador ve el trabajo y las
+ * personas, pero no las acciones de edición.
  *
  * El filtro **vive en la URL** (`?q=` y `?persona=`): se puede compartir y sobrevive a la
  * recarga. Se escribe con `replaceUrl`, así que teclear no llena el historial de un paso
@@ -35,7 +37,7 @@ import { BoardCanvas } from '@widgets/board-canvas';
  */
 @Component({
   selector: 'app-board-detail',
-  imports: [BoardCanvas, BoardFilters, BoardForm, Button, RouterLink],
+  imports: [BoardCanvas, BoardFilters, BoardForm, BoardMembers, Button, EmptyState, RouterLink],
   templateUrl: './board-detail.html',
   styleUrl: './board-detail.css',
 })
@@ -76,13 +78,28 @@ export default class BoardDetailPage {
   protected readonly filtro = linkedSignal<FiltroTablero>(() => this.filtroDeLaUrl());
 
   private referencia: DialogRef<unknown, DialogContent> | null = null;
+  private referenciaMiembros: DialogRef<unknown, DialogContent> | null = null;
 
   protected readonly plantillaRenombrar =
     viewChild.required<TemplateRef<unknown>>('plantillaRenombrar');
+  protected readonly plantillaMiembros =
+    viewChild.required<TemplateRef<unknown>>('plantillaMiembros');
 
   protected readonly cargando = this.tableros.cargando;
   protected readonly tablero = computed(() => this.tableros.buscar(comoBoardId(this.id())));
-  protected readonly puedeEditar = this.equipo.puedeEditar;
+
+  /** Quien no está en la lista de personas no puede ni ver el tablero. */
+  protected readonly tieneAcceso = computed(() => {
+    const board = this.tablero();
+
+    return board ? esMiembro(board, this.equipo.sesion().id) : false;
+  });
+
+  protected readonly puedeEditar = computed(() => {
+    const board = this.tablero();
+
+    return board ? puedeEn(board, this.equipo.sesion().id, 'editar') : false;
+  });
 
   constructor() {
     // La barra responde al instante; la URL se reescribe sin esperar a soltar la tecla.
@@ -142,6 +159,15 @@ export default class BoardDetailPage {
   protected cerrarRenombrar(): void {
     this.referencia?.close();
     this.referencia = null;
+  }
+
+  /** Las personas del tablero se ven siempre; invitar depende del rol. */
+  protected abrirMiembros(): void {
+    if (!this.tablero() || !this.tieneAcceso()) {
+      return;
+    }
+
+    this.referenciaMiembros = this.dialogos.abrir('Personas del tablero', this.plantillaMiembros());
   }
 
   /**

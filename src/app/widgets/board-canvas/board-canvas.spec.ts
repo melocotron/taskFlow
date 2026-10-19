@@ -11,6 +11,10 @@ const TABLERO: Board = {
   id: comoBoardId('producto'),
   titulo: 'Producto',
   columnas: COLUMNAS_POR_DEFECTO,
+  miembros: [
+    { memberId: comoMemberId('marta'), rol: 'admin' },
+    { memberId: comoMemberId('alba'), rol: 'viewer' },
+  ],
   archivado: false,
   creadoEn: '2026-10-18T00:00:00.000Z',
 };

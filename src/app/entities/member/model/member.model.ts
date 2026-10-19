@@ -18,19 +18,27 @@ export type Accion = 'ver' | 'editar' | 'administrar';
 export interface Member {
   readonly id: MemberId;
   readonly nombre: string;
-  /**
-   * En esta fase el rol es global a la persona. La especificación contempla un rol
-   * **por tablero**; se migrará cuando existan las invitaciones (S3.6).
-   */
-  readonly rol: Rol;
 }
 
 /** Las tres personas de ejemplo que fija el spec 001. */
 export const MIEMBROS_DEMO: readonly Member[] = [
-  { id: comoMemberId('marta'), nombre: 'Marta Ruiz', rol: 'admin' },
-  { id: comoMemberId('ivan'), nombre: 'Iván Soto', rol: 'editor' },
-  { id: comoMemberId('alba'), nombre: 'Alba Sanz', rol: 'viewer' },
+  { id: comoMemberId('marta'), nombre: 'Marta Ruiz' },
+  { id: comoMemberId('ivan'), nombre: 'Iván Soto' },
+  { id: comoMemberId('alba'), nombre: 'Alba Sanz' },
 ];
+
+/**
+ * Roles con los que se abrieron los tableros de la demo antes de S3.7.
+ *
+ * El rol dejó de ser global: ahora vive en cada tablero. Esta tabla solo existe para
+ * migrar los datos ya guardados en `localStorage`, de modo que quien ya tenía un
+ * tablero no se quede fuera al actualizar. Los tableros nuevos no la usan.
+ */
+export const ROLES_HEREDADOS: Readonly<Record<string, Rol>> = {
+  marta: 'admin',
+  ivan: 'editor',
+  alba: 'viewer',
+};
 
 /**
  * La regla de permisos, en un solo sitio.

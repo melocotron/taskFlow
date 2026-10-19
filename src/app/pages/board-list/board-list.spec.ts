@@ -3,14 +3,18 @@ import { TestBed } from '@angular/core/testing';
 import { Router, provideRouter } from '@angular/router';
 import { BoardStore } from '@entities/board';
 import { MemberStore, comoMemberId } from '@entities/member';
+import type { MemberId } from '@entities/member';
 import BoardListPage from './board-list';
+
+const MARTA = comoMemberId('marta');
+const ALBA = comoMemberId('alba');
 
 /** Destino de mentira: aquí solo interesa que la navegación tenga a dónde ir. */
 @Component({ template: '' })
 class DestinoVacio {}
 
 describe('BoardListPage', () => {
-  async function montar(rol: 'admin' | 'editor' | 'viewer' = 'admin') {
+  async function montar(persona: MemberId = MARTA) {
     TestBed.configureTestingModule({
       imports: [BoardListPage],
       providers: [
@@ -22,8 +26,7 @@ describe('BoardListPage', () => {
     });
 
     const equipo = TestBed.inject(MemberStore);
-    const id = rol === 'admin' ? 'marta' : rol === 'editor' ? 'ivan' : 'alba';
-    equipo.cambiarSesion(comoMemberId(id));
+    equipo.cambiarSesion(persona);
 
     const fixture = TestBed.createComponent(BoardListPage);
     const store = TestBed.inject(BoardStore);
@@ -69,21 +72,43 @@ describe('BoardListPage', () => {
   it('muestra el estado vacío cuando no hay tableros', async () => {
     const { elemento } = await montar();
 
-    expect(elemento.textContent).toContain('Todavía no hay tableros');
+    expect(elemento.textContent).toContain('No tienes tableros todavía');
   });
 
-  it('pinta una tarjeta por tablero y cuenta sus columnas', async () => {
+  it('pinta una tarjeta por tablero, cuenta columnas y personas, y dice tu rol', async () => {
     const { fixture, store, elemento } = await montar();
 
-    store.crear('Producto');
+    store.crear('Producto', MARTA);
     fixture.detectChanges();
 
     expect(elemento.querySelectorAll('app-card').length).toBe(1);
-    expect(elemento.textContent).toContain('3 columnas');
+    expect(elemento.textContent).toContain('3 columnas · 1 persona');
+    expect(elemento.textContent).toContain('Tu rol: Administración');
+  });
+
+  it('solo enseña los tableros a los que la persona tiene acceso', async () => {
+    const { fixture, store, elemento } = await montar(ALBA);
+
+    store.crear('Producto', MARTA);
+    fixture.detectChanges();
+
+    expect(elemento.querySelectorAll('app-card').length).toBe(0);
+    expect(elemento.textContent).toContain('No tienes tableros todavía');
+  });
+
+  it('quien fue invitada ve el tablero con el rol que le dieron', async () => {
+    const { fixture, store, elemento } = await montar(ALBA);
+    const board = store.crear('Producto', MARTA);
+
+    store.invitar(board.id, MARTA, ALBA, 'viewer');
+    fixture.detectChanges();
+
+    expect(elemento.querySelectorAll('app-card').length).toBe(1);
+    expect(elemento.textContent).toContain('Tu rol: Solo lectura');
   });
 
   describe('crear un tablero desde el diálogo', () => {
-    it('pide el nombre y lo crea con ese nombre', async () => {
+    it('pide el nombre y lo crea con ese nombre y a la sesión como administradora', async () => {
       const { fixture, elemento, store } = await montar();
 
       botonNuevo(elemento)?.click();
@@ -96,6 +121,7 @@ describe('BoardListPage', () => {
       fixture.detectChanges();
 
       expect(store.activos().map((board) => board.titulo)).toEqual(['Producto']);
+      expect(store.activos()[0]?.miembros).toEqual([{ memberId: MARTA, rol: 'admin' }]);
       expect(elemento.textContent).toContain('Producto');
     });
 
@@ -139,30 +165,23 @@ describe('BoardListPage', () => {
     });
   });
 
-  describe('permisos en la interfaz', () => {
-    it('quien administra ve el botón de crear', async () => {
-      const { elemento } = await montar('admin');
+  it('cualquier persona de la sesión puede crear su propio tablero', async () => {
+    const { fixture, elemento, store } = await montar(ALBA);
 
-      expect(botonNuevo(elemento)).not.toBeNull();
-    });
+    botonNuevo(elemento)?.click();
+    fixture.detectChanges();
 
-    it('quien solo observa no ve el botón de crear', async () => {
-      const { elemento } = await montar('viewer');
+    escribir(dialogo()?.querySelector('input') as HTMLInputElement, 'Marketing');
+    enviarFormulario();
+    fixture.detectChanges();
 
-      expect(botonNuevo(elemento)).toBeNull();
-      expect(elemento.textContent).toContain('no crear tableros');
-    });
-
-    it('quien edita ve el botón aunque no pueda administrar', async () => {
-      const { elemento } = await montar('editor');
-
-      expect(botonNuevo(elemento)).not.toBeNull();
-    });
+    expect(store.activos()[0]?.miembros).toEqual([{ memberId: ALBA, rol: 'admin' }]);
+    expect(elemento.textContent).toContain('Marketing');
   });
 
   it('cada tarjeta lleva al detalle de su tablero', async () => {
     const { fixture, store, elemento } = await montar();
-    const board = store.crear('Producto');
+    const board = store.crear('Producto', MARTA);
     fixture.detectChanges();
 
     const enlace = elemento.querySelector('a.enlace-tablero') as HTMLAnchorElement;
@@ -194,7 +213,6 @@ describe('BoardListPage', () => {
       fixture.detectChanges();
 
       expect(equipo.sesion().nombre).toBe('Alba Sanz');
-      expect(equipo.puedeEditar()).toBe(false);
     });
 
     it('salir cierra la sesión y saca de la aplicación', async () => {

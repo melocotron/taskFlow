@@ -1,22 +1,15 @@
-import { Injectable, computed, signal } from '@angular/core';
+import { Injectable, signal } from '@angular/core';
 import { borrarTexto, escribirTexto, leerTexto } from '@shared/lib/almacenamiento';
-import {
-  Accion,
-  Member,
-  MemberId,
-  MIEMBROS_DEMO,
-  Rol,
-  comoMemberId,
-  puede,
-} from '../model/member.model';
+import { Member, MemberId, MIEMBROS_DEMO, comoMemberId } from '../model/member.model';
 
 const CLAVE_SESION = 'taskflow.sesion';
 
 /**
  * Personas del equipo y quién está usando la app ahora mismo.
  *
- * No hay login: se elige una persona de la lista, tal como fijó el spec 001. Los
- * permisos se derivan del rol, nunca del componente que los muestra.
+ * No hay login: se elige una persona de la lista, tal como fijó el spec 001. El rol no
+ * vive aquí: cada tablero guarda quién entra y con qué permiso, así que la misma persona
+ * puede administrar un tablero y solo mirar otro.
  */
 @Injectable({ providedIn: 'root' })
 export class MemberStore {
@@ -34,10 +27,6 @@ export class MemberStore {
   readonly haySesion = this.elegida.asReadonly();
 
   readonly sesion = this.actual.asReadonly();
-  readonly rol = computed<Rol>(() => this.actual().rol);
-
-  readonly puedeEditar = computed(() => puede(this.rol(), 'editar'));
-  readonly puedeAdministrar = computed(() => puede(this.rol(), 'administrar'));
 
   constructor() {
     const guardada = leerTexto(CLAVE_SESION);
@@ -49,11 +38,6 @@ export class MemberStore {
       this.actual.set(encontrada);
       this.elegida.set(true);
     }
-  }
-
-  /** Atajo por si una acción concreta no está cubierta por los dos computeds. */
-  puede(accion: Accion): boolean {
-    return puede(this.rol(), accion);
   }
 
   /** Elegir persona es entrar: a partir de aquí hay sesión. */
