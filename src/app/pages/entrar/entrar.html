@@ -1,0 +1,30 @@
+<main class="entrar">
+  <header class="cabecera">
+    <p class="rotulo">TaskFlow</p>
+    <h1>¿Quién eres?</h1>
+    <p class="nota">
+      Elige una persona para entrar. Cada una tiene un rol distinto, así se ve cómo cambia lo que se
+      puede hacer.
+    </p>
+  </header>
+
+  <ul class="equipo">
+    @for (persona of equipo(); track persona.id; let i = $index) {
+      <li>
+        <button type="button" class="persona" (click)="entrar(persona.id)">
+          <app-card>
+            <div class="fila">
+              <app-avatar [nombre]="persona.nombre" [turno]="turno(i)" />
+              <div class="datos">
+                <p class="nombre">{{ persona.nombre }}</p>
+                <app-badge [tono]="persona.rol === 'admin' ? 'acento' : 'neutro'">
+                  {{ etiqueta(persona.rol) }}
+                </app-badge>
+              </div>
+            </div>
+          </app-card>
+        </button>
+      </li>
+    }
+  </ul>
+</main>
