@@ -1,4 +1,4 @@
-<main class="home">
+<main class="lista-tableros">
   <header class="cabecera">
     <div>
       <p class="rotulo">Tableros</p>
@@ -7,7 +7,7 @@
 
     <div class="acciones">
       @if (puedeEditar()) {
-        <button appButton variant="primary" (click)="crearTablero()">Nuevo tablero</button>
+        <button appButton variant="primary" (click)="nuevoTablero()">Nuevo tablero</button>
       }
 
       <button appButton variant="ghost" [cdkMenuTriggerFor]="menuSesion">
@@ -37,7 +37,7 @@
       descripcion="Un tablero reúne el trabajo del equipo en columnas."
     >
       @if (puedeEditar()) {
-        <button appButton variant="primary" (click)="crearTablero()">
+        <button appButton variant="primary" (click)="nuevoTablero()">
           Crear el primer tablero
         </button>
       } @else {
@@ -50,15 +50,43 @@
     <ul class="lista">
       @for (board of activos(); track board.id) {
         <li>
-          <app-card>
-            <p class="titulo">{{ board.titulo }}</p>
-            <p class="meta tabular">{{ board.columnas.length }} columnas</p>
-          </app-card>
+          <a class="enlace-tablero" [routerLink]="['/tableros', board.id]">
+            <app-card>
+              <p class="titulo">{{ board.titulo }}</p>
+              <p class="meta tabular">{{ board.columnas.length }} columnas</p>
+            </app-card>
+          </a>
         </li>
       }
     </ul>
   }
 </main>
+
+<ng-template #plantillaNuevo>
+  <form class="formulario" (submit)="confirmarNuevo($event)">
+    <app-field
+      label="Nombre del tablero"
+      hint="Con este nombre lo verá todo el equipo."
+      [error]="errorNombre()"
+    >
+      <input
+        appInput
+        type="text"
+        name="titulo"
+        maxlength="60"
+        autocomplete="off"
+        placeholder="Producto, Marketing…"
+        [value]="nombreNuevo()"
+        (input)="alEscribir($event)"
+      />
+    </app-field>
+
+    <div class="acciones-formulario">
+      <button appButton type="button" variant="ghost" (click)="cerrarNuevo()">Cancelar</button>
+      <button appButton type="submit" variant="primary">Crear tablero</button>
+    </div>
+  </form>
+</ng-template>
 
 <ng-template #menuSesion>
   <app-menu>
