@@ -391,31 +391,75 @@ curso, tablero tras mover y móvil a 390 px.
 
 ---
 
-## Sprint actual
+> **Nota de proceso (S3.4).** El commit `feat` de S3.4 se llevó dentro
+> `docs/PROGRESS.md`: lint-staged volvió a añadirlo al preparar el commit, así que no
+> hubo un commit `docs(progress)` separado. El contenido está; el historial de ese sprint
+> no es tan limpio como el de los anteriores. Desde S3.5 este archivo se actualiza y se
+> commitea **en la rama**, antes de fusionar.
 
-**S3.5 — Crear y editar tarjetas con Signal Forms**
+---
 
-| Tarea                                              | Estado |
-| -------------------------------------------------- | ------ |
-| Formulario de tarjeta con `@angular/forms/signals` | ⬜     |
-| Validación y errores junto al campo                | ⬜     |
-| Crear desde la columna y editar desde la tarjeta   | ⬜     |
-| Tests del formulario                               | ⬜     |
+## ✅ Fase 3 · S3.5 — Crear y editar tarjetas con Signal Forms
 
-**Criterio de verde:** crear y editar una tarjeta deja el tablero coherente. `verify`
-verde.
+Primera pieza de `features/`: `task-form`. **Una sola pieza crea y edita**, porque dos
+formularios acaban validando distinto.
+
+- **Signal Forms de verdad.** El modelo es una señal; el esquema declara `required`,
+  `maxLength` y una regla propia; `[formField]` ata cada control y `[formRoot]` envía. El
+  mensaje sale del estado del campo (`touched` + `errors`), no de una variable paralela.
+  `submit()` marca tocado al intentar guardar: el error aparece entonces, no mientras
+  alguien escribe por primera vez.
+- **Dos reglas para el mismo «no».** `required` no frena un título hecho de espacios; la
+  segunda regla mira el texto recortado. El formulario y `crearTask()` rechazan por el
+  mismo motivo, así que el mensaje no promete algo que el dominio no cumpla.
+- **El formulario no conoce el store.** Emite `DatosTarjeta` ya recortado (`responsable:
+null` si no hay) y el widget decide si crea o edita. La validación no se duplica.
+- **Crear desde la columna.** «Añadir tarjeta» al pie de cada columna, visible solo con
+  permiso y con el nombre de la columna en el título del diálogo. El tablero vacío ahora
+  explica **cómo** añadir la primera: el pendiente de S3.3 queda cerrado.
+- **Editar desde la tarjeta.** El menú de cada tarjeta pasa a llamarse «Acciones de…» y
+  ofrece «Editar tarjeta» antes de las columnas de destino. Sigue habiendo un solo icono
+  por tarjeta.
+- **Responsable (FR-011).** Desplegable con las tres personas y «Sin asignar»; `appInput`
+  aprende a vestir `select` para no dejar un control del navegador a medio vestir.
+
+**Tres defectos que salieron al mirar (no los veían los tests):**
+
+1. **La flecha de mover nunca fue una flecha.** Al SVG del botón le faltaba la regla de
+   `stroke`, así que el navegador rellenaba el path y pintaba dos triángulos sueltos, sin
+   la línea del medio. La regla de trazo vive ahora en el widget.
+2. **El diálogo tocaba los bordes en móvil.** 480 px fijos se recortaban a 390 sin
+   margen; ahora es `min(480px, 100vw - 2 × espacio-4)`.
+3. **`maxlength` a mano no compila.** NG8022 rechaza atributos que el esquema ya
+   gestiona: la longitud se declara una vez y la directiva la lleva al control.
+
+**Verificado con capturas:** diálogo de creación relleno, error de validación, menú de la
+tarjeta, lienzo con los botones de añadir y móvil a 390 px con el diálogo abierto.
+
+**E2E nuevo:** crear la primera tarjeta por la interfaz, recargar, editar desde el menú y
+recargar otra vez. También comprueba que sin título no se guarda y el diálogo no se cierra.
+
+128 tests (14 nuevos) y `npm run e2e` verde (7, tres nuevos).
+
+---
+
+## Sprint siguiente
+
+**S3.6 — Filtros y búsqueda con `linkedSignal` + estado en la URL.** El filtro tiene que
+sobrevivir a la recarga; hasta ahora todo el estado de la vista vive en memoria.
 
 ---
 
 ## Dónde me quedé
 
-S3.4 terminado en `feature/S3.4-arrastre`: mover tarjetas con ratón y con teclado, y el
-arreglo del menú del sistema de diseño. 114 tests, `verify` y `e2e` verdes.
+S3.5 terminado en `feature/S3.5-tarjetas`: formulario de tarjeta con Signal Forms, crear
+desde la columna y editar desde el menú de la tarjeta. 128 tests, `verify` y `e2e` verdes.
 
 ## Siguiente paso concreto
 
-Construir el formulario de tarjeta (crear y editar) con Signal Forms, que es lo que
-además cierra el pendiente de S3.3: hoy no hay forma de añadir la primera tarjeta.
+Empezar S3.6 en una rama nueva: filtrar el lienzo por texto y por persona, con
+`linkedSignal` para que el estado derivado no se desincronice, y con el filtro escrito en
+la URL para que recargar no lo pierda.
 
 ---
 
@@ -446,3 +490,4 @@ Los E2E corren en CI y antes de un merge a `main`.
 | 2026-10-18 | S3.2   | Lista de tableros, diálogo de creación y ruta al detalle.                              |
 | 2026-10-19 | S3.3   | Lienzo del tablero: widget `board-canvas` con columnas y tarjetas.                     |
 | 2026-10-19 | S3.4   | Mover tarjetas con arrastre y con menú; el menú del sistema no ejecutaba sus acciones. |
+| 2026-10-19 | S3.5   | Formulario de tarjeta con Signal Forms: crear desde la columna y editar desde el menú. |
