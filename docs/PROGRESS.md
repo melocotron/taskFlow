@@ -510,25 +510,59 @@ resultados y móvil a 390 px.
 
 ---
 
+## ✅ Fase 3 · S3.7 — Invitaciones y rol por tablero
+
+La historia 4 del spec, la única que seguía sin implementación. El rol deja de ser
+global y pasa a vivir en el tablero: la misma persona puede administrar uno y solo
+mirar otro.
+
+- **`Board.miembros`** es la lista de personas con acceso y su rol. Quien crea un
+  tablero entra como administrador; nadie más entra hasta que lo inviten.
+- **La migración no deja a nadie fuera.** Los tableros guardados antes de S3.7 no
+  tienen `miembros`; al cargarlos se les asignan los roles que tenía la demo (Marta
+  administra, Iván edita, Alba observa) y se reescribe el almacén una sola vez.
+- **Tres capas de permiso, ahora por tablero.** `puedeEn(board, persona, acción)`
+  combina la matriz de roles con la pertenencia. La lista de tableros solo muestra
+  los accesos; una URL directa a un tablero ajeno da «No tienes acceso», no un error
+  técnico. El lienzo, renombrar y el panel de personas preguntan al tablero concreto.
+- **`features/board-members`.** Cualquier persona con acceso ve quién está y con qué
+  rol; solo quien administra ve el formulario de invitación y los selectores de rol.
+  El dominio vuelve a comprobar la administración y protege el último administrador.
+- **Crear ya no es un permiso global.** Cualquier persona puede crear su tablero y
+  administrarlo; el rol se demuestra dentro de cada tablero.
+
+**Tres defectos que salieron al mirar la captura:** el `<select>` de rol mostraba
+siempre la primera opción (Administración) porque el `[value]` se aplicaba antes de
+que existieran las opciones; ahora cada `<option>` lleva su `[selected]`. La fila
+repetía el rol en un subtítulo y en el control; se quedó solo el control. Y el
+diálogo pedía 560 px cuando el sistema lo limita a 480: se dejó el ancho del sistema.
+
+179 tests (23 nuevos) y 18 E2E (3 nuevos: invitar, acceso denegado y observador sin
+formulario). `verify` verde. Capturas: panel de personas, lista con tu rol, detalle de
+observadora y móvil a 390 px.
+
+---
+
 ## Siguiente fase
 
-**Fase 4 — Calidad.** S4.1: los recorridos del spec como E2E, uno por historia, con
-`npm run e2e` verde en CI.
+**Fase 4 — Calidad.** S4.1: consolidar los cuatro journeys del spec como E2E, uno por
+recorrido, con `npm run e2e` verde en CI. La historia 4 ya tiene su recorrido, así que
+S4.1 empieza sin deuda de producto.
 
 ---
 
 ## Dónde me quedé
 
-S3.6 terminado en `feature/S3.6-filtros`: filtro por texto y persona con el estado en la
-URL, y el lienzo pintando solo lo que coincide. 156 tests, `verify` y `e2e` verdes. Con
+S3.7 terminado en `feature/S3.7-invitaciones`: invitaciones, rol por tablero, migración
+de los datos anteriores y el cuarto journey E2E. 179 tests, `verify` y `e2e` verdes. Con
 esto se cierra la Fase 3.
 
 ## Siguiente paso concreto
 
-Antes de S4.1 hay que decidir qué pasa con la historia 4 del spec (invitar personas y rol
-por tablero): es la única de las cuatro que no tiene implementación, así que hoy los
-«cuatro journeys» de S4.1 serían tres. O se construye (un S3.7) o S4.1 cubre tres
-recorridos y la deuda queda anotada.
+S4.1: los cuatro journeys ya existen (crear, mover, filtrar, invitar). Falta
+consolidarlos como recorridos del spec y cubrir explícitamente el movimiento **por
+teclado** del journey 2: hoy el E2E usa el menú «mover a…», que es el camino accesible,
+pero no recorre la apertura del menú con teclado.
 
 ---
 
@@ -562,3 +596,4 @@ Los E2E corren en CI y antes de un merge a `main`.
 | 2026-10-19 | S3.5   | Formulario de tarjeta con Signal Forms: crear desde la columna y editar desde el menú. |
 | 2026-10-19 | S3.5b  | Renombrar el tablero desde el detalle; el formulario de tablero pasa a `features`.     |
 | 2026-10-19 | S3.6   | Filtro por texto y persona con el estado en la URL; `linkedSignal` y columna filtrada. |
+| 2026-10-19 | S3.7   | Roles por tablero e invitaciones; el creador administra y la URL ajena se niega.       |

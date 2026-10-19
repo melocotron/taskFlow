@@ -9,3 +9,4 @@
 | Modo offline con IndexedDB                              | S0.1            | post-MVP       |
 | Atajos de teclado tipo Linear                           | S0.1            | Fase 3         |
 | Archivar tableros con vista de archivados y desarchivar | S3.5b           | post-MVP       |
+| Quitar a una persona del tablero                        | S3.7            | post-MVP       |
