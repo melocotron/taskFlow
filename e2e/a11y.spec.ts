@@ -252,6 +252,15 @@ test.describe('auditoría axe', () => {
     await page.getByRole('button', { name: 'Acciones de Preparar la demo del viernes' }).click();
     await page.getByRole('menuitem', { name: 'Mover a Por hacer' }).click();
     await expect(page.getByRole('status')).toContainText('Preparar la demo del viernes');
+
+    // La entrada del aviso anima la opacidad. Axe debe medirlo ya asentado; si no,
+    // calcula el contraste sobre un fotograma intermedio y denuncia un falso positivo.
+    await page
+      .locator('app-toast')
+      .evaluate((elemento) =>
+        Promise.all(elemento.getAnimations().map((animacion) => animacion.finished)),
+      );
+
     await sinViolaciones(page, 'aviso de movimiento');
   });
 
