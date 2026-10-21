@@ -1,2 +1,10 @@
 <router-outlet />
-<app-toast-container />
+
+<!--
+  Los avisos no son críticos: si llegan antes de que el navegador esté ocioso, el
+  servicio los guarda en cola y aparecen al cargar este bloque. Así su código no
+  viaja en el bundle inicial.
+-->
+@defer (on idle) {
+  <app-toast-container />
+}

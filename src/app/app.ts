@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { ToastContainer } from '@shared/ui';
+import { ToastContainer } from '@shared/ui/toast';
 
 @Component({
   imports: [RouterOutlet, ToastContainer],
