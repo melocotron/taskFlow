@@ -657,19 +657,40 @@ verde. Bundle inicial **331,96 kB** (88,94 kB de transferencia estimada).
 
 ---
 
+## ✅ Fase 4 · S4.4.1 — Hundido de superficies
+
+Ajuste posterior a la prueba manual de S4.4. Se añadió la clase global `.presionable`
+para las superficies que se pueden pulsar:
+
+- La tarjeta de la pantalla de entrada y el enlace de cada tablero bajan **1 px** al
+  pulsar. El fondo de la tarjeta de entrada pasa a `surface-sunken` sin transición, para
+  que el clic rápido también se sienta.
+- `prefers-reduced-motion` anula el desplazamiento y mantiene el cambio de tono.
+- El cursor que aparecía dentro de «Cancelar» era el **modo de navegación del navegador
+  (F7)**, no un defecto de la app: los botones son `<button>` nativos y el foco se mueve
+  con `Tab`. No se añadió `user-select: none` ni se alteró la selección de texto.
+- `e2e/presion.spec.ts` comprueba el `transform` calculado al pulsar y su anulación con
+  movimiento reducido. La auditoría axe espera a que termine la animación del aviso para
+  no medir un fotograma intermedio.
+
+**Verificado:** 180 tests unitarios, 31 E2E (`npm run e2e` verde) y `npm run verify`
+verde. Bundle inicial **332,20 kB** (89,02 kB de transferencia estimada).
+
+---
+
 ## Siguiente fase
 
-**Fase 4 — Calidad cerrada.** S4.1 a S4.4 completos. La siguiente sesión define el
+**Fase 4 — Calidad cerrada.** S4.1 a S4.4.1 completos. La siguiente sesión define el
 alcance de la Fase 5.
 
 ---
 
 ## Dónde me quedé
 
-S4.4 terminado en `feature/S4.4-pulido-visual`: avisos sobre el diálogo y accesibles,
-X legible, contenedor diferido que no pierde mensajes, móvil sin scroll de página,
-navegación táctil y `+` en «Añadir tarjeta». 180 tests unitarios, 29 E2E y `verify`
-verde. Bundle inicial 331,96 kB.
+S4.4.1 terminado en `feature/S4.4.1-ajustes-ux`: hundido global `.presionable` en
+tarjetas de entrada y enlaces a tableros, con `prefers-reduced-motion`. El cursor de
+texto era F7, no un defecto de la app. 180 tests unitarios, 31 E2E y `verify` verde.
+Bundle inicial 332,20 kB.
 
 ## Siguiente paso concreto
 
@@ -713,3 +734,4 @@ Los E2E corren en CI y antes de un merge a `main`.
 | 2026-10-20 | S4.2   | Axe sin violaciones en las pantallas principales y recorrido completo con teclado.     |
 | 2026-10-21 | S4.3   | Bundle inicial 330,94 kB (-20 %), avisos con `@defer` y presupuesto 350/370 kB.        |
 | 2026-10-21 | S4.4   | Avisos sobre el diálogo y accesibles, X legible y móvil sin scroll de página.          |
+| 2026-10-21 | S4.4.1 | Hundido global `.presionable`; F7 explicaba el cursor de texto.                        |
