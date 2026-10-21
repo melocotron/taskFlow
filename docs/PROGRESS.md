@@ -571,24 +571,56 @@ una espera perceptible.
 
 ---
 
+## ✅ Fase 4 · S4.2 — Auditoría de accesibilidad
+
+`e2e/a11y.spec.ts` tiene nueve pruebas que pasan axe con sus reglas por defecto, no solo
+con las etiquetas WCAG. Cubren entrar, la lista vacía y la lista con tableros, el menú de
+sesión, el diálogo de creación, el detalle, los diálogos de renombrar, personas, editar y
+nueva tarjeta, el menú de tarjeta, el aviso de movimiento, la vista de observadora, el
+acceso denegado, el tablero inexistente y el detalle a 390 px. Cada estado termina en
+`expect(violations).toEqual([])`; el mensaje de fallo lleva la regla, el impacto y el nodo.
+No se excluye ninguna regla.
+
+La novena prueba recorre la aplicación **sin ratón**: Tab y Enter para entrar, abrir el
+tablero, renombrar, abrir Personas y el menú de una tarjeta; Escape para volver. En cada
+parada se comprueba que `:focus-visible` deja un contorno sólido y que el foco regresa al
+disparador.
+
+**Lo que encontró axe y se corrigió en producto:**
+
+- Las iniciales del turno `cinta` estaban a 2,87:1. Es el único turno claro, así que usan
+  la tinta principal (5,33:1) en vez de la tinta de papel.
+- El contenedor de overlays del CDK quedaba fuera de todo landmark. `OverlayContainerAccesible`
+  le pone `role="region"` y un nombre; los roles propios de diálogo y menú no cambian.
+- El encabezado de los diálogos era `<header>` y, dentro de la nueva región, axe lo leía
+  como un `banner` anidado. Pasa a ser un `<div>`: el nombre accesible lo sigue dando el
+  `h2`.
+- `EmptyState` tenía un `h3` fijo: en la lista vacía saltaba de `h1` a `h3` y en el acceso
+  denegado no había `h1`. El nivel ahora es un input (2 por defecto); el acceso denegado
+  usa `h1` y el tablero inexistente también.
+
+**Verificado:** 180 tests unitarios, 28 E2E (`npm run e2e` verde) y `npm run verify`
+verde.
+
+---
+
 ## Siguiente fase
 
-**Fase 4 — Calidad.** S4.1 cerrado. S4.2: auditoría de accesibilidad completa, empezando
-por el camino de teclado que acaba de quedar cubierto.
+**Fase 4 — Calidad.** S4.1 y S4.2 cerrados. S4.3: presupuesto de bundle, `@defer` y
+revisión de OnPush/zoneless.
 
 ---
 
 ## Dónde me quedé
 
-S4.1 terminado en `feature/S4.1-journeys`: los cuatro journeys tienen su archivo E2E, el
-journey 1 empieza en la pantalla de entrada y el journey 2 recorre el menú con teclado.
-179 tests unitarios, 19 E2E y `verify` verde.
+S4.2 terminado en `feature/S4.2-a11y`: axe sin violaciones en las pantallas y estados
+principales, recorrido de teclado con foco visible y devolución al disparador. 180 tests
+unitarios, 28 E2E y `verify` verde.
 
 ## Siguiente paso concreto
 
-S4.2: pasar una auditoría a11y con axe sobre las pantallas principales, comprobar foco
-visible y navegación completa sin ratón, y corregir lo que salga antes de tocar
-rendimiento.
+S4.3: medir el bundle, fijar budgets en `angular.json`, aplicar `@defer` donde aporte y
+revisar que no quede ninguna suscripción que dependa de zone.js.
 
 ---
 
@@ -624,3 +656,4 @@ Los E2E corren en CI y antes de un merge a `main`.
 | 2026-10-19 | S3.6   | Filtro por texto y persona con el estado en la URL; `linkedSignal` y columna filtrada. |
 | 2026-10-19 | S3.7   | Roles por tablero e invitaciones; el creador administra y la URL ajena se niega.       |
 | 2026-10-20 | S4.1   | Cuatro journeys con archivo propio; el foco entra en los menús con el teclado.         |
+| 2026-10-20 | S4.2   | Axe sin violaciones en las pantallas principales y recorrido completo con teclado.     |
