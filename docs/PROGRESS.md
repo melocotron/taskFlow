@@ -543,26 +543,52 @@ observadora y móvil a 390 px.
 
 ---
 
+## ✅ Fase 4 · S4.1 — Los cuatro journeys E2E
+
+La suite deja de ser una colección de pruebas por feature y pasa a tener un archivo por
+journey del PLAN. Los recorridos que siembran su tablero lo siguen haciendo; el journey 1
+empieza sin sesión.
+
+- **`journey-1-tablero`**: entrar → crear tablero → abrir → crear la primera tarjeta →
+  recargar. Sustituye al smoke de S0.4, que ya no aportaba nada distinto.
+- **`journey-2-mover`**: ratón, menú y teclado. La prueba de teclado abre el menú de
+  acciones con Enter, comprueba que el foco entra en «Editar tarjeta», baja a «Mover a
+  En curso» y confirma; después recarga.
+- **`journey-3-filtrar`** y **`journey-4-invitar`**: los recorridos ya existentes, con sus
+  bordes (persona, sin acentos, acceso denegado, observadora).
+
+**El teclado no funcionaba de verdad.** El menú se abría y el ratón elegía opciones, pero
+las flechas no entraban en ellas: `app-menu` envolvía el `cdkMenu` en un `<div>` interno y
+el CDK buscaba sus opciones entre el contenido de ese `div`, donde solo veía el
+`<ng-content>`. El foco se quedaba en el disparador. `CdkMenu` pasa al anfitrión con
+`hostDirectives`: ahora el CDK ve los botones proyectados, el foco entra en el primero y
+las flechas recorren el menú. La prueba unitaria del menú comprueba ese foco.
+
+**Verificado:** 179 tests unitarios, 19 E2E (`npm run e2e` verde) y `npm run verify`
+verde. `crear.spec.ts` y `renombrar.spec.ts` se quedan como regresión de formularios y
+nombre: no son journeys, pero cubren escenarios de aceptación que ya estaban y no cuestan
+una espera perceptible.
+
+---
+
 ## Siguiente fase
 
-**Fase 4 — Calidad.** S4.1: consolidar los cuatro journeys del spec como E2E, uno por
-recorrido, con `npm run e2e` verde en CI. La historia 4 ya tiene su recorrido, así que
-S4.1 empieza sin deuda de producto.
+**Fase 4 — Calidad.** S4.1 cerrado. S4.2: auditoría de accesibilidad completa, empezando
+por el camino de teclado que acaba de quedar cubierto.
 
 ---
 
 ## Dónde me quedé
 
-S3.7 terminado en `feature/S3.7-invitaciones`: invitaciones, rol por tablero, migración
-de los datos anteriores y el cuarto journey E2E. 179 tests, `verify` y `e2e` verdes. Con
-esto se cierra la Fase 3.
+S4.1 terminado en `feature/S4.1-journeys`: los cuatro journeys tienen su archivo E2E, el
+journey 1 empieza en la pantalla de entrada y el journey 2 recorre el menú con teclado.
+179 tests unitarios, 19 E2E y `verify` verde.
 
 ## Siguiente paso concreto
 
-S4.1: los cuatro journeys ya existen (crear, mover, filtrar, invitar). Falta
-consolidarlos como recorridos del spec y cubrir explícitamente el movimiento **por
-teclado** del journey 2: hoy el E2E usa el menú «mover a…», que es el camino accesible,
-pero no recorre la apertura del menú con teclado.
+S4.2: pasar una auditoría a11y con axe sobre las pantallas principales, comprobar foco
+visible y navegación completa sin ratón, y corregir lo que salga antes de tocar
+rendimiento.
 
 ---
 
@@ -597,3 +623,4 @@ Los E2E corren en CI y antes de un merge a `main`.
 | 2026-10-19 | S3.5b  | Renombrar el tablero desde el detalle; el formulario de tablero pasa a `features`.     |
 | 2026-10-19 | S3.6   | Filtro por texto y persona con el estado en la URL; `linkedSignal` y columna filtrada. |
 | 2026-10-19 | S3.7   | Roles por tablero e invitaciones; el creador administra y la URL ajena se niega.       |
+| 2026-10-20 | S4.1   | Cuatro journeys con archivo propio; el foco entra en los menús con el teclado.         |

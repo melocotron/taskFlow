@@ -9,11 +9,13 @@ interface Pertenencia {
 }
 
 /**
- * Compartir un tablero.
+ * Journey 4 del PLAN: invitar a una persona y que aparezca en el tablero.
  *
  * La historia 4 del spec: quien administra invita y decide si la otra persona puede
  * editar o solo mirar. El rol es **por tablero**, así que el recorrido termina
  * cambiando de sesión: la misma persona ve el tablero sin ninguna acción de edición.
+ * Las otras pruebas cubren los dos bordes del acceso: URL directa sin pertenencia y
+ * una persona observadora que no puede invitar.
  */
 async function sembrarTablero(
   page: Page,
