@@ -46,12 +46,15 @@ describe('Menu', () => {
     expect(abrir(montar())).not.toBeNull();
   });
 
-  it('cada acción es un botón con rol menuitem, navegable con teclado', () => {
+  it('cada acción es un botón con rol menuitem y el foco entra en la primera', () => {
     const menu = abrir(montar());
     const items = menu!.querySelectorAll('[role="menuitem"]');
 
     expect(items.length).toBe(2);
     expect((items[0] as HTMLElement).tagName).toBe('BUTTON');
+    // El CDK busca las opciones dentro del menú: si el foco no entra, las flechas
+    // tampoco pueden navegar y el camino de teclado del journey 2 se rompe.
+    expect(document.activeElement).toBe(items[0]);
   });
 
   it('proyecta el texto de cada acción', () => {

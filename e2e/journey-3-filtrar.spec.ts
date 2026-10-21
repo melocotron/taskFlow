@@ -2,11 +2,12 @@ import { expect, test } from '@playwright/test';
 import type { Page } from '@playwright/test';
 
 /**
- * Filtrar el tablero.
+ * Journey 3 del PLAN: filtrar tareas y que el filtro sobreviva a la recarga.
  *
  * El filtro no es un estado de pantalla: vive en la URL. Por eso lo que más importa
  * aquí es que **recargar no lo pierda** y que la barra siga escribiendo en la URL
- * mientras se teclea, sin comerse caracteres por el camino.
+ * mientras se teclea, sin comerse caracteres por el camino. El resto de pruebas de
+ * este archivo cubren los bordes del mismo recorrido: persona, sin acentos y vacío.
  */
 async function sembrarTablero(page: Page): Promise<void> {
   await page.addInitScript(() => {
