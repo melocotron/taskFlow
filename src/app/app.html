@@ -1,10 +1,10 @@
 <router-outlet />
 
 <!--
-  Los avisos no son críticos: si llegan antes de que el navegador esté ocioso, el
-  servicio los guarda en cola y aparecen al cargar este bloque. Así su código no
-  viaja en el bundle inicial.
+  Los avisos no son críticos: el bloque se carga en el primer ocio. Si un aviso llega
+  antes, `hayAvisos` lo adelanta para que no se quede esperando (y caduque) mientras
+  el navegador sigue ocupado. Así su código no viaja en el bundle inicial.
 -->
-@defer (on idle) {
+@defer (on idle; when hayAvisos()) {
   <app-toast-container />
 }

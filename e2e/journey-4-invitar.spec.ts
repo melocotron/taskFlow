@@ -74,6 +74,13 @@ test('invitar como observadora: ve el tablero, pero ninguna acción de edición'
   await expect(filaAlba).toBeVisible();
   await expect(filaAlba).toContainText('Solo lectura');
 
+  // El aviso nace con el diálogo abierto: tiene que quedar por encima del overlay y
+  // poder cerrarse. Si vuelve a caer detrás del fondo, este clic se queda esperando.
+  const aviso = page.getByRole('status');
+  await expect(aviso).toContainText('«Alba Sanz» · Solo lectura');
+  await aviso.getByRole('button', { name: 'Cerrar el aviso' }).click();
+  await expect(page.locator('app-toast')).toHaveCount(0);
+
   // Cerrar y cambiar de persona: la invitación tiene que servir para entrar de verdad.
   await page.keyboard.press('Escape');
   await expect(dialogo).toBeHidden();

@@ -227,6 +227,31 @@ Los cuatro chequeos de la skill, pasados sobre `/kitchen-sink` con capturas real
 atenuado 6.48:1 · sobre acento 5.63:1 · sobre peligro 5.51:1 · sobre señal 7.25:1 ·
 sobre información 5.09:1. Todos por encima de 4.5:1.
 
+## Revisión de craft (S4.4)
+
+Pulido sobre las pantallas reales, sin cambiar la dirección. Las reglas que salieron de
+esta pasada:
+
+- **Los avisos flotan por encima del overlay.** El CDK 22 usa la Popover API para sus
+  overlays; en esa capa el `z-index` deja de ordenar. `OVERLAY_DEFAULT_CONFIG` desactiva
+  `usePopover` y el aviso usa `--z-toast: 1100` sobre el contenedor del CDK (1000).
+- **Un aviso también es contenido.** Vive como hijo directo de `body`, con
+  `role="status"` y `aria-live="polite"`, para que el diálogo no lo oculte del árbol de
+  accesibilidad. El bloque diferido se adelanta con `when hayAvisos()`: la cola no espera
+  al ocio ni caduca antes de verse.
+- **El scroll del lienzo no mueve la página.** `contain: paint` en `.columnas` encierra
+  el desbordamiento del grid. En móvil, el encabezado queda quieto y solo se desplazan
+  las columnas; el scroll interno sigue disponible.
+- **La navegación secundaria también tiene blanco táctil.** «← Todos los tableros» mide
+  40 px de alto y responde al hover; el texto sigue en `caption` y `text-muted`.
+- **Las tarjetas de entrada responden.** `hover`/`focus-visible` cambian el filete a
+  `border-color-strong`; `active` baja a `surface-sunken`. Mismo lenguaje que la lista
+  de tableros: el borde, no la sombra.
+- **Añadir es una acción, no una tarjeta.** «Añadir tarjeta» lleva un `+` de trazo,
+  `aria-hidden`, para distinguirla del contenido que tiene encima.
+- **La X de un aviso hereda el tono.** Sobre acento y peligro usa `--text-on-accent` /
+  `--text-on-danger`; el `text-secondary` por defecto quedaba casi invisible.
+
 ## Fuera de alcance (por ahora)
 
 - **Modo oscuro.** No en v1. Se decidirá con tokens, no con CSS duplicado.
@@ -235,5 +260,5 @@ sobre información 5.09:1. Todos por encima de 4.5:1.
 
 ## Siguiente paso
 
-Fase 2: el dominio. `entities/board`, `entities/task`, `entities/member` con sus stores
-de signals y tests.
+Fase 4 cerrada. El sistema visual queda congelado salvo enmienda; la Fase 5 define su
+alcance con el usuario.

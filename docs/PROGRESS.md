@@ -628,23 +628,53 @@ verde. El build no emite avisos de presupuesto.
 
 ---
 
+## ✅ Fase 4 · S4.4 — Pulido visual
+
+Segunda pasada sobre las pantallas reales con `design-deslop` + `design-review`. No se
+rediseñó la dirección **A · Taller**: se corrigieron defectos concretos de interacción,
+contraste y desbordamiento.
+
+- **Avisos por encima del diálogo.** El CDK 22 monta sus overlays en la capa superior
+  (Popover API), donde `z-index` deja de ordenar. `OVERLAY_DEFAULT_CONFIG` desactiva
+  `usePopover`; el aviso usa `--z-toast: 1100` sobre el contenedor del CDK (1000).
+- **El aviso también existe para lectores de pantalla.** Vive como hijo directo de
+  `body`, con `role="status"` y `aria-live="polite"`. Así el diálogo no lo oculta del
+  árbol de accesibilidad, y su `z-index` puede quedar por encima.
+- **El primer aviso no espera al ocio.** `@defer (on idle; when hayAvisos())` adelanta la
+  carga del contenedor si ya hay un aviso en cola; el mensaje no caduca antes de verse.
+- **La X de los avisos se lee.** Sobre acento y peligro hereda
+  `--text-on-accent`/`--text-on-danger`; antes usaba `text-secondary` (~1.02:1).
+- **El scroll del lienzo no mueve la página.** `contain: paint` en `.columnas` encierra
+  el desbordamiento horizontal del grid. En móvil, `document.scrollWidth` pasa de 907 a
+  390 px y el encabezado deja de moverse con el gesto; el scroll interno sigue disponible.
+- **Navegación táctil.** «← Todos los tableros» pasa a 40×118 px, con hover; las tarjetas
+  de la pantalla de entrada responden con filete y tono.
+- **Añadir es una acción.** «Añadir tarjeta» lleva un `+` de trazo (`aria-hidden`) para
+  separar la acción del contenido de las tarjetas.
+
+**Verificado:** 180 tests unitarios, 29 E2E (`npm run e2e` verde) y `npm run verify`
+verde. Bundle inicial **331,96 kB** (88,94 kB de transferencia estimada).
+
+---
+
 ## Siguiente fase
 
-**Fase 4 — Calidad.** S4.1, S4.2 y S4.3 cerrados. S4.4: pulido visual con
-`design-deslop` + `design-review`.
+**Fase 4 — Calidad cerrada.** S4.1 a S4.4 completos. La siguiente sesión define el
+alcance de la Fase 5.
 
 ---
 
 ## Dónde me quedé
 
-S4.3 terminado en `feature/S4.3-performance`: bundle inicial de 330,94 kB (antes 414,48),
-avisos diferidos con `@defer`, `provideHttpClient` retirado y presupuesto 350/370 kB. 180
-tests unitarios, 29 E2E y `verify` verde.
+S4.4 terminado en `feature/S4.4-pulido-visual`: avisos sobre el diálogo y accesibles,
+X legible, contenedor diferido que no pierde mensajes, móvil sin scroll de página,
+navegación táctil y `+` en «Añadir tarjeta». 180 tests unitarios, 29 E2E y `verify`
+verde. Bundle inicial 331,96 kB.
 
 ## Siguiente paso concreto
 
-S4.4: revisar el sistema visual en las pantallas reales, corregir densidad, jerarquía y
-estados, y cerrar con la revisión de diseño.
+Fase 4 cerrada. Definir con el usuario el alcance de la Fase 5 antes de abrir el
+siguiente sprint.
 
 ---
 
@@ -682,3 +712,4 @@ Los E2E corren en CI y antes de un merge a `main`.
 | 2026-10-20 | S4.1   | Cuatro journeys con archivo propio; el foco entra en los menús con el teclado.         |
 | 2026-10-20 | S4.2   | Axe sin violaciones en las pantallas principales y recorrido completo con teclado.     |
 | 2026-10-21 | S4.3   | Bundle inicial 330,94 kB (-20 %), avisos con `@defer` y presupuesto 350/370 kB.        |
+| 2026-10-21 | S4.4   | Avisos sobre el diálogo y accesibles, X legible y móvil sin scroll de página.          |
