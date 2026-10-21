@@ -51,3 +51,8 @@
   background-color: var(--surface-raised);
   color: var(--danger);
 }
+
+.no-encontrado h1 {
+  font-size: var(--text-h4);
+  font-weight: var(--weight-semibold);
+}

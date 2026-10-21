@@ -18,6 +18,7 @@ export type AvatarSize = 'sm' | 'md';
   host: {
     '[class.app-avatar--sm]': "size() === 'sm'",
     '[class.app-avatar--sin-turno]': 'turno() === null',
+    '[class.app-avatar--cinta]': "turno() === 'cinta'",
   },
 })
 export class Avatar {
