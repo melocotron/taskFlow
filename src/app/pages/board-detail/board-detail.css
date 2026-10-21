@@ -7,10 +7,26 @@
   padding: var(--board-padding);
 }
 
+/*
+ * El texto sigue siendo discreto, pero el enlace no: 40 px de alto y un fondo al
+ * pasar. El margen negativo devuelve la línea a su sitio sin reducir el blanco táctil.
+ */
 .volver {
+  display: inline-flex;
+  align-items: center;
   align-self: flex-start;
+  min-height: var(--control-hit-area);
+  margin: calc(var(--space-2) * -1) 0 calc(var(--space-2) * -1) calc(var(--space-2) * -1);
+  padding: 0 var(--space-2);
+  border-radius: var(--control-radius);
   color: var(--text-muted);
   font-size: var(--text-caption);
+  text-decoration: none;
+}
+
+.volver:hover {
+  background-color: var(--surface-sunken);
+  color: var(--text-primary);
 }
 
 .cabecera {

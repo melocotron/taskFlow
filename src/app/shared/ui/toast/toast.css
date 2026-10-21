@@ -26,6 +26,23 @@
   color: var(--text-on-danger);
 }
 
+/*
+ * La X vive sobre el color del aviso, no sobre el papel: hereda el color de texto
+ * del tono y usa un velo del mismo color al pasar. El valor por defecto de
+ * `app-icon-button` es `text-secondary`, que sobre acento y peligro queda por
+ * debajo de 1.1:1 y desaparece.
+ */
+:host(.app-toast--acento) button[appIconButton],
+:host(.app-toast--peligro) button[appIconButton] {
+  color: var(--text-on-accent);
+}
+
+:host(.app-toast--acento) button[appIconButton]:hover,
+:host(.app-toast--peligro) button[appIconButton]:hover {
+  background-color: color-mix(in srgb, var(--text-on-accent) 16%, transparent);
+  color: var(--text-on-accent);
+}
+
 .mensaje {
   font-size: var(--text-body);
 }

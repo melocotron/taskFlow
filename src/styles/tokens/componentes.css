@@ -43,6 +43,10 @@
     --dialog-padding: var(--space-6);
     --dialog-max-width: 480px;
 
+    /* ── Avisos ──────────────────────────────────────────────────────── */
+    /* Por encima del overlay del CDK (1000): una confirmación no puede quedar tras el fondo. */
+    --z-toast: 1100;
+
     /* ── Tablero ─────────────────────────────────────────────────────── */
     --board-padding: var(--space-6);
   }

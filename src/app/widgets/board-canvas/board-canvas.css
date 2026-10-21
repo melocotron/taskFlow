@@ -10,6 +10,12 @@
   gap: var(--column-gap);
   align-items: start;
   overflow-x: auto;
+  /*
+   * Sin esto, Chromium deja que el contenido del scroll interno del grid contribuya
+   * al scroll de la página: en móvil se movía también el encabezado. `paint` encierra
+   * el desbordamiento en la caja de columnas.
+   */
+  contain: paint;
   padding-bottom: var(--space-2);
 }
 

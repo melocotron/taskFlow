@@ -1,4 +1,4 @@
-import { OverlayContainer } from '@angular/cdk/overlay';
+import { OVERLAY_DEFAULT_CONFIG, OverlayContainer } from '@angular/cdk/overlay';
 import { ApplicationConfig, provideBrowserGlobalErrorListeners } from '@angular/core';
 import { provideRouter, withComponentInputBinding } from '@angular/router';
 import { OverlayContainerAccesible } from '@shared/ui/overlay/overlay-container';
@@ -17,6 +17,13 @@ export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideRouter(routes, withComponentInputBinding()),
+    /*
+     * El CDK 22 monta los overlays en la capa superior del navegador (Popover API),
+     * donde el z-index deja de ordenar. Con un diálogo abierto, el aviso de
+     * confirmación quedaba detrás de su fondo y no se podía cerrar. Sin popover, el
+     * contenedor del CDK vuelve al z-index 1000 y el aviso (1100) puede quedar encima.
+     */
+    { provide: OVERLAY_DEFAULT_CONFIG, useValue: { usePopover: false } },
     { provide: OverlayContainer, useClass: OverlayContainerAccesible },
   ],
 };
