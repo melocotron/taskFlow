@@ -1,6 +1,8 @@
+import { OverlayContainer } from '@angular/cdk/overlay';
 import { provideHttpClient } from '@angular/common/http';
 import { ApplicationConfig, provideBrowserGlobalErrorListeners } from '@angular/core';
 import { provideRouter, withComponentInputBinding } from '@angular/router';
+import { OverlayContainerAccesible } from '@shared/ui/overlay/overlay-container';
 import { routes } from './app.routes';
 
 /**
@@ -17,5 +19,6 @@ export const appConfig: ApplicationConfig = {
     provideBrowserGlobalErrorListeners(),
     provideRouter(routes, withComponentInputBinding()),
     provideHttpClient(),
+    { provide: OverlayContainer, useClass: OverlayContainerAccesible },
   ],
 };

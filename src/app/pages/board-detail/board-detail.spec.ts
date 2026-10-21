@@ -91,7 +91,7 @@ describe('BoardDetailPage', () => {
 
     expect(elemento.textContent).toContain('No tienes acceso a este tablero');
     expect(elemento.querySelectorAll('.columna').length).toBe(0);
-    expect(elemento.querySelector('h1')).toBeNull();
+    expect(elemento.querySelector('h1')?.textContent).toContain('No tienes acceso');
   });
 
   it('quien observa ve el trabajo y las personas, pero no las acciones de edición', async () => {

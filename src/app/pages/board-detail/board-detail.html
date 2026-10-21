@@ -6,6 +6,7 @@
   } @else if (tablero(); as tablero) {
     @if (!tieneAcceso()) {
       <app-empty-state
+        [nivel]="1"
         titulo="No tienes acceso a este tablero"
         descripcion="Pídeselo a quien lo administre: desde Personas puede invitarte con el rol que necesites."
       >
@@ -35,7 +36,7 @@
     }
   } @else {
     <div class="no-encontrado" role="alert">
-      <p>No se encontró ese tablero.</p>
+      <h1>No se encontró ese tablero.</h1>
       <a routerLink="/">Volver a la lista</a>
     </div>
   }
