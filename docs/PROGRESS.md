@@ -604,23 +604,47 @@ verde.
 
 ---
 
+## ✅ Fase 4 · S4.3 — Rendimiento y presupuesto
+
+El bundle inicial baja de **414,48 kB a 330,94 kB** (-20 %) y de 104,48 a 88,46 kB de
+transferencia estimada. La causa principal era el barril `@shared/ui`: `App` importaba
+`ToastContainer` desde el índice y eso arrastraba todos los componentes compartidos y el
+CDK de overlays al bundle inicial. El shell ahora importa `@shared/ui/toast` directamente.
+
+- El contenedor de avisos se carga con `@defer (on idle)`: no es crítico y el servicio
+  conserva en cola lo que llegue antes de que el bloque esté listo.
+- Se retira `provideHttpClient()`: no había ninguna petición HTTP; los repositorios usan
+  almacenamiento local.
+- El presupuesto inicial queda en **350 kB de aviso y 370 kB de error** en `angular.json`.
+- La aplicación sigue sin `zone.js`: Angular 22 es zoneless por defecto y no hay
+  `polyfills` que lo reintroduzcan. `e2e/performance.spec.ts` comprueba en el navegador
+  que `window.Zone` no existe.
+- Revisión de detección de cambios: Angular 22 usa `OnPush` por defecto; no hay
+  `ChangeDetectionStrategy.Default` ni componentes fuera de ese modo. Los componentes ya
+  trabajan con signals, así que no hace falta añadir decoradores redundantes.
+
+**Verificado:** 180 tests unitarios, 29 E2E (`npm run e2e` verde) y `npm run verify`
+verde. El build no emite avisos de presupuesto.
+
+---
+
 ## Siguiente fase
 
-**Fase 4 — Calidad.** S4.1 y S4.2 cerrados. S4.3: presupuesto de bundle, `@defer` y
-revisión de OnPush/zoneless.
+**Fase 4 — Calidad.** S4.1, S4.2 y S4.3 cerrados. S4.4: pulido visual con
+`design-deslop` + `design-review`.
 
 ---
 
 ## Dónde me quedé
 
-S4.2 terminado en `feature/S4.2-a11y`: axe sin violaciones en las pantallas y estados
-principales, recorrido de teclado con foco visible y devolución al disparador. 180 tests
-unitarios, 28 E2E y `verify` verde.
+S4.3 terminado en `feature/S4.3-performance`: bundle inicial de 330,94 kB (antes 414,48),
+avisos diferidos con `@defer`, `provideHttpClient` retirado y presupuesto 350/370 kB. 180
+tests unitarios, 29 E2E y `verify` verde.
 
 ## Siguiente paso concreto
 
-S4.3: medir el bundle, fijar budgets en `angular.json`, aplicar `@defer` donde aporte y
-revisar que no quede ninguna suscripción que dependa de zone.js.
+S4.4: revisar el sistema visual en las pantallas reales, corregir densidad, jerarquía y
+estados, y cerrar con la revisión de diseño.
 
 ---
 
@@ -657,3 +681,4 @@ Los E2E corren en CI y antes de un merge a `main`.
 | 2026-10-19 | S3.7   | Roles por tablero e invitaciones; el creador administra y la URL ajena se niega.       |
 | 2026-10-20 | S4.1   | Cuatro journeys con archivo propio; el foco entra en los menús con el teclado.         |
 | 2026-10-20 | S4.2   | Axe sin violaciones en las pantallas principales y recorrido completo con teclado.     |
+| 2026-10-21 | S4.3   | Bundle inicial 330,94 kB (-20 %), avisos con `@defer` y presupuesto 350/370 kB.        |
