@@ -11,7 +11,7 @@
   <ul class="equipo">
     @for (persona of equipo(); track persona.id; let i = $index) {
       <li>
-        <button type="button" class="persona" (click)="entrar(persona.id)">
+        <button type="button" class="persona presionable" (click)="entrar(persona.id)">
           <app-card>
             <div class="fila">
               <app-avatar [nombre]="persona.nombre" [turno]="turno(i)" />

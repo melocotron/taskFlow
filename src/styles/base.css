@@ -140,6 +140,28 @@
     border: 0;
   }
 
+  /*
+   * Hundido de superficies clicables. Se aplica con la clase `.presionable` a la
+   * superficie completa —tarjeta, enlace—, no al texto interior. El desplazamiento
+   * es de 1px: se siente como una pieza que se apoya, no como una animación.
+   */
+  .presionable {
+    transition: transform var(--duration-fast) var(--ease-out);
+  }
+
+  .presionable:active {
+    transform: translateY(1px);
+    transition-duration: 0ms;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .presionable,
+    .presionable:active {
+      transform: none;
+      transition: none;
+    }
+  }
+
   @media (prefers-reduced-motion: reduce) {
     *,
     *::before,

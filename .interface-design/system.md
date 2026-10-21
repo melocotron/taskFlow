@@ -251,6 +251,9 @@ esta pasada:
   `aria-hidden`, para distinguirla del contenido que tiene encima.
 - **La X de un aviso hereda el tono.** Sobre acento y peligro usa `--text-on-accent` /
   `--text-on-danger`; el `text-secondary` por defecto quedaba casi invisible.
+- **El hundido es una clase global.** `.presionable` baja 1 px la superficie completa al
+  pulsar; se aplica a las tarjetas de entrada y a los enlaces de tableros, no al texto
+  interior. `prefers-reduced-motion` anula el desplazamiento y conserva el cambio de tono.
 
 ## Fuera de alcance (por ahora)
 

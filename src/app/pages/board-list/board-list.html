@@ -40,7 +40,7 @@
     <ul class="lista">
       @for (board of misTableros(); track board.id) {
         <li>
-          <a class="enlace-tablero" [routerLink]="['/tableros', board.id]">
+          <a class="enlace-tablero presionable" [routerLink]="['/tableros', board.id]">
             <app-card>
               <p class="titulo">{{ board.titulo }}</p>
               <p class="meta tabular">

@@ -44,6 +44,7 @@
 
 .persona:active app-card {
   background-color: var(--surface-sunken);
+  transition: none;
 }
 
 .persona:focus-visible {
