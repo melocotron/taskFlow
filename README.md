@@ -1,7 +1,7 @@
 # TaskFlow
 
-Tableros kanban con equipos. Proyecto de aprendizaje **Angular 22** construido con
-Spec-Driven Development, Gitflow y design system propio.
+**Versión 1.0.0.** Tableros kanban con equipos. Proyecto de aprendizaje **Angular 22**
+construido con Spec-Driven Development, Gitflow y design system propio.
 
 ## Empezar
 
@@ -9,6 +9,7 @@ Spec-Driven Development, Gitflow y design system propio.
 npm install
 npm start        # http://localhost:4200
 npm test         # Vitest (watch)
+npm run e2e      # Playwright (32 pruebas)
 npm run verify   # format + lint + tests + build
 ```
 
@@ -19,6 +20,7 @@ npm run verify   # format + lint + tests + build
 | [PLAN.md](PLAN.md)                   | El plan maestro: stack, skills, arquitectura, sprints |
 | [docs/PROGRESS.md](docs/PROGRESS.md) | Dónde vamos y dónde me quedé                          |
 | [docs/IDEAS.md](docs/IDEAS.md)       | Ideas aparcadas (no se tocan a mitad de sprint)       |
+| [CHANGELOG.md](CHANGELOG.md)         | Qué entró en cada versión                             |
 | [CLAUDE.md](CLAUDE.md)               | Reglas de código de Angular 22 para el agente         |
 
 ## Stack
