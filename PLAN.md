@@ -25,12 +25,12 @@ Verificado contra el registro de npm y angular.dev hoy.
 | --------------------- | ------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
 | Angular               | **22.2.3** (`@angular/cli` 22.2.3)                      | Última estable. Signals-first, `OnPush` por defecto, zoneless.                                                                             |
 | Node                  | 24.18.0 ✓ (Angular 22 pide ≥24.15)                      | Ya instalado.                                                                                                                              |
-| Gestor de paquetes    | **pnpm**                                                | Ya instalado, lockfile estricto, rápido.                                                                                                   |
+| Gestor de paquetes    | **npm**                                                 | Caché local en `.npm-cache/`; pnpm se descartó por el sandbox.                                                                             |
 | Change detection      | **Zoneless**                                            | Es el futuro; en v22 es estable. Aprenderlo ahora evita des-aprender después.                                                              |
 | Estilos               | **CSS nativo + custom properties**                      | Sin Tailwind ni SCSS: los tokens son el design system.                                                                                     |
 | Primitivas accesibles | **`@angular/cdk` + `@angular/aria`** (22.2.3)           | CDK da overlay/portal/drag&drop; Aria da tabs, menu, listbox, combobox, grid, tree **ya accesibles**. No reimplementamos teclado ni focus. |
 | Formularios           | **Signal Forms** (`@angular/forms/signals`)             | Estables en v22.                                                                                                                           |
-| Datos                 | **`httpResource` + `resource`**                         | Estables en v22.                                                                                                                           |
+| Datos                 | **`resource()` + repositorios async**                   | Sin backend: localStorage con latencia simulada. `httpResource` se demuestra en S4.6.                                                      |
 | Unit tests            | **Vitest + jsdom** (builder `@angular/build:unit-test`) | Es le default del CLI. `ng test`.                                                                                                          |
 | E2E                   | **Playwright**                                          | Separado del unit test: es el estándar real.                                                                                               |
 | Metodología           | **GitHub Spec Kit** (spec-driven development)           | `uv tool install specify-cli`.                                                                                                             |
@@ -39,9 +39,8 @@ Verificado contra el registro de npm y angular.dev hoy.
 
 ### 1.1 Nota sobre el nombre de la carpeta
 
-La carpeta actual se llama `Agular-skills` (falta una "n"). Es inofensivo, pero si
-quieres un nombre limpio para el repo, es el momento de renombrarla a `taskflow`
-antes del primer commit. **Decisión pendiente #1.**
+La carpeta se renombró a `taskFlow`. El repositorio remoto se llama `taskFlow` y la
+app vive en la raíz del workspace, no en `apps/taskflow/`.
 
 ---
 
@@ -170,8 +169,7 @@ entities/board/
 │   ├── board.store.ts     # signals + computed + métodos
 │   └── board.store.spec.ts
 ├── api/
-│   ├── board.api.ts       # httpResource
-│   └── board.api.spec.ts  # con HttpTestingController
+│   └── board.repository.ts # localStorage tolerante
 └── ui/
     ├── board-card.ts      # componente presentacional
     └── board-card.spec.ts
@@ -298,15 +296,15 @@ Un sprint = una rama = un PR. Así el PR es tu "resumen de sesión".
 ### 6.2 Husky v9 + hooks
 
 ```powershell
-pnpm add -D husky lint-staged @commitlint/cli @commitlint/config-conventional
-pnpm exec husky init
+npm install -D husky lint-staged @commitlint/cli @commitlint/config-conventional
+npx husky init
 ```
 
-| Hook         | Contenido                        | Qué evita                                 |
-| ------------ | -------------------------------- | ----------------------------------------- |
-| `pre-commit` | `pnpm exec lint-staged`          | Formato y lint sucios en el commit        |
-| `commit-msg` | `pnpm exec commitlint --edit $1` | Commits "asdf" y sin conventional commits |
-| `pre-push`   | `pnpm run test:ci`               | Subir a remoto con tests rojos            |
+| Hook         | Contenido                  | Qué evita                                 |
+| ------------ | -------------------------- | ----------------------------------------- |
+| `pre-commit` | `npx lint-staged`          | Formato y lint sucios en el commit        |
+| `commit-msg` | `npx commitlint --edit $1` | Commits "asdf" y sin conventional commits |
+| `pre-push`   | `npm run test:ci`          | Subir a remoto con tests rojos            |
 
 `lint-staged`: `*.ts → eslint --fix + prettier`, `*.html/*.css/*.md → prettier`.
 
@@ -351,7 +349,7 @@ Nada más. Un E2E que no representa un journey es un unit test lento.
 | #        | Objetivo                                                                                         | Verde cuando                                                                   |
 | -------- | ------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------ |
 | **S0.1** | Repo + Gitflow + husky + commitlint + prettier + eslint                                          | Un commit con mensaje inválido es rechazado; uno válido pasa                   |
-| **S0.2** | `ng new` Angular 22 zoneless + esqueleto FSD + alias `@pages`, `@shared`… + boundaries en eslint | `pnpm build` y `pnpm test` pasan; un import ilegal falla                       |
+| **S0.2** | `ng new` Angular 22 zoneless + esqueleto FSD + alias `@pages`, `@shared`… + boundaries en eslint | `npm run build` y `npm test` pasan; un import ilegal falla                     |
 | **S0.3** | Spec Kit instalado + `constitution` + primer `spec` (primer feature real)                        | `.specify/memory/constitution.md` existe y `specs/001-…/spec.md` está aprobado |
 | **S0.4** | Playwright + GitHub Action (lint + test + e2e)                                                   | Un push a `develop` corre todo en CI y sale verde                              |
 
@@ -368,12 +366,12 @@ Nada más. Un E2E que no representa un journey es un unit test lento.
 
 ### Fase 2 — Dominio (4 sprints)
 
-| #        | Objetivo                                                                                  | Verde cuando                                      |
-| -------- | ----------------------------------------------------------------------------------------- | ------------------------------------------------- |
-| **S2.1** | Entity `board`: modelo + store con signals + spec                                         | Crear/renombrar/archivar tablero + tests          |
-| **S2.2** | Entity `task`: modelo + store + estados                                                   | Mover tarea de columna cambia el estado, con test |
-| **S2.3** | Entity `member` + roles/permissions                                                       | Un `viewer` no puede editar (test)                |
-| **S2.4** | API mock: `httpResource`, interceptores, manejo de errores, estados `loading/error/empty` | `resource()` con estados reales en el UI          |
+| #        | Objetivo                                                                          | Verde cuando                                      |
+| -------- | --------------------------------------------------------------------------------- | ------------------------------------------------- |
+| **S2.1** | Entity `board`: modelo + store con signals + spec                                 | Crear/renombrar/archivar tablero + tests          |
+| **S2.2** | Entity `task`: modelo + store + estados                                           | Mover tarea de columna cambia el estado, con test |
+| **S2.3** | Entity `member` + roles/permissions                                               | Un `viewer` no puede editar (test)                |
+| **S2.4** | Repositorios async con latencia simulada, errores y estados `loading/error/empty` | Estados reales en el UI; sin backend              |
 
 ### Fase 3 — Features (8 sprints)
 
@@ -388,25 +386,33 @@ Nada más. Un E2E que no representa un journey es un unit test lento.
 | **S3.6**  | Filtros/búsqueda con `linkedSignal` + estado en URL | Recargar mantiene el filtro                      |
 | **S3.7**  | Invitaciones y rol **por tablero** (historia 4)     | Observador ve sin acciones; URL ajena se niega   |
 
-### Fase 4 — Calidad (4 sprints)
+### Fase 4 — Calidad (4 sprints + ajustes)
 
-| #        | Objetivo                                                    | Verde cuando                                |
-| -------- | ----------------------------------------------------------- | ------------------------------------------- |
-| **S4.1** | E2E Playwright: los 4 journeys                              | `pnpm e2e` verde en CI                      |
-| **S4.2** | Auditoría a11y completa (`accessibility`)                   | 0 violaciones axe + navegación por teclado  |
-| **S4.3** | Performance: budgets, `@defer`, revisión de OnPush/zoneless | Bundle dentro de presupuesto, sin `zone.js` |
-| **S4.4** | Pulido visual: `design-deslop` + `design-review`            | Revisión aprobada                           |
+| #          | Objetivo                                                    | Verde cuando                                |
+| ---------- | ----------------------------------------------------------- | ------------------------------------------- |
+| **S4.1**   | E2E Playwright: los 4 journeys                              | `npm run e2e` verde en CI                   |
+| **S4.2**   | Auditoría a11y completa (`accessibility`)                   | 0 violaciones axe + navegación por teclado  |
+| **S4.3**   | Performance: budgets, `@defer`, revisión de OnPush/zoneless | Bundle dentro de presupuesto, sin `zone.js` |
+| **S4.4**   | Pulido visual: `design-deslop` + `design-review`            | Revisión aprobada                           |
+| **S4.4.1** | Hundido global de superficies pulsables                     | Revisión manual y E2E verde                 |
 
-### Fase 5 — Extras v22 (opcional, 3 sprints)
+### Fase 4.5 — Reconciliación y cobertura v22 (2 sprints)
 
-| #        | Objetivo                                                       |
-| -------- | -------------------------------------------------------------- |
-| **S5.1** | SSR + incremental hydration + event replay                     |
-| **S5.2** | WebMCP experimental (exponer los tableros como tools)          |
-| **S5.3** | CI avanzado + changelog + release `1.0.0` con Gitflow completo |
+| #        | Objetivo                                                                  | Verde cuando                                       |
+| -------- | ------------------------------------------------------------------------- | -------------------------------------------------- |
+| **S4.5** | Alinear `PLAN.md`, `PROGRESS.md` y READMEs con lo construido              | Documentación sin contradicciones y `format:check` |
+| **S4.6** | Laboratorio de `@Service`, `injectAsync` y `httpResource` en kitchen-sink | API demostrada sin tocar la persistencia real      |
 
-**Total: ~29 sprints ≈ 24–29 horas de trabajo real.** A 1 sprint por día, un mes suave.
-A 2 por día, dos semanas.
+### Fase 5 — Entrega y extras v22 (3 sprints)
+
+| #        | Objetivo                                              |
+| -------- | ----------------------------------------------------- |
+| **S5.1** | GitHub real, CI verde, changelog y release `1.0.0`    |
+| **S5.2** | SSR + incremental hydration + event replay            |
+| **S5.3** | WebMCP experimental (exponer los tableros como tools) |
+
+**Total: ~32 sprints.** La estimación inicial de 24–29 horas ya no aplica: el proyecto
+incluye S4.4.1, la reconciliación y el laboratorio. El calendario depende de la sesión.
 
 ---
 
@@ -460,7 +466,7 @@ Añadir al Button el estado `loading` y su test.
 - **Nada de Storybook** (otra app que mantener). Usamos la ruta `/kitchen-sink`.
 - **Nada de Nx** todavía. Un proyecto Angular simple; si algún día crece, migramos.
 - **Nada de librerías de UI**. Eso es justamente lo que queremos aprender a hacer.
-- **Un solo comando de verificación**: `pnpm verify` = lint + test + build.
+- **Un solo comando de verificación**: `npm run verify` = formato + lint + test + build.
 
 ---
 
@@ -472,11 +478,12 @@ Para que "todas las nuevas funcionalidades" sea verificable, no aspiracional.
 | -------------------------------------------------------------- | ------------- |
 | Zoneless + `OnPush` por defecto                                | S0.2          |
 | Standalone components + control flow (`@if`/`@for`/`@switch`)  | S0.2          |
-| `@Service()` (reemplazo de `@Injectable({providedIn:'root'})`) | S2.1          |
-| `inject()` / `injectAsync()`                                   | S2.1 / S3.2   |
+| `@Service()` (reemplazo de `@Injectable({providedIn:'root'})`) | S4.6          |
+| `inject()` / `injectAsync()`                                   | S2.1 / S4.6   |
 | Signals, `computed`, `effect`                                  | S2.1          |
 | `linkedSignal`                                                 | S3.6          |
-| `resource()` / `httpResource` + estados async                  | S2.4          |
+| `resource()` + estados async                                   | S2.4          |
+| `httpResource` + interceptores                                 | S4.6          |
 | Signal Forms (`@angular/forms/signals`)                        | S3.5          |
 | `input()`, `output()`, `model()`, queries por signal           | S1.3          |
 | Multi-case y exhaustive `@switch`                              | S1.4          |
@@ -484,10 +491,10 @@ Para que "todas las nuevas funcionalidades" sea verificable, no aspiracional.
 | Comentarios HTML en template                                   | S2.1          |
 | `@angular/aria` (accessible primitives)                        | S1.5          |
 | `@angular/cdk` drag & drop                                     | S3.4          |
-| Lazy routing + route-level render modes                        | S3.2 / S5.1   |
-| SSR + incremental hydration + event replay                     | S5.1          |
-| `@boundary` / `@error` (dev preview)                           | S5.1          |
-| WebMCP (experimental)                                          | S5.2          |
+| Lazy routing + route-level render modes                        | S3.2 / S5.2   |
+| SSR + incremental hydration + event replay                     | S5.2          |
+| `@boundary` / `@error` (dev preview)                           | S5.2          |
+| WebMCP (experimental)                                          | S5.3          |
 | TypeScript 6                                                   | S0.2          |
 | Angular CLI MCP (`ng mcp`)                                     | Opcional, §11 |
 
@@ -504,10 +511,24 @@ Para que "todas las nuevas funcionalidades" sea verificable, no aspiracional.
 
 ---
 
-## 12. Decisiones pendientes
+## 12. Decisiones cerradas
 
-1. ¿Renombramos la carpeta `Agular-skills` → `taskflow` antes del primer commit?
-2. ¿La app se crea en la raíz del workspace, o en `apps/taskflow/`?
-3. ¿Remoto en GitHub desde el inicio (CI real desde S0.1) o todo local hasta S0.4?
+1. La carpeta se renombró a `taskFlow` y la app vive en la raíz del workspace.
+2. El remoto es GitHub: `https://github.com/melocotron/taskFlow.git`. La verificación
+   real de CI se hace en S5.1, cuando `develop` y `main` estén publicados.
+3. No se rellenan `plan.md`/`tasks.md` de 001 a posteriori. Spec Kit se usa desde la
+   Fase 5; hasta ahora el seguimiento vive en `PLAN.md` y `PROGRESS.md`.
+4. Archivar tableros queda para después del 1.0: el dominio ya lo soporta, falta la UI.
+5. Publicar una URL queda para después del 1.0. La release será de GitHub; un despliegue
+   gratuito puede ser GitHub Pages o Vercel.
 
-_(Si no dices nada, tomo: renombrar, raíz, local hasta S0.4 y luego push.)_
+## 13. Desviaciones conscientes
+
+- **Sin backend.** Los datos viven en `localStorage`; los repositorios simulan latencia
+  para ejercitar `loading/error/empty`. `httpResource` e interceptores se demuestran en
+  un laboratorio aislado, no en la persistencia del producto.
+- **Archivar sin puerta.** `BoardStore.archivar()` y su test existen desde S2.1, pero no
+  hay acción de UI ni vista de archivados.
+- **Spec 001 sin artefactos posteriores.** Solo hay `spec.md`; no se generaron `plan.md`,
+  `tasks.md` ni `checklists/`.
+- **Renombrar se resolvió.** El repo local y el remoto usan `taskFlow`.

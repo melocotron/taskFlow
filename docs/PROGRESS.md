@@ -265,7 +265,7 @@ con `reuseExistingServer: false` en `playwright.config.ts`: siempre servidor nue
 
 ---
 
-## Sprint actual — Fase 3
+## Fase 3 — Features
 
 ## ✅ Fase 3 · S3.1 — Entrada, guard de sesión y permisos en la interfaz
 
@@ -678,24 +678,44 @@ verde. Bundle inicial **332,20 kB** (89,02 kB de transferencia estimada).
 
 ---
 
+## ✅ Fase 4.5 · S4.5 — Reconciliación del plan
+
+Se alineó la documentación con lo que realmente se construyó antes de añadir el
+laboratorio de Angular 22:
+
+- `PLAN.md` pasa a `npm`, corrige S2.4, añade S4.4.1 y S4.5/S4.6, y reordena la Fase 5
+  para publicar el 1.0 antes de SSR y WebMCP.
+- El mapa de cobertura deja de prometer `@Service`, `injectAsync` y `httpResource` como
+  hechos: se cubren en S4.6, en un laboratorio aislado.
+- `entities/README.md` ya no habla de `board.api.ts`: el slice usa
+  `board.repository.ts` sobre `localStorage`.
+- Quedan registradas las desviaciones conscientes: sin backend, archivar solo en
+  dominio y Spec 001 sin `plan.md`/`tasks.md` retroactivos.
+- Decisiones cerradas: carpeta `taskFlow`, app en la raíz y remoto
+  `https://github.com/melocotron/taskFlow.git`.
+
+**Verificado:** 180 tests unitarios, 31 E2E y `npm run verify` verde. Sin cambios de
+código; el bundle inicial sigue en **332,20 kB**.
+
+---
+
 ## Siguiente fase
 
-**Fase 4 — Calidad cerrada.** S4.1 a S4.4.1 completos. La siguiente sesión define el
-alcance de la Fase 5.
+**Fase 4.5 en curso.** S4.5 cerrado; sigue S4.6 con el laboratorio de `@Service`,
+`injectAsync` y `httpResource`. Después, S5.1: GitHub, CI real y release 1.0.
 
 ---
 
 ## Dónde me quedé
 
-S4.4.1 terminado en `feature/S4.4.1-ajustes-ux`: hundido global `.presionable` en
-tarjetas de entrada y enlaces a tableros, con `prefers-reduced-motion`. El cursor de
-texto era F7, no un defecto de la app. 180 tests unitarios, 31 E2E y `verify` verde.
-Bundle inicial 332,20 kB.
+S4.5 terminado en `feature/S4.5-reconciliacion-plan`: el plan y los READMEs reflejan
+el estado real. Siguiente: crear el laboratorio v22 sin tocar la persistencia del
+producto.
 
 ## Siguiente paso concreto
 
-Fase 4 cerrada. Definir con el usuario el alcance de la Fase 5 antes de abrir el
-siguiente sprint.
+Ejecutar S4.6: convertir `ToastService` a `@Service`, demostrar `injectAsync` y añadir
+un laboratorio de `httpResource` con interceptor mock en `/kitchen-sink`.
 
 ---
 
@@ -735,3 +755,4 @@ Los E2E corren en CI y antes de un merge a `main`.
 | 2026-10-21 | S4.3   | Bundle inicial 330,94 kB (-20 %), avisos con `@defer` y presupuesto 350/370 kB.        |
 | 2026-10-21 | S4.4   | Avisos sobre el diálogo y accesibles, X legible y móvil sin scroll de página.          |
 | 2026-10-21 | S4.4.1 | Hundido global `.presionable`; F7 explicaba el cursor de texto.                        |
+| 2026-10-21 | S4.5   | Plan y READMEs alineados; npm, S4.6 y release 1.0 registrados.                         |
