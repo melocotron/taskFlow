@@ -1,0 +1,16 @@
+<div class="campo">
+  <label class="etiqueta" [attr.for]="inputId()">
+    {{ label() }}
+    @if (optional()) {
+      <span class="opcional">opcional</span>
+    }
+  </label>
+
+  <ng-content />
+
+  @if (invalid()) {
+    <p class="mensaje mensaje--error" [id]="falloId" role="alert">{{ error() }}</p>
+  } @else if (hint()) {
+    <p class="mensaje" [id]="ayudaId">{{ hint() }}</p>
+  }
+</div>

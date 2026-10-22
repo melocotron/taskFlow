@@ -1,0 +1,46 @@
+.dialogo {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  max-width: var(--dialog-max-width);
+  border-radius: var(--dialog-radius);
+  background-color: var(--surface-raised);
+  color: var(--text-primary);
+}
+
+.cabecera {
+  display: flex;
+  gap: var(--space-3);
+  align-items: center;
+  justify-content: space-between;
+  /* Hueco para la X, que ya no ocupa sitio en la fila. */
+  padding: var(--space-4) calc(var(--control-hit-area) + var(--space-3)) var(--space-3)
+    var(--space-4);
+  border-bottom: var(--border-width) solid var(--border-color);
+}
+
+.cerrar {
+  position: absolute;
+  top: var(--space-3);
+  right: var(--space-3);
+}
+
+.titulo {
+  font-family: var(--font-sans);
+  font-size: var(--text-h3);
+  font-weight: var(--weight-semibold);
+  letter-spacing: normal;
+}
+
+.cuerpo {
+  padding: var(--dialog-padding);
+}
+
+svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentcolor;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+}

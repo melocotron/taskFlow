@@ -1,0 +1,19 @@
+<div class="dialogo">
+  <div class="cabecera">
+    <h2 class="titulo">{{ titulo() }}</h2>
+  </div>
+
+  <div class="cuerpo">
+    <ng-container [ngTemplateOutlet]="contenido" />
+  </div>
+
+  <!--
+    El botón de cerrar va al final del DOM y se coloca arriba a la derecha con
+    posicionamiento absoluto. Así el primer elemento tabulable del diálogo es el
+    primer campo del formulario, no la X: `autoFocus: 'first-tabbable'` enfoca lo
+    que hay que rellenar, y quien no ve la pantalla empieza por el dato.
+  -->
+  <button appIconButton class="cerrar" label="Cerrar el diálogo" (click)="cerrar()">
+    <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8" /></svg>
+  </button>
+</div>

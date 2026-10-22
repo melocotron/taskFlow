@@ -1,0 +1,142 @@
+@if (fallo()) {
+  <div class="fallo" role="alert">
+    <p>{{ error() }}</p>
+    <button appButton variant="secondary" (click)="reintentar()">Reintentar</button>
+  </div>
+} @else {
+  @if (!cargando() && total() === 0) {
+    <p class="aviso-vacio">
+      Este tablero todavía no tiene tarjetas.
+      @if (puedeEditar()) {
+        Elige una columna y pulsa «Añadir tarjeta».
+      }
+    </p>
+  } @else if (!cargando() && hayFiltro()) {
+    <p class="estado-filtro" role="status">{{ visibles() }} de {{ total() }} tarjetas</p>
+
+    @if (visibles() === 0) {
+      <p class="aviso-vacio">
+        Ninguna tarjeta coincide con el filtro. Prueba con otras palabras o con otra persona.
+      </p>
+    }
+  }
+
+  <div class="columnas" cdkDropListGroup>
+    @for (columna of columnas(); track columna.id) {
+      @let tarjetas = columna.tarjetas;
+      @let cuantas = tarjetas.length;
+      @let etiqueta = cuantas === 1 ? 'tarjeta' : 'tarjetas';
+
+      <section class="columna" [attr.aria-labelledby]="'columna-' + columna.id">
+        <header class="columna-cabecera">
+          <h2 class="rotulo" [id]="'columna-' + columna.id">{{ columna.titulo }}</h2>
+
+          @if (!cargando()) {
+            <span class="cuenta tabular">
+              {{ cuantas }}<span class="visualmente-oculto"> {{ etiqueta }}</span>
+            </span>
+          }
+        </header>
+
+        @if (cargando()) {
+          <div class="huesos">
+            @for (hueco of [1, 2, 3]; track hueco) {
+              <div class="hueso">
+                <app-skeleton [lineas]="2" anchoUltima="50%" />
+              </div>
+            }
+          </div>
+        } @else {
+          <ul
+            class="tarjetas"
+            cdkDropList
+            [cdkDropListData]="columna.id"
+            [cdkDropListDisabled]="!puedeEditar() || hayFiltro()"
+            (cdkDropListDropped)="soltar($event)"
+          >
+            @for (tarea of tarjetas; track tarea.id) {
+              <li
+                class="tarjeta-item"
+                cdkDrag
+                [cdkDragData]="tarea"
+                [cdkDragDisabled]="!puedeEditar() || hayFiltro()"
+              >
+                <app-card [turno]="turnoDe(tarea.responsable)" [persona]="tarea.responsable ?? ''">
+                  <div class="tarjeta-cabecera">
+                    <p class="tarjeta-titulo">{{ tarea.titulo }}</p>
+
+                    @if (puedeEditar()) {
+                      <button
+                        appIconButton
+                        size="sm"
+                        [label]="'Acciones de ' + tarea.titulo"
+                        [cdkMenuTriggerFor]="menuTarjeta"
+                      >
+                        <svg class="puntos" viewBox="0 0 16 16" aria-hidden="true">
+                          <circle cx="3.5" cy="8" r="1.4" />
+                          <circle cx="8" cy="8" r="1.4" />
+                          <circle cx="12.5" cy="8" r="1.4" />
+                        </svg>
+                      </button>
+                    }
+                  </div>
+
+                  @if (tarea.descripcion) {
+                    <p class="tarjeta-descripcion">{{ tarea.descripcion }}</p>
+                  }
+
+                  @if (tarea.responsable; as persona) {
+                    <p class="tarjeta-responsable">
+                      <app-avatar [nombre]="persona" [turno]="turnoDe(persona)" size="sm" />
+                      <span>{{ persona }}</span>
+                    </p>
+                  }
+                </app-card>
+
+                <ng-template #menuTarjeta>
+                  <app-menu>
+                    <button appMenuItem (click)="editarTarjeta(tarea)">Editar tarjeta</button>
+                    @for (destino of board().columnas; track destino.id) {
+                      @if (destino.id !== columna.id) {
+                        <button appMenuItem (click)="moverA(tarea, destino.id)">
+                          Mover a {{ destino.titulo }}
+                        </button>
+                      }
+                    }
+                  </app-menu>
+                </ng-template>
+              </li>
+            }
+          </ul>
+
+          @if (tarjetas.length === 0) {
+            <p class="columna-vacia">Sin tarjetas</p>
+          }
+        }
+
+        @if (!cargando() && puedeEditar()) {
+          <button
+            appButton
+            variant="secondary"
+            class="anadir-tarjeta"
+            (click)="nuevaTarjeta(columna.id)"
+          >
+            <svg viewBox="0 0 16 16" aria-hidden="true">
+              <path d="M8 3v10M3 8h10" />
+            </svg>
+            Añadir tarjeta
+          </button>
+        }
+      </section>
+    }
+  </div>
+}
+
+<ng-template #plantillaTarjeta>
+  <app-task-form
+    [modo]="modoFormulario()"
+    [inicial]="datosIniciales()"
+    (guardado)="guardarTarjeta($event)"
+    (cancelado)="cerrarFormulario()"
+  />
+</ng-template>

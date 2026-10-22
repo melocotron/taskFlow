@@ -1,0 +1,27 @@
+<main class="entrar">
+  <header class="cabecera">
+    <p class="rotulo">TaskFlow</p>
+    <h1>¿Quién eres?</h1>
+    <p class="nota">
+      Elige una persona para entrar. Los permisos dependen de cada tablero: la misma persona puede
+      administrar uno y solo mirar otro.
+    </p>
+  </header>
+
+  <ul class="equipo">
+    @for (persona of equipo(); track persona.id; let i = $index) {
+      <li>
+        <button type="button" class="persona presionable" (click)="entrar(persona.id)">
+          <app-card>
+            <div class="fila">
+              <app-avatar [nombre]="persona.nombre" [turno]="turno(i)" />
+              <div class="datos">
+                <p class="nombre">{{ persona.nombre }}</p>
+              </div>
+            </div>
+          </app-card>
+        </button>
+      </li>
+    }
+  </ul>
+</main>

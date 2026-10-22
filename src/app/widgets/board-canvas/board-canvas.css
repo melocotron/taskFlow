@@ -1,0 +1,185 @@
+:host {
+  display: block;
+}
+
+/* El lienzo se desplaza en horizontal; las columnas miden lo que dice el sistema. */
+.columnas {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: var(--column-width);
+  gap: var(--column-gap);
+  align-items: start;
+  overflow-x: auto;
+  /*
+   * Sin esto, Chromium deja que el contenido del scroll interno del grid contribuya
+   * al scroll de la página: en móvil se movía también el encabezado. `paint` encierra
+   * el desbordamiento en la caja de columnas.
+   */
+  contain: paint;
+  padding-bottom: var(--space-2);
+}
+
+.columna {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--column-padding);
+  border: var(--border-width) solid var(--border-color);
+  border-radius: var(--card-radius);
+  background-color: var(--surface-sunken);
+}
+
+.columna-cabecera {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  min-height: var(--column-header-height);
+}
+
+.cuenta {
+  color: var(--text-secondary);
+  font-size: var(--text-body);
+  font-weight: var(--weight-medium);
+}
+
+/* ── Tarjetas ────────────────────────────────────────────────────────── */
+
+.tarjetas {
+  display: flex;
+  flex-direction: column;
+  gap: var(--card-gap);
+  min-height: var(--card-min-height);
+  max-height: var(--column-max-height);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-right: var(--space-1);
+}
+
+.tarjeta-item {
+  cursor: grab;
+}
+
+.tarjeta-item.cdk-drag-disabled {
+  cursor: default;
+}
+
+/* Lo que queda en su sitio mientras la tarjeta vuela. */
+.tarjeta-item.cdk-drag-placeholder {
+  opacity: 0.4;
+}
+
+/* Reordenar sin saltos: solo se mueve el transform, y por eso va a 60 fps. */
+.tarjetas.cdk-drop-list-dragging .tarjeta-item:not(.cdk-drag-placeholder) {
+  transition: transform var(--duration-base) var(--ease-out);
+}
+
+.tarjeta-cabecera {
+  display: flex;
+  gap: var(--space-2);
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+/*
+ * Los iconos del widget se dibujan con trazo, como manda el sistema. Sin esta regla
+ * el navegador rellena el path y las flechas salen como triángulos sueltos.
+ */
+svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentcolor;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.puntos circle {
+  fill: currentcolor;
+  stroke: none;
+}
+
+.anadir-tarjeta {
+  width: 100%;
+}
+
+.tarjeta-titulo {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-weight: var(--weight-medium);
+  line-height: var(--leading-tight);
+}
+
+.tarjeta-descripcion {
+  display: -webkit-box;
+  margin-top: var(--space-1);
+  overflow: hidden;
+  color: var(--text-muted);
+  font-size: var(--text-caption);
+  line-height: var(--leading-normal);
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.tarjeta-responsable {
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
+  margin-top: var(--space-2);
+  color: var(--text-secondary);
+  font-size: var(--text-caption);
+}
+
+/* ── Estados ─────────────────────────────────────────────────────────── */
+
+/*
+ * El esqueleto suelto se pierde sobre la superficie hundida de la columna: cada hueco
+ * lleva el mismo fondo elevado que la tarjeta que va a sustituir.
+ */
+.huesos {
+  display: flex;
+  flex-direction: column;
+  gap: var(--card-gap);
+}
+
+.hueso {
+  padding: var(--card-padding);
+  border: var(--border-width) solid var(--border-color);
+  border-radius: var(--card-radius);
+  background-color: var(--surface-raised);
+}
+
+.columna-vacia {
+  padding: var(--space-4) var(--space-2);
+  color: var(--text-muted);
+  font-size: var(--text-caption);
+  text-align: center;
+}
+
+.aviso-vacio {
+  margin-bottom: var(--space-3);
+  color: var(--text-muted);
+  font-size: var(--text-caption);
+}
+
+/* Lo que se oye al filtrar: cuántas quedan de cuántas, sin tener que contar tarjetas. */
+.estado-filtro {
+  margin-bottom: var(--space-2);
+  color: var(--text-secondary);
+  font-size: var(--text-caption);
+  font-weight: var(--weight-medium);
+}
+
+.fallo {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-4);
+  border: var(--border-width) solid var(--danger);
+  border-radius: var(--card-radius);
+  background-color: var(--surface-raised);
+  color: var(--danger);
+}

@@ -1,0 +1,74 @@
+<main class="lista-tableros">
+  <header class="cabecera">
+    <div>
+      <p class="rotulo">Tableros</p>
+      <h1>TaskFlow</h1>
+    </div>
+
+    <div class="acciones">
+      <button appButton variant="primary" (click)="nuevoTablero()">Nuevo tablero</button>
+
+      <button appButton variant="ghost" [cdkMenuTriggerFor]="menuSesion">
+        <app-avatar [nombre]="sesion().nombre" [turno]="turnoActual()" size="sm" />
+        <span class="nombre-sesion">{{ sesion().nombre }}</span>
+      </button>
+    </div>
+  </header>
+
+  @if (cargando()) {
+    <div class="cargando" aria-busy="true" aria-live="polite">
+      <p class="rotulo">Cargando tableros</p>
+      @for (marca of [1, 2, 3]; track marca) {
+        <div class="hueso">
+          <app-skeleton [lineas]="2" anchoUltima="40%" />
+        </div>
+      }
+    </div>
+  } @else if (conFallo()) {
+    <div class="fallo" role="alert">
+      <p>{{ error() }}</p>
+      <button appButton variant="secondary" (click)="reintentar()">Reintentar</button>
+    </div>
+  } @else if (cuantos() === 0) {
+    <app-empty-state
+      titulo="No tienes tableros todavía"
+      descripcion="Crea el primero: entrarás como administrador y podrás invitar a quien quieras. Si alguien ya te invitó, cambia de persona o pídele acceso."
+    >
+      <button appButton variant="primary" (click)="nuevoTablero()">Crear mi primer tablero</button>
+    </app-empty-state>
+  } @else {
+    <ul class="lista">
+      @for (board of misTableros(); track board.id) {
+        <li>
+          <a class="enlace-tablero presionable" [routerLink]="['/tableros', board.id]">
+            <app-card>
+              <p class="titulo">{{ board.titulo }}</p>
+              <p class="meta tabular">
+                {{ board.columnas.length }} columnas · {{ board.miembros.length }}
+                {{ board.miembros.length === 1 ? 'persona' : 'personas' }}
+              </p>
+              @if (rolDe(board); as rol) {
+                <p class="meta">Tu rol: {{ etiqueta(rol) }}</p>
+              }
+            </app-card>
+          </a>
+        </li>
+      }
+    </ul>
+  }
+</main>
+
+<ng-template #plantillaNuevo>
+  <app-board-form (guardado)="crearTablero($event)" (cancelado)="cerrarNuevo()" />
+</ng-template>
+
+<ng-template #menuSesion>
+  <app-menu>
+    @for (persona of miembros(); track persona.id) {
+      <button appMenuItem (click)="cambiarSesion(persona.id)">
+        {{ persona.nombre }}
+      </button>
+    }
+    <button appMenuItem (click)="salir()">Salir</button>
+  </app-menu>
+</ng-template>

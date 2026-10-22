@@ -1,0 +1,58 @@
+<main class="detalle">
+  <a class="volver" routerLink="/">← Todos los tableros</a>
+
+  @if (cargando()) {
+    <p class="nota" aria-busy="true">Cargando el tablero…</p>
+  } @else if (tablero(); as tablero) {
+    @if (!tieneAcceso()) {
+      <app-empty-state
+        [nivel]="1"
+        titulo="No tienes acceso a este tablero"
+        descripcion="Pídeselo a quien lo administre: desde Personas puede invitarte con el rol que necesites."
+      >
+        <a class="volver" routerLink="/">Volver a mis tableros</a>
+      </app-empty-state>
+    } @else {
+      <header class="cabecera">
+        <div class="identidad">
+          <p class="rotulo">Tablero</p>
+          <h1>{{ tablero.titulo }}</h1>
+        </div>
+
+        <div class="acciones">
+          <button appButton variant="ghost" (click)="abrirMiembros()">
+            Personas ({{ tablero.miembros.length }})
+          </button>
+
+          @if (puedeEditar()) {
+            <button appButton variant="ghost" (click)="renombrar()">Renombrar</button>
+          }
+        </div>
+      </header>
+
+      <app-board-filters [filtro]="filtro()" (cambios)="aplicarFiltro($event)" />
+
+      <app-board-canvas [board]="tablero" [filtro]="filtro()" />
+    }
+  } @else {
+    <div class="no-encontrado" role="alert">
+      <h1>No se encontró ese tablero.</h1>
+      <a routerLink="/">Volver a la lista</a>
+    </div>
+  }
+</main>
+
+<ng-template #plantillaRenombrar>
+  <app-board-form
+    modo="renombrar"
+    [tituloInicial]="tablero()?.titulo ?? ''"
+    (guardado)="guardarNombre($event)"
+    (cancelado)="cerrarRenombrar()"
+  />
+</ng-template>
+
+<ng-template #plantillaMiembros>
+  @if (tablero(); as tablero) {
+    <app-board-members [board]="tablero" />
+  }
+</ng-template>

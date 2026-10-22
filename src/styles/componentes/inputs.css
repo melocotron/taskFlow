@@ -1,0 +1,72 @@
+/**
+ * Estilos de los controles nativos vestidos con `appInput`.
+ *
+ * Viven en la capa global `componentes` porque una directiva no puede tener
+ * estilos propios: su única misión es añadir la clase y la semántica accesible.
+ */
+@layer componentes {
+  .app-input {
+    width: 100%;
+    min-height: var(--control-height);
+    padding: var(--space-2) var(--control-padding-x);
+    border: var(--border-width) solid var(--border-color);
+    border-radius: var(--control-radius);
+    background-color: var(--surface-raised);
+    color: var(--text-primary);
+    font-family: var(--font-sans);
+    font-size: var(--text-body);
+    line-height: var(--leading-normal);
+    transition:
+      border-color var(--duration-fast) var(--ease-out),
+      background-color var(--duration-fast) var(--ease-out);
+  }
+
+  textarea.app-input {
+    padding-top: var(--space-2);
+    resize: vertical;
+  }
+
+  /* El desplegable conserva su flecha nativa: es la única que existe en todos los sistemas. */
+  select.app-input {
+    padding-right: var(--space-3);
+    cursor: pointer;
+  }
+
+  /*
+   * El navegador pinta su propia X azul dentro de los buscadores. Se quita: el azul no
+   * es un token del sistema y el filtro ya tiene su «Quitar filtro» al lado.
+   */
+  .app-input[type='search']::-webkit-search-cancel-button {
+    appearance: none;
+  }
+
+  /* El placeholder también es texto que hay que poder leer: 4.5:1, no 2.7:1. */
+  .app-input::placeholder {
+    color: var(--text-muted);
+    opacity: 1;
+  }
+
+  .app-input:hover:not(:disabled, :focus-visible) {
+    border-color: var(--border-color-strong);
+  }
+
+  .app-input:focus-visible {
+    border-color: var(--accent);
+  }
+
+  .app-input:disabled {
+    background-color: var(--surface-sunken);
+    color: var(--text-disabled);
+    cursor: not-allowed;
+  }
+
+  /* El error cambia el filete, no el fondo: nada de campos rojos chillones. */
+  .app-input--invalid,
+  .app-input--invalid:hover:not(:disabled) {
+    border-color: var(--danger);
+  }
+
+  .app-input[aria-invalid='true'] {
+    border-color: var(--danger);
+  }
+}

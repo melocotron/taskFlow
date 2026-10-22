@@ -1,0 +1,17 @@
+<form class="formulario" [formRoot]="formulario">
+  <app-field label="Nombre del tablero" [hint]="ayuda()" [error]="error()">
+    <input
+      #campoTitulo
+      appInput
+      type="text"
+      [formField]="formulario.titulo"
+      autocomplete="off"
+      placeholder="Producto, Marketing…"
+    />
+  </app-field>
+
+  <div class="acciones">
+    <button appButton type="button" variant="ghost" (click)="cancelado.emit()">Cancelar</button>
+    <button appButton type="submit" variant="primary">{{ etiquetaBoton() }}</button>
+  </div>
+</form>

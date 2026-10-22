@@ -9,11 +9,25 @@ export default {
     'type-enum': [
       2,
       'always',
-      ['feat', 'fix', 'docs', 'style', 'refactor', 'perf', 'test', 'build', 'ci', 'chore', 'revert'],
+      [
+        'feat',
+        'fix',
+        'docs',
+        'style',
+        'refactor',
+        'perf',
+        'test',
+        'build',
+        'ci',
+        'chore',
+        'revert',
+      ],
     ],
-    // Obligatorio el alcance: feature/sprint que se toca (S0.1, design-system, board…)
+    // Obligatorio el alcance: feature/sprint que se toca (board, design-system…).
+    // Se usa lower-case en vez de kebab-case porque kebab-case rechaza dígitos
+    // y alcances como `e2e`, `s3` o `a11y` son legítimos.
     'scope-empty': [2, 'never'],
-    'scope-case': [2, 'always', 'kebab-case'],
+    'scope-case': [2, 'always', 'lower-case'],
     'subject-empty': [2, 'never'],
     'subject-full-stop': [2, 'never', '.'],
     'subject-case': [2, 'never', ['upper-case', 'pascal-case', 'start-case']],

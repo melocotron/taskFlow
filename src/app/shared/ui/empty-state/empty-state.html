@@ -1,0 +1,21 @@
+<div class="vacio">
+  @switch (nivel()) {
+    @case (1) {
+      <h1 class="titulo">{{ titulo() }}</h1>
+    }
+    @case (3) {
+      <h3 class="titulo">{{ titulo() }}</h3>
+    }
+    @default {
+      <h2 class="titulo">{{ titulo() }}</h2>
+    }
+  }
+
+  @if (descripcion()) {
+    <p class="descripcion">{{ descripcion() }}</p>
+  }
+
+  <div class="acciones">
+    <ng-content />
+  </div>
+</div>

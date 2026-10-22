@@ -1,0 +1,39 @@
+/**
+ * Burbuja del tooltip.
+ *
+ * Es global porque la directiva crea el elemento en tiempo de ejecución y no puede
+ * llevarse sus propios estilos.
+ */
+@layer componentes {
+  /* El ancla se posiciona para que la burbuja pueda colgar de ella. */
+  .app-tooltip-ancla {
+    position: relative;
+  }
+
+  .app-tooltip {
+    position: absolute;
+    top: calc(100% + var(--space-2));
+    left: 50%;
+    z-index: 30;
+    max-width: 240px;
+    padding: var(--space-1) var(--space-2);
+    border-radius: var(--radius-sm);
+    background-color: var(--hierro-900);
+    color: var(--viruta-50);
+    font-size: var(--text-caption);
+    line-height: var(--leading-normal);
+    white-space: nowrap;
+    transform: translateX(-50%);
+    pointer-events: none;
+    opacity: 0;
+    visibility: hidden;
+    transition:
+      opacity var(--duration-popover) var(--ease-out),
+      visibility var(--duration-popover);
+  }
+
+  .app-tooltip[data-visible='true'] {
+    opacity: 1;
+    visibility: visible;
+  }
+}

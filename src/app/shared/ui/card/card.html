@@ -1,0 +1,6 @@
+@if (conTurno()) {
+  <span class="lengueta" [style.background-color]="colorLengueta()" aria-hidden="true"></span>
+  <span class="visualmente-oculto">{{ textoAsignacion() }}</span>
+}
+
+<ng-content />
