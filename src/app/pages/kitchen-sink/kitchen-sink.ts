@@ -1,5 +1,14 @@
 import { CdkMenuTrigger } from '@angular/cdk/menu';
-import { Component, TemplateRef, ViewChild, afterNextRender, inject, signal } from '@angular/core';
+import { httpResource } from '@angular/common/http';
+import {
+  Component,
+  TemplateRef,
+  ViewChild,
+  afterNextRender,
+  inject,
+  injectAsync,
+  signal,
+} from '@angular/core';
 import {
   Avatar,
   Badge,
@@ -18,6 +27,8 @@ import {
   Tooltip,
 } from '@shared/ui';
 import type { BadgeTono, ButtonVariant } from '@shared/ui';
+import type { DatosLaboratorio } from './lab.interceptor';
+import type { V22LabService } from './v22-lab.service';
 
 interface Token {
   readonly name: string;
@@ -63,10 +74,27 @@ export default class KitchenSinkPage {
   private readonly dialogos = inject(DialogService);
   private readonly avisos = inject(ToastService);
 
+  /** `injectAsync` carga el servicio solo cuando alguien pulsa el botón. */
+  private readonly cargarLaboratorio = injectAsync<V22LabService>(() =>
+    import('./v22-lab.service').then((modulo) => modulo.V22LabService),
+  );
+
+  protected readonly mensajeLaboratorio = signal('');
+  protected readonly laboratorioHttp = httpResource<DatosLaboratorio>(() => '/api/laboratorio');
+
   @ViewChild('contenidoDialogo', { static: true })
   private contenidoDialogo!: TemplateRef<unknown>;
 
   protected readonly valores = signal<Record<string, string>>({});
+
+  protected async probarInjectAsync(): Promise<void> {
+    const servicio = await this.cargarLaboratorio();
+    this.mensajeLaboratorio.set(servicio.mensaje);
+  }
+
+  protected recargarLaboratorioHttp(): void {
+    this.laboratorioHttp.reload();
+  }
 
   protected abrirDialogo(): void {
     this.dialogos.abrir('Renombrar tablero', this.contenidoDialogo);

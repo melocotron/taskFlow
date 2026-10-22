@@ -1,4 +1,4 @@
-import { Injectable, signal } from '@angular/core';
+import { Service, signal } from '@angular/core';
 import type { ToastTono } from './toast';
 
 export interface Aviso {
@@ -13,7 +13,7 @@ export interface Aviso {
  * Un aviso no bloquea y no pide confirmación: si hiciera eso sería un diálogo.
  * Se va solo, y quien no llegó a leerlo puede repetir la acción.
  */
-@Injectable({ providedIn: 'root' })
+@Service()
 export class ToastService {
   private readonly cola = signal<readonly Aviso[]>([]);
   private readonly temporizadores = new Map<number, ReturnType<typeof setTimeout>>();

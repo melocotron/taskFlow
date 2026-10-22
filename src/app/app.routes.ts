@@ -25,9 +25,9 @@ export const routes: Routes = [
   },
   {
     // Banco de pruebas del design system. No es producto: no aparece en la navegación.
+    // Las rutas hijas cargan HttpClient solo para el laboratorio v22.
     path: 'kitchen-sink',
-    title: 'Kitchen sink · TaskFlow',
-    loadComponent: () => import('@pages/kitchen-sink/kitchen-sink'),
+    loadChildren: () => import('@pages/kitchen-sink/kitchen-sink.routes'),
   },
   {
     path: '**',

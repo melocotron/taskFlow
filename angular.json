@@ -43,6 +43,12 @@
           },
           "configurations": {
             "production": {
+              "fileReplacements": [
+                {
+                  "replace": "src/app/pages/kitchen-sink/kitchen-sink.routes.ts",
+                  "with": "src/app/pages/kitchen-sink/kitchen-sink.routes.production.ts"
+                }
+              ],
               "budgets": [
                 {
                   "type": "initial",
