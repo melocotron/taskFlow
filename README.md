@@ -21,6 +21,7 @@ npm run verify   # format + lint + tests + build
 | [docs/PROGRESS.md](docs/PROGRESS.md) | Dónde vamos y dónde me quedé                          |
 | [docs/IDEAS.md](docs/IDEAS.md)       | Ideas aparcadas (no se tocan a mitad de sprint)       |
 | [CHANGELOG.md](CHANGELOG.md)         | Qué entró en cada versión                             |
+| [docs/DEPLOY.md](docs/DEPLOY.md)     | Despliegue en Vercel y flujo de ramas                 |
 | [CLAUDE.md](CLAUDE.md)               | Reglas de código de Angular 22 para el agente         |
 
 ## Stack
