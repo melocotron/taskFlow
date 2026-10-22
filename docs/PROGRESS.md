@@ -721,22 +721,41 @@ del presupuesto 350/370 kB.
 
 ---
 
+## ✅ Fase 5 · S5.1 — Entrega 1.0
+
+TaskFlow ya tiene repositorio remoto y una release publicada:
+
+- `main` y `develop` están en GitHub:
+  `https://github.com/melocotron/taskFlow`.
+- CI verde en ambas ramas, con los jobs de calidad y E2E.
+- Se sincronizó el lockfile con `@types/node` para que `npm ci` funcione en un
+  entorno limpio; el fallo inicial de CI fue exactamente ese.
+- `release/1.0.0` sube la versión, añade `CHANGELOG.md` y actualiza el README.
+- Tag `v1.0.0` y GitHub Release:
+  `https://github.com/melocotron/taskFlow/releases/tag/v1.0.0`.
+- `develop` recibió el back-merge de la release.
+
+**Verificado:** 180 tests unitarios, 32 E2E, `npm run verify` verde y CI verde en
+`main` y `develop`. Bundle inicial **333,88 kB**.
+
+---
+
 ## Siguiente fase
 
-**Fase 4.5 cerrada.** S4.5 y S4.6 completos. Sigue S5.1: publicar `main`/`develop` en
-GitHub, comprobar CI real, actualizar versión y changelog, y etiquetar `v1.0.0`.
+**Fase 5 en curso.** S5.1 cerrado con la release 1.0. Quedan S5.2 (SSR + hydration) y
+S5.3 (WebMCP), ambos opcionales. Archivar tableros sigue como post-1.0.
 
 ---
 
 ## Dónde me quedé
 
-S4.6 terminado en `feature/S4.6-laboratorio-v22`: laboratorio dev-only de `@Service`,
-`injectAsync` y `httpResource`, con 32 E2E. Siguiente: S5.1, entrega real en GitHub.
+S5.1 terminado: `main` y `develop` publicados, CI verde, tag `v1.0.0` y release de
+GitHub. Siguiente decisión: continuar con SSR/WebMCP o cerrar el proyecto en 1.0.
 
 ## Siguiente paso concreto
 
-Ejecutar S5.1: push de `main` y `develop`, verificar CI, preparar `release/1.0.0`,
-changelog, tag `v1.0.0` y back-merge a `develop`.
+Elegir entre S5.2 (SSR + incremental hydration + event replay), S5.3 (WebMCP) o
+posponer ambos y abordar archivar tableros como feature post-1.0.
 
 ---
 
@@ -778,3 +797,4 @@ Los E2E corren en CI y antes de un merge a `main`.
 | 2026-10-21 | S4.4.1 | Hundido global `.presionable`; F7 explicaba el cursor de texto.                        |
 | 2026-10-21 | S4.5   | Plan y READMEs alineados; npm, S4.6 y release 1.0 registrados.                         |
 | 2026-10-21 | S4.6   | Laboratorio dev-only de @Service, injectAsync y httpResource; 32 E2E.                  |
+| 2026-10-21 | S5.1   | GitHub, CI verde, release 1.0.0 y tag v1.0.0.                                          |

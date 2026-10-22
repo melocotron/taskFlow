@@ -514,8 +514,8 @@ Para que "todas las nuevas funcionalidades" sea verificable, no aspiracional.
 ## 12. Decisiones cerradas
 
 1. La carpeta se renombró a `taskFlow` y la app vive en la raíz del workspace.
-2. El remoto es GitHub: `https://github.com/melocotron/taskFlow.git`. La verificación
-   real de CI se hace en S5.1, cuando `develop` y `main` estén publicados.
+2. El remoto es GitHub: `https://github.com/melocotron/taskFlow.git`. CI quedó verde
+   en `main` y `develop` al cerrar S5.1.
 3. No se rellenan `plan.md`/`tasks.md` de 001 a posteriori. Spec Kit se usa desde la
    Fase 5; hasta ahora el seguimiento vive en `PLAN.md` y `PROGRESS.md`.
 4. Archivar tableros queda para después del 1.0: el dominio ya lo soporta, falta la UI.
