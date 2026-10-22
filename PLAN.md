@@ -398,10 +398,10 @@ Nada más. Un E2E que no representa un journey es un unit test lento.
 
 ### Fase 4.5 — Reconciliación y cobertura v22 (2 sprints)
 
-| #        | Objetivo                                                                  | Verde cuando                                       |
-| -------- | ------------------------------------------------------------------------- | -------------------------------------------------- |
-| **S4.5** | Alinear `PLAN.md`, `PROGRESS.md` y READMEs con lo construido              | Documentación sin contradicciones y `format:check` |
-| **S4.6** | Laboratorio de `@Service`, `injectAsync` y `httpResource` en kitchen-sink | API demostrada sin tocar la persistencia real      |
+| #        | Objetivo                                                           | Verde cuando                                          |
+| -------- | ------------------------------------------------------------------ | ----------------------------------------------------- |
+| **S4.5** | Alinear `PLAN.md`, `PROGRESS.md` y READMEs con lo construido       | Documentación sin contradicciones y `format:check`    |
+| **S4.6** | Laboratorio dev-only de `@Service`, `injectAsync` y `httpResource` | E2E verde y producción sin HttpClient ni kitchen-sink |
 
 ### Fase 5 — Entrega y extras v22 (3 sprints)
 

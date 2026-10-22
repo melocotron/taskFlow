@@ -699,23 +699,44 @@ código; el bundle inicial sigue en **332,20 kB**.
 
 ---
 
+## ✅ Fase 4.5 · S4.6 — Laboratorio Angular 22
+
+Se cubrieron las tres APIs que el mapa de cobertura daba por hechas:
+
+- **`@Service()`**: `ToastService` pasa del decorador clásico al nuevo; sigue siendo
+  singleton y sus tests no cambian.
+- **`injectAsync()`**: un servicio de laboratorio se carga con `import()` solo al pulsar
+  un botón de `/kitchen-sink`; no entra en el camino crítico.
+- **`httpResource` + interceptor**: una petición a `/api/laboratorio` se resuelve en
+  memoria, con retardo para que se vea el estado de carga. No hay backend ni se toca la
+  persistencia del producto.
+- **Aislamiento de producción**: `angular.json` sustituye la ruta lazy del kitchen-sink
+  por una redirección. Así `HttpClient` y el laboratorio no entran en el bundle inicial.
+- `e2e/laboratorio.spec.ts` cubre ruta lazy, provider, interceptor, `httpResource` e
+  `injectAsync` en un solo recorrido.
+
+**Verificado:** 180 tests unitarios, **32 E2E** (`npm run e2e` verde) y `npm run verify`
+verde. Bundle inicial **333,88 kB** (87,35 kB de transferencia estimada); sigue dentro
+del presupuesto 350/370 kB.
+
+---
+
 ## Siguiente fase
 
-**Fase 4.5 en curso.** S4.5 cerrado; sigue S4.6 con el laboratorio de `@Service`,
-`injectAsync` y `httpResource`. Después, S5.1: GitHub, CI real y release 1.0.
+**Fase 4.5 cerrada.** S4.5 y S4.6 completos. Sigue S5.1: publicar `main`/`develop` en
+GitHub, comprobar CI real, actualizar versión y changelog, y etiquetar `v1.0.0`.
 
 ---
 
 ## Dónde me quedé
 
-S4.5 terminado en `feature/S4.5-reconciliacion-plan`: el plan y los READMEs reflejan
-el estado real. Siguiente: crear el laboratorio v22 sin tocar la persistencia del
-producto.
+S4.6 terminado en `feature/S4.6-laboratorio-v22`: laboratorio dev-only de `@Service`,
+`injectAsync` y `httpResource`, con 32 E2E. Siguiente: S5.1, entrega real en GitHub.
 
 ## Siguiente paso concreto
 
-Ejecutar S4.6: convertir `ToastService` a `@Service`, demostrar `injectAsync` y añadir
-un laboratorio de `httpResource` con interceptor mock en `/kitchen-sink`.
+Ejecutar S5.1: push de `main` y `develop`, verificar CI, preparar `release/1.0.0`,
+changelog, tag `v1.0.0` y back-merge a `develop`.
 
 ---
 
@@ -756,3 +777,4 @@ Los E2E corren en CI y antes de un merge a `main`.
 | 2026-10-21 | S4.4   | Avisos sobre el diálogo y accesibles, X legible y móvil sin scroll de página.          |
 | 2026-10-21 | S4.4.1 | Hundido global `.presionable`; F7 explicaba el cursor de texto.                        |
 | 2026-10-21 | S4.5   | Plan y READMEs alineados; npm, S4.6 y release 1.0 registrados.                         |
+| 2026-10-21 | S4.6   | Laboratorio dev-only de @Service, injectAsync y httpResource; 32 E2E.                  |
