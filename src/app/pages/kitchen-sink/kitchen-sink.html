@@ -302,6 +302,55 @@
     </app-empty-state>
   </section>
 
+  <section class="seccion" aria-labelledby="v22">
+    <h2 id="v22">Angular 22: DI y recursos</h2>
+    <p class="nota">
+      Tres APIs que el producto no necesita en su camino crítico, demostradas sin abrir un backend:
+      <code>@Service</code>, <code>injectAsync</code> y <code>httpResource</code>.
+    </p>
+
+    <div class="fila-demo">
+      <span class="rotulo control-rotulo">@Service</span>
+      <p>
+        <code>ToastService</code> ya se declara con <code>@Service()</code>: sigue siendo un
+        singleton.
+      </p>
+    </div>
+
+    <div class="fila-demo">
+      <span class="rotulo control-rotulo">injectAsync</span>
+      <button appButton variant="secondary" (click)="probarInjectAsync()">
+        Cargar servicio bajo demanda
+      </button>
+      @if (mensajeLaboratorio()) {
+        <p role="status">{{ mensajeLaboratorio() }}</p>
+      }
+    </div>
+
+    <div class="fila-demo">
+      <span class="rotulo control-rotulo">httpResource</span>
+      <button appButton variant="secondary" (click)="recargarLaboratorioHttp()">
+        Recargar datos
+      </button>
+      @switch (laboratorioHttp.status()) {
+        @case ('loading') {
+          <p role="status">Cargando datos del laboratorio…</p>
+        }
+        @case ('error') {
+          <p role="alert">No se pudieron cargar los datos.</p>
+        }
+        @case ('resolved') {
+          @if (laboratorioHttp.value(); as datos) {
+            <p role="status">{{ datos.titulo }} · {{ datos.tarjetas }} tarjetas</p>
+          }
+        }
+        @default {
+          <p role="status">En espera.</p>
+        }
+      }
+    </div>
+  </section>
+
   <section class="seccion" aria-labelledby="overlays">
     <h2 id="overlays">Overlays</h2>
     <p class="nota">
