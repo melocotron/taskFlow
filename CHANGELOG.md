@@ -17,6 +17,8 @@ versionado semántico.
 - Docker Compose para PostgreSQL local y base `taskflow_test`.
 - Dockerfile multi-stage que sirve Angular y la API desde Go.
 - Cliente HTTP `shared/api` con errores tipados y proxy de desarrollo hacia Go.
+- Acceso real con email y contraseña: `AuthService`, guards de sesión e invitado y
+  pantalla de login/registro conectada a la API.
 - Job de backend en GitHub Actions con PostgreSQL real.
 - Dependencia fijada de Vite 8.3.5 mediante `overrides`; `npm audit` queda sin
   vulnerabilidades conocidas.
@@ -31,8 +33,8 @@ versionado semántico.
 
 ### Pendiente
 
-- Conectar los repositorios de Angular con la API y sustituir la entrada de demo por
-  login y registro reales.
+- Conectar los repositorios de tableros, tarjetas y miembros con la API y retirar
+  `localStorage` del camino principal.
 
 ## [1.0.0] - 2026-10-21
 

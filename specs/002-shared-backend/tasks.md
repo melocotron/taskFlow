@@ -232,7 +232,7 @@ crea duplicados y devuelve contadores coherentes.
 > romper referencias.
 
 - [x] T069 Añadir `shared/api` y el proxy de desarrollo
-- [ ] T071 Sustituir `/entrar` por login/registro y añadir `AuthService`
+- [x] T071 Sustituir `/entrar` por login/registro y añadir `AuthService`
 - [ ] T070 Migrar repositorios de `board`, `task` y `member` a HTTP
 - [ ] T072 Adaptar stores, filtros, formularios y tests de UI
 - [ ] T073 Añadir E2E con Go + PostgreSQL

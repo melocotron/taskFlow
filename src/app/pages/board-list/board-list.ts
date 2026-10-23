@@ -2,10 +2,11 @@ import type { DialogRef } from '@angular/cdk/dialog';
 import { CdkMenuTrigger } from '@angular/cdk/menu';
 import { Component, TemplateRef, computed, inject, viewChild } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
+import { AuthService } from '@entities/auth';
 import { BoardStore, esMiembro, rolEn } from '@entities/board';
 import type { Board } from '@entities/board';
 import { MemberStore, etiquetaRol } from '@entities/member';
-import type { MemberId, Rol } from '@entities/member';
+import type { Rol } from '@entities/member';
 import { BoardForm } from '@features/board-form';
 import type { DatosTablero } from '@features/board-form';
 import { turnoPorIndice } from '@shared/lib/turnos';
@@ -53,6 +54,7 @@ export default class BoardListPage {
   private readonly tableros = inject(BoardStore);
   private readonly avisos = inject(ToastService);
   private readonly equipo = inject(MemberStore);
+  private readonly auth = inject(AuthService);
   private readonly dialogos = inject(DialogService);
   private readonly rutas = inject(Router);
 
@@ -73,13 +75,6 @@ export default class BoardListPage {
   protected readonly cuantos = computed(() => this.misTableros().length);
 
   protected readonly sesion = this.equipo.sesion;
-  protected readonly miembros = this.equipo.miembros;
-
-  protected readonly turnoActual = computed(() => {
-    const indice = this.miembros().findIndex((persona) => persona.id === this.sesion().id);
-
-    return turnoPorIndice(Math.max(indice, 0));
-  });
 
   /** Etiqueta legible del rol, para la tarjeta de cada tablero. */
   protected etiqueta = etiquetaRol;
@@ -92,14 +87,14 @@ export default class BoardListPage {
     return rolEn(board, this.sesion().id);
   }
 
-  protected cambiarSesion(id: MemberId): void {
-    this.equipo.cambiarSesion(id);
-  }
-
-  /** Salir deja de tener sentido si te deja dentro: se cierra la sesión y se sale. */
-  protected salir(): void {
-    this.equipo.salir();
-    void this.rutas.navigate(['/entrar']);
+  /** Cierra la sesión en el servidor y en el store de identidad local. */
+  protected async salir(): Promise<void> {
+    try {
+      await this.auth.salir();
+    } finally {
+      this.equipo.salir();
+      await this.rutas.navigate(['/entrar']);
+    }
   }
 
   protected nuevoTablero(): void {

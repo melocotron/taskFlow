@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { sesionGuard } from './sesion.guard';
+import { invitadoGuard, sesionGuard } from './sesion.guard';
 
 /**
  * Rutas raíz. Todas las páginas entran por lazy loading: así el bundle inicial
@@ -9,6 +9,7 @@ export const routes: Routes = [
   {
     path: 'entrar',
     title: 'Entrar · TaskFlow',
+    canActivate: [invitadoGuard],
     loadComponent: () => import('@pages/entrar/entrar'),
   },
   {

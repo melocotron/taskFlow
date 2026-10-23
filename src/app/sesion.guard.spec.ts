@@ -1,28 +1,38 @@
 import { TestBed } from '@angular/core/testing';
 import { Router, provideRouter } from '@angular/router';
-import { MemberStore, comoMemberId } from '@entities/member';
-import { sesionGuard } from './sesion.guard';
+import { AuthService } from '@entities/auth';
+import { invitadoGuard, sesionGuard } from './sesion.guard';
 
-describe('sesionGuard', () => {
+describe('guards de sesión', () => {
+  let conSesion = false;
+
   function configurar() {
-    TestBed.configureTestingModule({ providers: [provideRouter([])] });
-    return TestBed.inject(MemberStore);
+    const auth = {
+      listo: Promise.resolve(),
+      haySesion: () => conSesion,
+    };
+
+    TestBed.configureTestingModule({
+      providers: [{ provide: AuthService, useValue: auth }, provideRouter([])],
+    });
   }
 
-  function ejecutar(): boolean | import('@angular/router').UrlTree {
+  async function ejecutar(
+    guard: typeof sesionGuard,
+  ): Promise<boolean | import('@angular/router').UrlTree> {
     return TestBed.runInInjectionContext(
-      () => sesionGuard({} as never, {} as never) as boolean | import('@angular/router').UrlTree,
-    ) as boolean | import('@angular/router').UrlTree;
+      () => guard({} as never, {} as never) as ReturnType<typeof guard>,
+    ) as Promise<boolean | import('@angular/router').UrlTree>;
   }
 
   beforeEach(() => {
-    localStorage.clear();
+    conSesion = false;
   });
 
-  it('sin sesión elegida redirige a /entrar', () => {
+  it('sin sesión redirige a /entrar', async () => {
     configurar();
 
-    const resultado = ejecutar();
+    const resultado = await ejecutar(sesionGuard);
     const router = TestBed.inject(Router);
 
     expect(resultado).not.toBe(true);
@@ -31,20 +41,28 @@ describe('sesionGuard', () => {
     );
   });
 
-  it('con sesión elegida deja pasar', () => {
-    const equipo = configurar();
-    equipo.cambiarSesion(comoMemberId('ivan'));
+  it('con sesión deja pasar', async () => {
+    configurar();
+    conSesion = true;
 
-    expect(ejecutar()).toBe(true);
+    await expect(ejecutar(sesionGuard)).resolves.toBe(true);
   });
 
-  it('después de salir vuelve a bloquear', () => {
-    const equipo = configurar();
-    equipo.cambiarSesion(comoMemberId('marta'));
-    expect(ejecutar()).toBe(true);
+  it('el guard de invitado saca de /entrar si ya hay sesión', async () => {
+    configurar();
+    conSesion = true;
 
-    equipo.salir();
+    const resultado = await ejecutar(invitadoGuard);
+    const router = TestBed.inject(Router);
 
-    expect(ejecutar()).not.toBe(true);
+    expect((resultado as import('@angular/router').UrlTree).toString()).toBe(
+      router.createUrlTree(['/']).toString(),
+    );
+  });
+
+  it('el guard de invitado deja entrar sin sesión', async () => {
+    configurar();
+
+    await expect(ejecutar(invitadoGuard)).resolves.toBe(true);
   });
 });

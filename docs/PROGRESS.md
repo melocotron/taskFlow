@@ -770,32 +770,55 @@ registro → tablero → tarjeta → movimiento → logout, `npm run verify` com
 (180 tests unitarios, lint, fronteras y build), `npm audit` sin hallazgos y la imagen
 Docker construida y probada sirviendo la SPA, `/healthz` y 404 JSON para la API.
 
-**Pendiente consciente:** la interfaz todavía usa `localStorage`. La fase 9 de
-`specs/002-shared-backend/tasks.md` ya tiene el cliente HTTP y el proxy (T069); quedan
-migrar los repositorios, añadir login/registro reales y retirar la persistencia local.
+**Pendiente consciente:** la interfaz todavía usa `localStorage` para tableros y
+tarjetas. La fase 9 de `specs/002-shared-backend/tasks.md` ya tiene el cliente HTTP, el
+proxy y la autenticación real (T069 y T071); queda migrar los repositorios y retirar la
+persistencia local (T070, T072–T074).
+
+---
+
+## Fase 6 · S6.4b — Acceso real
+
+La aplicación deja de elegir una persona de la demo: ahora pide email y contraseña
+contra la API.
+
+- **`entities/auth`** contiene `AuthService`, el modelo `Usuario` y la comprobación
+  inicial de `GET /me`. Un `401` se interpreta como “sin sesión”, no como fallo.
+- **Login y registro** comparten la pantalla `/entrar`; Signal Forms valida email,
+  contraseña y nombre antes de enviar, y muestra el mensaje de la API si falla.
+- **Guards:** `sesionGuard` espera a que termine la comprobación de sesión;
+  `invitadoGuard` saca de `/entrar` a quien ya está autenticado.
+- **Puente de identidad:** `App` sincroniza `AuthService.usuario` con `MemberStore`
+  para que los tableros locales sigan usando `MemberId` mientras llega T070.
+- **Cierre de sesión:** el botón del menú llama a `AuthService.salir()`, revoca la
+  sesión en Go y limpia la identidad local.
+
+**Verificado:** `npm run verify` completo (197 tests, lint, fronteras y build). La UI
+de datos sigue leyendo `localStorage`; una cuenta nueva ve la lista vacía y puede crear
+tableros locales hasta que T070 los lleve al servidor.
 
 ---
 
 ## Siguiente fase
 
-**Fase 6 en curso.** S6.1-S6.3 entregados: especificación, API, Docker y CI. S6.4
-(integrar Angular) empieza con `shared/api` y el proxy; quedan S6.4 completo y S6.5
-(desplegar Go + Neon). SSR y WebMCP siguen opcionales.
+**Fase 6 en curso.** S6.1–S6.4b entregados: especificación, API, Docker, CI, cliente
+HTTP y acceso real. Queda S6.4 completo con la migración de repositorios a HTTP
+(T070, T072) y S6.5 (desplegar Go + Neon). SSR y WebMCP siguen opcionales.
 
 ---
 
 ## Dónde me quedé
 
-El backend está implementado y probado de punta a punta con PostgreSQL, pero el
-navegador aún no lo consume. La rama activa es `feature/002-shared-backend`.
+El backend está implementado y probado de punta a punta con PostgreSQL. El navegador ya
+puede autenticarse contra él, pero tableros y tarjetas todavía se guardan en
+`localStorage`. La rama activa es `feature/002-shared-backend`.
 
 ## Siguiente paso concreto
 
-Continuar la fase 9 con T071 + T070 como una sola rebanada: primero `AuthService`,
-guard y pantalla de login/registro, porque sin sesión cualquier repositorio HTTP
-recibiría `401`; después migrar los repositorios de `board`, `task` y `member` a HTTP.
-Cierran la rebanada T072 (stores, filtros y tests), T073 (E2E con Go + PostgreSQL) y
-T074 (retirar `localStorage`). `shared/api` y el proxy ya están listos (T069).
+Continuar la fase 9 con **T070**: convertir los repositorios de `board`, `task` y
+`member` a HTTP y adaptar stores, filtros, formularios y tests (T072). Después vienen
+T073 (E2E con Go + PostgreSQL) y T074 (retirar `localStorage` y cerrar la importación
+de datos de la versión 1.0).
 
 ---
 
@@ -842,3 +865,4 @@ Los E2E corren en CI y antes de un merge a `main`.
 | 2026-10-23 | S6.2   | Auth, tableros, roles, tarjetas, movimiento, importación y Dockerfile multi-stage.     |
 | 2026-10-23 | S6.3   | Imagen Docker verificada; Vite 8.3.5 y `npm audit` sin vulnerabilidades.               |
 | 2026-10-23 | S6.4   | `shared/api`, errores tipados y proxy de desarrollo `/api` → Go.                       |
+| 2026-10-23 | S6.4b  | `AuthService`, guards y `/entrar` con login y registro reales; 197 tests.              |

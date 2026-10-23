@@ -5,11 +5,13 @@ import { Member, MemberId, MIEMBROS_DEMO, comoMemberId } from '../model/member.m
 const CLAVE_SESION = 'taskflow.sesion';
 
 /**
- * Personas del equipo y quién está usando la app ahora mismo.
+ * Identidad adaptada al modelo de tableros.
  *
- * No hay login: se elige una persona de la lista, tal como fijó el spec 001. El rol no
- * vive aquí: cada tablero guarda quién entra y con qué permiso, así que la misma persona
- * puede administrar un tablero y solo mirar otro.
+ * `AuthService` es la fuente de verdad de la sesión. Este store conserva la interfaz
+ * que ya usan los tableros y sincroniza la cuenta autenticada desde `App`. El rol no
+ * vive aquí: cada tablero guarda quién entra y con qué permiso. Los métodos de la
+ * demo (elegir persona y `localStorage`) sobreviven hasta retirar los repositorios
+ * locales en T074.
  */
 @Injectable({ providedIn: 'root' })
 export class MemberStore {
@@ -51,6 +53,28 @@ export class MemberStore {
     escribirTexto(CLAVE_SESION, id);
     this.actual.set(elegida);
     this.elegida.set(true);
+  }
+
+  /**
+   * Sincroniza el store con la cuenta que devuelve la API.
+   *
+   * La autenticación real vive en `AuthService`; este método solo adapta la identidad
+   * al modelo de miembro que ya usan los tableros. Al cerrar sesión se vuelve a la
+   * lista de demostración para que los tests y la pantalla antigua sigan funcionando
+   * mientras termina la migración de datos (T070).
+   */
+  sincronizarSesion(miembro: Member | null): void {
+    if (miembro) {
+      this.miembros.set([miembro]);
+      this.actual.set(miembro);
+      this.elegida.set(true);
+      return;
+    }
+
+    this.miembros.set(MIEMBROS_DEMO);
+    this.actual.set(MIEMBROS_DEMO[0]!);
+    this.elegida.set(false);
+    borrarTexto(CLAVE_SESION);
   }
 
   salir(): void {

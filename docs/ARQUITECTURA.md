@@ -61,7 +61,7 @@ pages  →  widgets  →  features  →  entities  →  shared
 | `pages/`    | Una ruta. Solo compone.                        | `board-list`, `board-detail`               |
 | `widgets/`  | Bloque de UI con sentido propio.               | `board-canvas`                             |
 | `features/` | Una acción del usuario (verbo).                | `board-form`, `task-form`, `board-members` |
-| `entities/` | Modelo, store, repositorio y UI de lectura.    | `board`, `task`, `member`                  |
+| `entities/` | Modelo, store, repositorio y UI de lectura.    | `board`, `task`, `member`, `auth`          |
 | `shared/`   | Sin negocio: design system, utilidades y HTTP. | `ui/button`, `api/api-client`              |
 
 ### Límites entre capas
@@ -89,19 +89,29 @@ pages  →  widgets  →  features  →  entities  →  shared
 - El servidor sigue siendo la autoridad de permisos. Ocultar un botón en Angular no
   sustituye la comprobación de rol en Go.
 
+### Sesión
+
+`entities/auth` contiene `AuthService`, el modelo `Usuario` y la comprobación inicial
+de `GET /me`. Al arrancar, la aplicación espera esa promesa antes de decidir si muestra
+el producto o `/entrar`; un `401` significa “sin sesión” y no se pinta como error. La
+cookie `HttpOnly` es la fuente de verdad: el cliente no guarda tokens. `App` adapta el
+usuario autenticado a `MemberStore` mientras los tableros siguen usando `MemberId`;
+ese puente se retira con la migración de repositorios (T070).
+
 ### Estado actual de la integración
 
 | Pieza                              | Estado           |
 | ---------------------------------- | ---------------- |
 | `shared/api` + proxy de desarrollo | Terminado (T069) |
+| `AuthService`, login y registro    | Terminado (T071) |
 | Repositorios de entidades por HTTP | Pendiente (T070) |
-| `AuthService`, login y registro    | Pendiente (T071) |
 | Stores, filtros y tests adaptados  | Pendiente (T072) |
 | E2E con Go + PostgreSQL            | Pendiente (T073) |
 | Retirada de `localStorage`         | Pendiente (T074) |
 
-Mientras T070–T074 no terminen, la interfaz sigue leyendo `localStorage` y `/entrar`
-sigue siendo el selector de personas de la demo. El backend ya está operativo.
+Mientras T070 y T072–T074 no terminen, la interfaz se autentica contra Go pero sigue
+leyendo tableros y tarjetas de `localStorage`. `AuthService` es la fuente de verdad de
+la sesión; `App` adapta la cuenta a `MemberStore` para no romper los stores locales.
 
 ## 3. Backend: capas y responsabilidades
 

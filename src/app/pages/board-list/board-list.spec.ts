@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { Router, provideRouter } from '@angular/router';
+import { AuthService } from '@entities/auth';
 import { BoardStore } from '@entities/board';
 import { MemberStore, comoMemberId } from '@entities/member';
 import type { MemberId } from '@entities/member';
@@ -15,9 +16,15 @@ class DestinoVacio {}
 
 describe('BoardListPage', () => {
   async function montar(persona: MemberId = MARTA) {
+    const auth = {
+      salir: async () => undefined,
+      usuario: () => null,
+    };
+
     TestBed.configureTestingModule({
       imports: [BoardListPage],
       providers: [
+        { provide: AuthService, useValue: auth },
         provideRouter([
           { path: 'tableros/:id', component: DestinoVacio },
           { path: 'entrar', component: DestinoVacio },
@@ -34,7 +41,7 @@ describe('BoardListPage', () => {
     await store.listo;
     fixture.detectChanges();
 
-    return { fixture, store, equipo, elemento: fixture.nativeElement as HTMLElement };
+    return { fixture, store, equipo, auth, elemento: fixture.nativeElement as HTMLElement };
   }
 
   function botonNuevo(elemento: HTMLElement): HTMLButtonElement | null {
@@ -203,16 +210,12 @@ describe('BoardListPage', () => {
       return Array.from(document.querySelectorAll('[role="menuitem"]')) as HTMLButtonElement[];
     }
 
-    it('cambia de persona y la sesión queda guardada', async () => {
-      const { fixture, equipo, elemento } = await montar();
+    it('ofrece cerrar sesión y no cambiar de identidad a mano', async () => {
+      const { fixture, elemento } = await montar();
       // El menú es del CDK y se abre en un overlay: hay que detectar cambios tras cada paso.
       const opciones = abrirMenu(elemento, fixture);
-      const alba = opciones.find((opcion) => opcion.textContent?.includes('Alba Sanz'))!;
 
-      alba.click();
-      fixture.detectChanges();
-
-      expect(equipo.sesion().nombre).toBe('Alba Sanz');
+      expect(opciones.map((opcion) => opcion.textContent?.trim())).toEqual(['Salir']);
     });
 
     it('salir cierra la sesión y saca de la aplicación', async () => {

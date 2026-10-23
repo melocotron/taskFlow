@@ -62,10 +62,10 @@ go test ./...
 | Servir Angular desde Go | Implementado con `STATIC_DIR`; se activa en la imagen Docker                                      |
 | Despliegue              | Vercel publica la 1.0; el destino es Go + Neon en un solo origen                                  |
 
-El cliente HTTP (`shared/api`) y el proxy de desarrollo ya están listos, pero la
-interfaz todavía lee `localStorage`: falta cambiar los repositorios, añadir la pantalla
-de acceso real y adaptar los tests. Queda registrado en
-[tasks.md](specs/002-shared-backend/tasks.md), fase 9.
+El cliente HTTP, el proxy de desarrollo y el acceso real con email y contraseña ya
+están listos. La interfaz todavía guarda tableros y tarjetas en `localStorage`: falta
+migrar los repositorios a la API y adaptar stores y tests. Queda registrado en
+[tasks.md](specs/002-shared-backend/tasks.md), fase 9 (T070 y T072–T074).
 
 ## Documentos
 
