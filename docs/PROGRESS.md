@@ -840,12 +840,32 @@ La suite de Playwright deja de sembrar `localStorage` y estrena cuentas en Postg
 
 ---
 
+## Fase 6 — S6.5a — Staging en Fly.io
+
+La imagen Go + Angular está publicada en staging con Neon PostgreSQL 17.
+
+- **URL:** `https://taskflow-stg-melocotron.fly.dev`
+- **Infraestructura:** app Fly.io `taskflow-stg-melocotron`, región `iad`, una máquina
+  `shared-cpu-1x` de 512 MB; rama `staging` de Neon en `us-east-2`.
+- **Migraciones:** se ejecutan como `release_command` con `taskflow-migrate`. El
+  Dockerfile usa `CMD` en lugar de `ENTRYPOINT` para que Fly no arranque la API al
+  ejecutar el release.
+- **Smoke tests:** `/healthz` y `/readyz` en 200; registro, login, cookie
+  `__Host-taskflow_session` con `HttpOnly`, `Secure` y `SameSite=Lax`; tablero,
+  tarjeta y movimiento; `viewer` recibe 403; `/api/v1` inexistente devuelve JSON 404;
+  logout invalida la sesión.
+- **Límite:** el plan trial de Fly detiene la máquina a los 5 minutos de inactividad;
+  se reactiva con la primera petición. Para evitar el cold start hay que añadir un
+  método de pago.
+
+---
+
 ## Siguiente fase
 
-**Fase 6 casi cerrada.** S6.1–S6.4d entregados: especificación, API, Docker, CI,
-autenticación real, migración de repositorios, importación heredada y E2E con Go +
-PostgreSQL. Queda **S6.5**: desplegar Go + Neon y retirar Vercel de producción. SSR y
-WebMCP siguen opcionales.
+**Fase 6 casi cerrada.** S6.1–S6.5a entregados: especificación, API, Docker, CI,
+autenticación real, migración de repositorios, importación heredada, E2E y staging en
+Fly.io + Neon. Queda **S6.5b**: desplegar producción y retirar Vercel de producción.
+SSR y WebMCP siguen opcionales.
 
 ---
 
@@ -853,15 +873,15 @@ WebMCP siguen opcionales.
 
 El frontend y el backend forman una sola aplicación: Angular consume `/api/v1`, la
 sesión vive en una cookie `HttpOnly` y los tableros se comparten en PostgreSQL. La fase
-9 de Spec 002 está cerrada (T069–T075). La rama activa es
+9 de Spec 002 está cerrada (T069–T075) y staging está publicado en
+`https://taskflow-stg-melocotron.fly.dev`. La rama activa es
 `feature/002-shared-backend`.
 
 ## Siguiente paso concreto
 
-Cerrar **S6.5**: preparar Neon, configurar las variables de producción, construir y
-publicar la imagen Go, comprobar cookies seguras y migraciones, y actualizar
-`docs/DEPLOY.md` con el dominio final. Antes de eso, revisar el diff y publicar el
-commit de la integración.
+Cerrar **S6.5b**: añadir método de pago en Fly si staging debe quedar encendido,
+fusionar la rama a `main` con CI verde, crear la app de producción con la rama `main`
+de Neon, verificar el origen `*.fly.dev` y retirar Vercel de producción.
 
 ---
 
@@ -911,3 +931,4 @@ Los E2E corren en CI y antes de un merge a `main`.
 | 2026-10-23 | S6.4b  | `AuthService`, guards y `/entrar` con login y registro reales; 197 tests.              |
 | 2026-10-23 | S6.4c  | Repositorios HTTP, stores asíncronos e importación del trabajo heredado; 189 tests.    |
 | 2026-10-23 | S6.4d  | E2E contra Go + PostgreSQL, CI con Postgres y cierre de la fase 9; 33 E2E.             |
+| 2026-10-23 | S6.5a  | Staging en Fly.io + Neon, release de migraciones, smoke tests y cookie segura.         |

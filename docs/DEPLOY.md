@@ -17,7 +17,10 @@ se cambia la rama de producción de Vercel o se retira el proyecto.
 - Cuenta de Neon con una base PostgreSQL 17.
 - Go 1.27.3 o superior si se ejecuta fuera de Docker.
 - Un proveedor de contenedores: Fly.io (recomendado) o Render.
-- Dominio propio o subdominio para el origen único.
+- Dominio propio o subdominio para el origen único. Para staging se puede usar el
+  subdominio `*.fly.dev`.
+- En Fly.io, un método de pago si la máquina debe permanecer encendida: el plan trial
+  detiene las máquinas a los 5 minutos.
 
 ## 2. Variables de entorno
 
@@ -50,7 +53,11 @@ Construir desde la raíz:
 docker build -f backend/Dockerfile -t taskflow-api .
 ```
 
-La imagen arranca la API en `:8080` y sirve Angular desde `STATIC_DIR`.
+La imagen arranca la API en `:8080` y sirve Angular desde `STATIC_DIR`. El comando por
+defecto se declara con `CMD ["taskflow-api"]`, no con `ENTRYPOINT`: Fly.io añade el
+comando de release como argumento. Con `ENTRYPOINT`, el release ejecutaría
+`taskflow-api taskflow-migrate` y arrancaría la API en lugar de aplicar las
+migraciones.
 
 ## 4. Migraciones
 
@@ -73,34 +80,57 @@ la nueva versión en tráfico.
 
 ## 5. Despliegue en Fly.io
 
+El repositorio incluye `fly.toml` con el Dockerfile, el puerto interno, el release
+command y un health check. El binario se llama `flyctl`; si la instalación creó el
+alias `fly`, ambos son equivalentes.
+
+Staging actual:
+
+- App: `taskflow-stg-melocotron`
+- URL: `https://taskflow-stg-melocotron.fly.dev`
+- Región: `iad`
+- Base: rama `staging` de Neon en `us-east-2`
+
 ```bash
-fly launch --no-deploy
-fly secrets set DATABASE_URL="postgres://..." \
-  APP_ENV=production \
-  COOKIE_SECURE=true \
-  ALLOWED_ORIGINS="https://taskflow.example.com"
-fly deploy
+flyctl apps create taskflow-stg-melocotron
+flyctl secrets set DATABASE_URL="postgres://..." \
+  ALLOWED_ORIGINS="https://taskflow-stg-melocotron.fly.dev" \
+  -a taskflow-stg-melocotron
+flyctl deploy -a taskflow-stg-melocotron --ha=false
 ```
+
+Para producción se repite con otra app y la URL pública definitiva. Mantén una app y
+una base por entorno; no reutilices la base de staging.
 
 Comprobaciones:
 
 ```bash
-curl https://taskflow.example.com/healthz
-curl https://taskflow.example.com/readyz
+curl https://taskflow-stg-melocotron.fly.dev/healthz
+curl https://taskflow-stg-melocotron.fly.dev/readyz
 ```
 
-`/readyz` comprueba PostgreSQL; si falla, no envíes tráfico a la instancia.
+`/readyz` comprueba PostgreSQL; si falla, no envíes tráfico a la instancia. El health
+check de Fly usa `/healthz` para no reiniciar la máquina por una caída transitoria de
+Neon.
+
+En el plan trial de Fly, la máquina se detiene a los 5 minutos de inactividad y se
+reactiva con la primera petición (cold start de aproximadamente 1 segundo). Para
+mantenerla siempre encendida y evitar ese arranque hay que añadir un método de pago.
 
 ## 6. Neon
 
 1. Crea un proyecto PostgreSQL 17.
-2. Copia la cadena de conexión con `sslmode=require`.
-3. Configúrala como secreto del proveedor; no la escribas en el repositorio.
-4. Ejecuta `taskflow-migrate` una vez por release.
-5. Programa una copia de seguridad o usa la retención de Neon.
+2. Crea una rama `staging` y deja `main` para producción.
+3. Copia la cadena de **conexión directa** con `sslmode=require`; evita la cadena
+   `-pooler` para el release command.
+4. Configúrala como secreto del proveedor; no la escribas en el repositorio.
+5. Ejecuta `taskflow-migrate` una vez por release.
+6. Programa una copia de seguridad o usa la retención de Neon.
 
-Para staging, usa una base o rama de Neon distinta. No uses la misma base para staging y
-producción.
+La API y `taskflow-migrate` comparten `DATABASE_URL`. Si más adelante quieres usar la
+conexión pooled para la API, añade una variable separada para las migraciones antes de
+cambiar la cadena. Para staging, usa una base o rama de Neon distinta. No uses la misma
+base para staging y producción.
 
 ## 7. Vercel (etapa actual)
 
@@ -108,7 +138,8 @@ El repositorio conserva `vercel.json` para la SPA de 1.0. La rama de producción
 Vercel es `main`; los pushes a `develop` generan previews. La línea `$schema` de
 `vercel.json` se mantiene aunque el editor muestre un aviso: no afecta al despliegue.
 
-Cuando el backend esté en producción:
+Staging ya está en Fly.io; Vercel sigue publicando la 1.0 hasta que producción esté
+verificada. Cuando el backend esté en producción:
 
 - Si Vercel se conserva para previews, mantén solo ramas de preview.
 - Si se retira, elimina el proyecto y la integración de GitHub.
@@ -134,8 +165,10 @@ Cuando el backend esté en producción:
 
 ## 10. Limitaciones actuales
 
-- La integración HTTP está cerrada; lo que falta es desplegar la imagen Go + Neon
-  (S6.5). Hasta entonces, Vercel mantiene publicada la SPA de 1.0.
+- Staging está desplegado en `https://taskflow-stg-melocotron.fly.dev` con Fly.io +
+  Neon. Falta producción (S6.5b) y retirar Vercel de producción; Vercel mantiene
+  publicada la SPA de 1.0 hasta entonces.
+- El staging usa el subdominio `*.fly.dev`, no un dominio propio.
 - No hay envío de correos, verificación de email ni recuperación de contraseña.
 - No hay colaboración en tiempo real: los cambios se ven al recargar.
 - `kitchen-sink` y el laboratorio HTTP siguen desactivados en producción.

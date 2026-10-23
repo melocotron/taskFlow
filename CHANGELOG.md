@@ -27,6 +27,8 @@ versionado semántico.
   migraciones y Go.
 - Dependencia fijada de Vite 8.3.5 mediante `overrides`; `npm audit` queda sin
   vulnerabilidades conocidas.
+- Despliegue staging en Fly.io (`taskflow-stg-melocotron.fly.dev`) con Neon PostgreSQL
+  17, migraciones de release y health checks.
 
 ### Cambiado
 
@@ -37,6 +39,8 @@ versionado semántico.
 - El límite de autenticación por IP se amplía solo en los entornos `test` y `e2e` para
   no interferir con la suite; desarrollo y producción conservan el límite estricto.
 - El feedback de presión de los botones respeta `prefers-reduced-motion`.
+- La imagen Go usa `CMD` en lugar de `ENTRYPOINT` para que `taskflow-migrate` funcione
+  como release command de Fly.io.
 
 ### Documentación
 
@@ -49,8 +53,9 @@ versionado semántico.
 
 ### Pendiente
 
-- S6.5: desplegar la imagen Go con Neon, verificar cookies seguras y migraciones, y
-  retirar Vercel de producción.
+- S6.5b: desplegar producción en Fly.io + Neon y retirar Vercel de producción. Staging
+  ya está verificado; en el plan trial de Fly la máquina se apaga por inactividad y
+  despierta con la primera petición.
 
 ## [1.0.0] - 2026-10-21
 

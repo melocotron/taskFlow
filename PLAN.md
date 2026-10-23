@@ -432,16 +432,17 @@ Nada más. Un E2E que no representa un journey es un unit test lento.
 
 ### Fase 6 — Backend compartido (Spec 002)
 
-| #        | Objetivo                                                                | Verde cuando                                          |
-| -------- | ----------------------------------------------------------------------- | ----------------------------------------------------- |
-| **S6.1** | Spec 002, PostgreSQL local, configuración, migraciones y salud          | Migraciones aplicadas y `/readyz` verde               |
-| **S6.2** | Auth, tableros, miembros, tarjetas, movimiento e importación            | `go test ./...` con PostgreSQL real                   |
-| **S6.3** | Docker multi-stage, servir Angular desde Go y CI de backend             | Imagen única y job `backend` verde                    |
-| **S6.4** | Integrar Angular con la API (repositorios HTTP, login/registro, guards) | `npm run verify` y E2E con Go + PostgreSQL            |
-| **S6.5** | Desplegar Go + Neon y retirar Vercel de producción                      | Dominio único, cookies seguras y migración en release |
+| #         | Objetivo                                                                | Verde cuando                                            |
+| --------- | ----------------------------------------------------------------------- | ------------------------------------------------------- |
+| **S6.1**  | Spec 002, PostgreSQL local, configuración, migraciones y salud          | Migraciones aplicadas y `/readyz` verde                 |
+| **S6.2**  | Auth, tableros, miembros, tarjetas, movimiento e importación            | `go test ./...` con PostgreSQL real                     |
+| **S6.3**  | Docker multi-stage, servir Angular desde Go y CI de backend             | Imagen única y job `backend` verde                      |
+| **S6.4**  | Integrar Angular con la API (repositorios HTTP, login/registro, guards) | `npm run verify` y E2E con Go + PostgreSQL              |
+| **S6.5a** | Desplegar staging en Fly.io + Neon                                      | URL `*.fly.dev`, cookies seguras y migración en release |
+| **S6.5b** | Desplegar producción y retirar Vercel de producción                     | Producción verificada y una sola fuente de datos        |
 
-S6.1–S6.4 están cerrados: 189 tests unitarios, 33 E2E con Go + PostgreSQL y `verify`
-verde. Queda S6.5 (despliegue).
+S6.1–S6.5a están cerrados: 189 tests unitarios, 33 E2E con Go + PostgreSQL, `verify`
+verde y staging en `https://taskflow-stg-melocotron.fly.dev`. Queda S6.5b (producción).
 
 **Total: ~37 sprints.** La estimación inicial de 24–29 horas ya no aplica: el proyecto
 incluye S4.4.1, la reconciliación, el laboratorio y el backend compartido. El calendario
@@ -553,8 +554,9 @@ Para que "todas las nuevas funcionalidades" sea verificable, no aspiracional.
    Fase 5; hasta ahora el seguimiento vive en `PLAN.md` y `PROGRESS.md`.
 4. Archivar tableros queda para después del 1.0: el dominio ya lo soporta, falta la UI.
 5. La 1.0 se publicó en Vercel. El destino de producción es una imagen Go que sirve
-   Angular y la API desde el mismo origen, con PostgreSQL en Neon. Mientras S6.5 no
-   cierre el despliegue, Vercel sigue publicando la SPA y sus previews.
+   Angular y la API desde el mismo origen, con PostgreSQL en Neon. Staging ya está
+   desplegado en `https://taskflow-stg-melocotron.fly.dev`; hasta cerrar S6.5b, Vercel
+   sigue publicando la SPA y sus previews.
 
 ## 13. Desviaciones conscientes
 

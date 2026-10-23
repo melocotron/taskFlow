@@ -25,4 +25,4 @@ ENV APP_ENV=production \
     COOKIE_SECURE=true
 USER taskflow
 EXPOSE 8080
-ENTRYPOINT ["taskflow-api"]
+CMD ["taskflow-api"]

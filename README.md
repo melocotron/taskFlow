@@ -67,7 +67,7 @@ go test ./...
 | PostgreSQL              | Local en Docker; Neon para staging/producción                                                     |
 | Servir Angular desde Go | Implementado con `STATIC_DIR`; se activa en la imagen Docker                                      |
 | Pruebas                 | 189 unitarios, 33 E2E con Go + PostgreSQL, `go test` y `npm run verify` verdes                    |
-| Despliegue              | Vercel publica la 1.0; el destino es Go + Neon en un solo origen (S6.5)                           |
+| Despliegue              | Staging en Fly.io + Neon: `https://taskflow-stg-melocotron.fly.dev`; producción pendiente (S6.5b) |
 
 La sesión es una cookie `HttpOnly`; `MemberStore` ya no persiste identidad en
 `localStorage`. Si este navegador conserva tableros o tarjetas de la 1.0, la lista de
