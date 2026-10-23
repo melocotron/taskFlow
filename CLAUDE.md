@@ -57,3 +57,16 @@ You are an expert in TypeScript, Angular, and scalable web application developme
 - Use the `providedIn: 'root'` option for singleton services
 - Prefer the `@Service` decorator over `@Injectable({providedIn: 'root'})` for new singleton services (Angular v22+)
 - Use the `inject()` function instead of constructor injection
+
+## Go Backend
+
+- Keep HTTP handlers thin: validate input, call the store, map the result to JSON.
+- Keep SQL in `backend/internal/store`; do not put queries in handlers.
+- Use `pgx` with parameterized SQL and transactions for multi-row operations.
+- Apply authorization on the server with `board_members`; never trust a role sent by the client.
+- Return `404` for boards the caller cannot see, not `403`.
+- Use `version` for optimistic concurrency on tasks; stale writes return `409`.
+- Store only hashes of session tokens; never persist a raw token or password.
+- Run `gofmt`, `go vet ./...` and `go test ./...` before committing.
+- Backend tests that need PostgreSQL use `TEST_DATABASE_URL` and skip without it; CI always sets it.
+- Update `specs/002-shared-backend/` first when changing the HTTP contract or data model.

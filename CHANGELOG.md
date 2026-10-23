@@ -4,6 +4,33 @@ Todas las versiones relevantes de TaskFlow. El formato sigue
 [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y el proyecto usa
 versionado semántico.
 
+## [Unreleased]
+
+### Añadido
+
+- Backend compartido en Go 1.27 con chi, pgx y PostgreSQL 17.
+- Registro, login, logout y sesiones revocables con cookie `HttpOnly` y Argon2id.
+- Tableros persistentes con columnas iniciales, miembros y roles por tablero.
+- Tarjetas con creación, edición, borrado, responsable y movimiento transaccional.
+- Detección de conflictos mediante `version` en las tarjetas.
+- Importación única de tableros y tarjetas de `localStorage` mediante `legacy_id`.
+- Docker Compose para PostgreSQL local y base `taskflow_test`.
+- Dockerfile multi-stage que sirve Angular y la API desde Go.
+- Job de backend en GitHub Actions con PostgreSQL real.
+- Dependencia fijada de Vite 8.3.5 mediante `overrides`; `npm audit` queda sin
+  vulnerabilidades conocidas.
+
+### Documentación
+
+- Especificación 002, plan, investigación, modelo de datos, contrato OpenAPI, quickstart
+  y lista de tareas.
+- README y guía de despliegue actualizados para el destino Go + Neon.
+
+### Pendiente
+
+- Conectar los repositorios de Angular con la API y sustituir la entrada de demo por
+  login y registro reales.
+
 ## [1.0.0] - 2026-10-21
 
 Primera versión completa de TaskFlow: tableros kanban con equipos, roles e

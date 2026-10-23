@@ -740,22 +740,59 @@ TaskFlow ya tiene repositorio remoto y una release publicada:
 
 ---
 
+## ✅ Fase 6 · S6.1 — Backend compartido (Spec 002)
+
+La aplicación deja de ser solo un ejercicio de frontend: se añadió la primera entrega
+del servicio compartido, con especificación, plan, modelo de datos y contrato antes del
+código.
+
+- **Spec 002 aprobada** con cuatro historias: cuenta y sesión, tableros persistentes,
+  roles por tablero e importación local. Artefactos en `specs/002-shared-backend/`.
+- **PostgreSQL 17 local** con `compose.yaml`, base `taskflow_test` y migraciones
+  embebidas con `goose` (`00001` usuarios/sesiones, `00002` tableros/columnas/miembros,
+  `00003` tarjetas).
+- **API Go** bajo `/api/v1`: registro, login, logout, `/me`, tableros, miembros,
+  tarjetas, movimiento transaccional e importación idempotente.
+- **Seguridad:** Argon2id, sesiones opacas con solo el SHA-256 en base de datos, cookie
+  `HttpOnly`, comprobación de `Origin` y límite básico de peticiones de autenticación.
+- **Permisos en servidor:** `admin`, `editor`, `viewer`; un `viewer` recibe `403`, un
+  tablero ajeno responde `404`, y el último administrador no puede desaparecer.
+- **Concurrencia:** `version` en tarjetas; una edición con versión vieja recibe `409`.
+- **Importación:** conserva tableros y tarjetas de 1.0 con `legacy_id`; repetirla no
+  duplica tableros.
+- **Operación:** Dockerfile multi-stage que compila Angular y Go, sirve estáticos con
+  `STATIC_DIR`, y job `backend` en GitHub Actions con PostgreSQL real.
+- **Seguridad de dependencias:** Vite fijado a 8.3.5 con `overrides`; `npm audit`
+  queda en cero vulnerabilidades conocidas.
+
+**Verificado:** `go vet ./...`, `go test ./...` con PostgreSQL real, recorrido manual
+registro → tablero → tarjeta → movimiento → logout, `npm run verify` completo
+(180 tests unitarios, lint, fronteras y build), `npm audit` sin hallazgos y la imagen
+Docker construida y probada sirviendo la SPA, `/healthz` y 404 JSON para la API.
+
+**Pendiente consciente:** la interfaz todavía usa `localStorage`. La fase 9 de
+`specs/002-shared-backend/tasks.md` conecta los repositorios de Angular con la API y
+sustituye `/entrar` por login y registro reales.
+
+---
+
 ## Siguiente fase
 
-**Fase 5 en curso.** S5.1 cerrado con la release 1.0. Quedan S5.2 (SSR + hydration) y
-S5.3 (WebMCP), ambos opcionales. Archivar tableros sigue como post-1.0.
+**Fase 6 en curso.** S6.1–S6.3 entregados: especificación, API, Docker y CI. Queda S6.4
+(integrar Angular) y S6.5 (desplegar Go + Neon). SSR y WebMCP siguen opcionales.
 
 ---
 
 ## Dónde me quedé
 
-S5.1 terminado: `main` y `develop` publicados, CI verde, tag `v1.0.0` y release de
-GitHub. Siguiente decisión: continuar con SSR/WebMCP o cerrar el proyecto en 1.0.
+El backend está implementado y probado de punta a punta con PostgreSQL, pero el
+navegador aún no lo consume. La rama activa es `feature/002-shared-backend`.
 
 ## Siguiente paso concreto
 
-Elegir entre S5.2 (SSR + incremental hydration + event replay), S5.3 (WebMCP) o
-posponer ambos y abordar archivar tableros como feature post-1.0.
+Integrar Angular con la API: crear `shared/api`, migrar los repositorios de `board`,
+`task` y `member` a HTTP, añadir `AuthService` + guard y reemplazar la entrada de demo
+por login y registro.
 
 ---
 
@@ -798,3 +835,6 @@ Los E2E corren en CI y antes de un merge a `main`.
 | 2026-10-21 | S4.5   | Plan y READMEs alineados; npm, S4.6 y release 1.0 registrados.                         |
 | 2026-10-21 | S4.6   | Laboratorio dev-only de @Service, injectAsync y httpResource; 32 E2E.                  |
 | 2026-10-21 | S5.1   | GitHub, CI verde, release 1.0.0 y tag v1.0.0.                                          |
+| 2026-10-23 | S6.1   | Spec 002, PostgreSQL local, migraciones y API Go con tests de integración.             |
+| 2026-10-23 | S6.2   | Auth, tableros, roles, tarjetas, movimiento, importación y Dockerfile multi-stage.     |
+| 2026-10-23 | S6.3   | Imagen Docker verificada; Vite 8.3.5 y `npm audit` sin vulnerabilidades.               |

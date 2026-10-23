@@ -24,13 +24,15 @@ Verificado contra el registro de npm y angular.dev hoy.
 | Pieza                 | Versión / elección                                      | Por qué                                                                                                                                    |
 | --------------------- | ------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
 | Angular               | **22.2.3** (`@angular/cli` 22.2.3)                      | Última estable. Signals-first, `OnPush` por defecto, zoneless.                                                                             |
-| Node                  | 24.18.0 ✓ (Angular 22 pide ≥24.15)                      | Ya instalado.                                                                                                                              |
+| Node                  | 24.22.1 ✓ (Angular 22 pide ≥24.15)                      | Actualizado tras las alertas de seguridad de octubre.                                                                                      |
 | Gestor de paquetes    | **npm**                                                 | Caché local en `.npm-cache/`; pnpm se descartó por el sandbox.                                                                             |
 | Change detection      | **Zoneless**                                            | Es el futuro; en v22 es estable. Aprenderlo ahora evita des-aprender después.                                                              |
 | Estilos               | **CSS nativo + custom properties**                      | Sin Tailwind ni SCSS: los tokens son el design system.                                                                                     |
 | Primitivas accesibles | **`@angular/cdk` + `@angular/aria`** (22.2.3)           | CDK da overlay/portal/drag&drop; Aria da tabs, menu, listbox, combobox, grid, tree **ya accesibles**. No reimplementamos teclado ni focus. |
 | Formularios           | **Signal Forms** (`@angular/forms/signals`)             | Estables en v22.                                                                                                                           |
-| Datos                 | **`resource()` + repositorios async**                   | Sin backend: localStorage con latencia simulada. `httpResource` se demuestra en S4.6.                                                      |
+| Datos (1.0)           | **`resource()` + repositorios async**                   | localStorage con latencia simulada; se sustituye por HTTP en la fase 9 de Spec 002.                                                        |
+| Backend               | **Go 1.27.3 + chi + pgx + goose**                       | API compartida, sesiones opacas y SQL explícito.                                                                                           |
+| Base de datos         | **PostgreSQL 17**                                       | Docker en local; Neon en staging y producción.                                                                                             |
 | Unit tests            | **Vitest + jsdom** (builder `@angular/build:unit-test`) | Es le default del CLI. `ng test`.                                                                                                          |
 | E2E                   | **Playwright**                                          | Separado del unit test: es el estándar real.                                                                                               |
 | Metodología           | **GitHub Spec Kit** (spec-driven development)           | `uv tool install specify-cli`.                                                                                                             |
@@ -41,6 +43,20 @@ Verificado contra el registro de npm y angular.dev hoy.
 
 La carpeta se renombró a `taskFlow`. El repositorio remoto se llama `taskFlow` y la
 app vive en la raíz del workspace, no en `apps/taskflow/`.
+
+### 1.2 Backend compartido (Spec 002)
+
+La versión 1.0 guarda todo en `localStorage`. La Spec 002 añade un servicio compartido:
+
+- **Go** sirve la API y, en producción, también la build de Angular.
+- **PostgreSQL** es la fuente de verdad; Neon para staging y producción.
+- **Sesiones opacas** en cookie `HttpOnly`, no JWT en `localStorage`.
+- **Roles por tablero**: `admin`, `editor`, `viewer`; permisos en el servidor.
+- **Optimistic locking** con `version` en tarjetas para no sobrescribir cambios.
+- **Importación única** de los datos de 1.0 mediante `legacy_id`.
+
+La API está implementada y probada con PostgreSQL real. La interfaz todavía no la
+consume: esa integración es la fase 9 de `specs/002-shared-backend/tasks.md`.
 
 ---
 
@@ -169,7 +185,7 @@ entities/board/
 │   ├── board.store.ts     # signals + computed + métodos
 │   └── board.store.spec.ts
 ├── api/
-│   └── board.repository.ts # localStorage tolerante
+│   └── board.repository.ts # HTTP o localStorage durante la transición
 └── ui/
     ├── board-card.ts      # componente presentacional
     └── board-card.spec.ts
@@ -411,8 +427,19 @@ Nada más. Un E2E que no representa un journey es un unit test lento.
 | **S5.2** | SSR + incremental hydration + event replay            |
 | **S5.3** | WebMCP experimental (exponer los tableros como tools) |
 
-**Total: ~32 sprints.** La estimación inicial de 24–29 horas ya no aplica: el proyecto
-incluye S4.4.1, la reconciliación y el laboratorio. El calendario depende de la sesión.
+### Fase 6 — Backend compartido (Spec 002)
+
+| #        | Objetivo                                                                | Verde cuando                                          |
+| -------- | ----------------------------------------------------------------------- | ----------------------------------------------------- |
+| **S6.1** | Spec 002, PostgreSQL local, configuración, migraciones y salud          | Migraciones aplicadas y `/readyz` verde               |
+| **S6.2** | Auth, tableros, miembros, tarjetas, movimiento e importación            | `go test ./...` con PostgreSQL real                   |
+| **S6.3** | Docker multi-stage, servir Angular desde Go y CI de backend             | Imagen única y job `backend` verde                    |
+| **S6.4** | Integrar Angular con la API (repositorios HTTP, login/registro, guards) | `npm run verify` y E2E con Go + PostgreSQL            |
+| **S6.5** | Desplegar Go + Neon y retirar Vercel de producción                      | Dominio único, cookies seguras y migración en release |
+
+**Total: ~37 sprints.** La estimación inicial de 24–29 horas ya no aplica: el proyecto
+incluye S4.4.1, la reconciliación, el laboratorio y el backend compartido. El calendario
+depende de la sesión.
 
 ---
 
@@ -519,14 +546,15 @@ Para que "todas las nuevas funcionalidades" sea verificable, no aspiracional.
 3. No se rellenan `plan.md`/`tasks.md` de 001 a posteriori. Spec Kit se usa desde la
    Fase 5; hasta ahora el seguimiento vive en `PLAN.md` y `PROGRESS.md`.
 4. Archivar tableros queda para después del 1.0: el dominio ya lo soporta, falta la UI.
-5. Publicar una URL queda para después del 1.0. La release será de GitHub; un despliegue
-   gratuito puede ser GitHub Pages o Vercel.
+5. La 1.0 se publicó en Vercel. El destino de producción es una imagen Go que sirve
+   Angular y la API desde el mismo origen, con PostgreSQL en Neon; Vercel queda como
+   preview estática hasta completar la integración.
 
 ## 13. Desviaciones conscientes
 
-- **Sin backend.** Los datos viven en `localStorage`; los repositorios simulan latencia
-  para ejercitar `loading/error/empty`. `httpResource` e interceptores se demuestran en
-  un laboratorio aislado, no en la persistencia del producto.
+- **Integración pendiente.** El backend existe y está probado, pero los repositorios de
+  Angular todavía leen `localStorage`. La fase 9 de Spec 002 los cambia a HTTP y conserva
+  la importación única de los datos locales.
 - **Archivar sin puerta.** `BoardStore.archivar()` y su test existen desde S2.1, pero no
   hay acción de UI ni vista de archivados.
 - **Spec 001 sin artefactos posteriores.** Solo hay `spec.md`; no se generaron `plan.md`,
