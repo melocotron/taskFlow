@@ -8,7 +8,7 @@ import { expect, test } from '@playwright/test';
  */
 test('la aplicación arranca sin zone.js', async ({ page }) => {
   await page.goto('/');
-  await expect(page.getByRole('heading', { level: 1, name: '¿Quién eres?' })).toBeVisible();
+  await expect(page.getByRole('heading', { level: 1, name: 'Entra en TaskFlow' })).toBeVisible();
 
   expect(await page.evaluate(() => 'Zone' in window)).toBe(false);
 });

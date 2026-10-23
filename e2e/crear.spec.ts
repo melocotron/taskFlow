@@ -1,41 +1,24 @@
 import { expect, test } from '@playwright/test';
-import type { Page, Locator } from '@playwright/test';
+import type { Locator, Page } from '@playwright/test';
+import { crearTablero, registrar } from './apoyo';
+import type { Cuenta, Tablero } from './apoyo';
 
 /**
  * Crear y editar tarjetas de verdad.
  *
- * El formulario es la primera pieza con Signal Forms y la que cierra el pendiente de
- * S3.3: hasta ahora no había forma de añadir la primera tarjeta desde la interfaz.
- * Aquí se comprueba el recorrido completo y, sobre todo, que el resultado sobrevive a
- * la recarga, que es lo que promete el spec.
+ * Cada prueba estrena cuenta y tablero en PostgreSQL. Lo que se comprueba es el
+ * formulario, el responsable por identificador y que el resultado sobrevive a la
+ * recarga.
  */
-async function sembrarTableroVacio(page: Page): Promise<void> {
-  await page.addInitScript(() => {
-    // Solo la primera vez: si no, cada recarga borraría lo creado.
-    if (localStorage.getItem('taskflow.tableros')) {
-      return;
-    }
+let marta: Cuenta;
+let tablero: Tablero;
 
-    localStorage.setItem(
-      'taskflow.tableros',
-      JSON.stringify([
-        {
-          id: 'producto',
-          titulo: 'Producto',
-          archivado: false,
-          creadoEn: '2026-10-18T00:00:00.000Z',
-          columnas: [
-            { id: 'por-hacer', titulo: 'Por hacer' },
-            { id: 'en-curso', titulo: 'En curso' },
-            { id: 'hecho', titulo: 'Hecho' },
-          ],
-        },
-      ]),
-    );
-
-    localStorage.setItem('taskflow.sesion', 'marta');
-  });
-}
+test.beforeEach(async ({ page }) => {
+  marta = await registrar(page, 'Marta Ruiz');
+  tablero = await crearTablero(page);
+  await page.goto(`/tableros/${tablero.id}`);
+  await expect(page.getByRole('heading', { level: 1, name: 'Producto' })).toBeVisible();
+});
 
 async function abrirFormularioNuevo(page: Page): Promise<Locator> {
   await page
@@ -63,11 +46,6 @@ async function crearTarjeta(page: Page, titulo: string): Promise<void> {
 
   await expect(dialogo).toBeHidden();
 }
-
-test.beforeEach(async ({ page }) => {
-  await sembrarTableroVacio(page);
-  await page.goto('/tableros/producto');
-});
 
 test('crear la primera tarjeta desde la columna y verla tras recargar', async ({ page }) => {
   const porHacer = page.getByRole('region', { name: 'Por hacer' });
@@ -109,8 +87,11 @@ test('editar desde la tarjeta y conservar el cambio tras recargar', async ({ pag
   await page.getByRole('menuitem', { name: 'Editar tarjeta' }).click();
 
   const dialogo = page.getByRole('dialog', { name: 'Editar tarjeta' });
+  const responsable = dialogo.getByRole('combobox', { name: 'Responsable' });
+
   await expect(dialogo.getByRole('textbox', { name: 'Título' })).toHaveValue('Revisar el copy');
-  await expect(dialogo.getByRole('combobox', { name: 'Responsable' })).toHaveValue('Marta Ruiz');
+  await expect(responsable.locator('option:checked')).toHaveText('Marta Ruiz');
+  await expect(responsable).toHaveValue(marta.id);
 
   await dialogo.getByRole('textbox', { name: 'Título' }).fill('Revisar el copy final');
   await dialogo.getByRole('button', { name: 'Guardar cambios' }).click();

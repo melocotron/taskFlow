@@ -1,23 +1,31 @@
 import { expect, test } from '@playwright/test';
+import { PASSWORD, emailNuevo } from './apoyo';
 
 /**
- * Journey 1 del PLAN: crear un tablero, entrar y añadir la primera tarjeta.
+ * Journey 1: crear una cuenta, un tablero y la primera tarjeta.
  *
- * Empieza sin sesión a propósito: el recorrido incluye el guard, la creación del
- * tablero y el formulario de tarjeta. Termina recargando, porque todo lo que se
- * guarda tiene que seguir ahí.
- *
- * Las validaciones y la edición de tarjetas viven en `crear.spec.ts`: aquí solo se
- * recorre el camino que promete el journey, de principio a fin.
+ * Empieza sin sesión a propósito: el recorrido incluye el guard, el registro real y
+ * la creación desde la interfaz. Termina recargando, porque todo lo que se guarda
+ * tiene que seguir ahí.
  */
-test('crear un tablero, entrar y añadir la primera tarjeta', async ({ page }) => {
+test('crear una cuenta, un tablero y añadir la primera tarjeta', async ({ page }) => {
   await page.goto('/');
 
-  // Sin sesión no se entra: el guard manda a la pantalla de entrada.
+  // Sin sesión no se entra: el guard manda a la pantalla de acceso.
   await expect(page).toHaveURL(/\/entrar$/);
-  await expect(page.getByRole('heading', { level: 1, name: '¿Quién eres?' })).toBeVisible();
+  await expect(page.getByRole('heading', { level: 1, name: 'Entra en TaskFlow' })).toBeVisible();
 
-  await page.getByRole('button', { name: /Marta Ruiz/ }).click();
+  await page
+    .getByRole('group', { name: 'Entrar o crear cuenta' })
+    .getByRole('button', { name: 'Crear cuenta' })
+    .click();
+  await expect(page.getByRole('heading', { level: 1, name: 'Crea tu cuenta' })).toBeVisible();
+
+  const formulario = page.locator('form');
+  await formulario.getByRole('textbox', { name: 'Nombre' }).fill('Marta Ruiz');
+  await formulario.getByRole('textbox', { name: 'Email' }).fill(emailNuevo('journey-1'));
+  await formulario.getByLabel('Contraseña').fill(PASSWORD);
+  await formulario.getByRole('button', { name: 'Crear cuenta' }).click();
 
   // Con sesión, la raíz es la lista de tableros.
   await expect(page.getByRole('heading', { level: 1, name: 'TaskFlow' })).toBeVisible();
