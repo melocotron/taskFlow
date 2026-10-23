@@ -62,3 +62,9 @@ Thumbs.db
 
 # Capturas locales de revisión visual
 /screenshots
+
+# Backend Go
+/backend/bin
+/.env
+/.env.*
+!/.env.example
