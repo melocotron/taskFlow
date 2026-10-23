@@ -233,10 +233,12 @@ crea duplicados y devuelve contadores coherentes.
 
 - [x] T069 Añadir `shared/api` y el proxy de desarrollo
 - [x] T071 Sustituir `/entrar` por login/registro y añadir `AuthService`
-- [ ] T070 Migrar repositorios de `board`, `task` y `member` a HTTP
-- [ ] T072 Adaptar stores, filtros, formularios y tests de UI
-- [ ] T073 Añadir E2E con Go + PostgreSQL
-- [ ] T074 Retirar la persistencia `localStorage` del camino de producción
+- [x] T070 Migrar `board` y `task` a HTTP; `MemberStore` toma la identidad de `/me`
+- [x] T072 Adaptar stores, filtros, formularios y tests de UI
+- [x] T073 Añadir E2E con Go + PostgreSQL
+- [x] T074 Retirar la persistencia `localStorage` del camino de producción
+- [x] T075 Ofrecer la importación única del trabajo heredado desde `board-list`
+      (`ImportadorLocal` y aviso con confirmación)
 
 ---
 

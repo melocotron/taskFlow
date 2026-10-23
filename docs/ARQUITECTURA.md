@@ -84,8 +84,8 @@ pages  →  widgets  →  features  →  entities  →  shared
 - Cada entidad expone su repositorio en `entities/*/api/` y lo adapta a su modelo.
   Ninguna página llama a `HttpClient` directamente.
 - Los stores conservan el estado con signals. La carga inicial es asíncrona y las
-  mutaciones se confirman contra el servidor; la fase 9 define mutaciones optimistas
-  con reversión si la API falla.
+  mutaciones se confirman contra el servidor; la UI refleja la respuesta y recarga el
+  tablero cuando hace falta. No hay estado optimista persistido en el navegador.
 - El servidor sigue siendo la autoridad de permisos. Ocultar un botón en Angular no
   sustituye la comprobación de rol en Go.
 
@@ -94,9 +94,9 @@ pages  →  widgets  →  features  →  entities  →  shared
 `entities/auth` contiene `AuthService`, el modelo `Usuario` y la comprobación inicial
 de `GET /me`. Al arrancar, la aplicación espera esa promesa antes de decidir si muestra
 el producto o `/entrar`; un `401` significa “sin sesión” y no se pinta como error. La
-cookie `HttpOnly` es la fuente de verdad: el cliente no guarda tokens. `App` adapta el
-usuario autenticado a `MemberStore` mientras los tableros siguen usando `MemberId`;
-ese puente se retira con la migración de repositorios (T070).
+cookie `HttpOnly` es la fuente de verdad: el cliente no guarda tokens. `MemberStore`
+toma la identidad de `/me` y los tableros usan su `memberId`; al recargar no se pierde
+la sesión porque la cookie viaja sola.
 
 ### Estado actual de la integración
 
@@ -104,14 +104,16 @@ ese puente se retira con la migración de repositorios (T070).
 | ---------------------------------- | ---------------- |
 | `shared/api` + proxy de desarrollo | Terminado (T069) |
 | `AuthService`, login y registro    | Terminado (T071) |
-| Repositorios de entidades por HTTP | Pendiente (T070) |
-| Stores, filtros y tests adaptados  | Pendiente (T072) |
-| E2E con Go + PostgreSQL            | Pendiente (T073) |
-| Retirada de `localStorage`         | Pendiente (T074) |
+| Repositorios de entidades por HTTP | Terminado (T070) |
+| Stores, filtros y tests adaptados  | Terminado (T072) |
+| E2E con Go + PostgreSQL            | Terminado (T073) |
+| Retirada de `localStorage`         | Terminado (T074) |
+| Importación única del trabajo 1.0  | Terminado (T075) |
 
-Mientras T070 y T072–T074 no terminen, la interfaz se autentica contra Go pero sigue
-leyendo tableros y tarjetas de `localStorage`. `AuthService` es la fuente de verdad de
-la sesión; `App` adapta la cuenta a `MemberStore` para no romper los stores locales.
+`localStorage` ya no es fuente de datos ni guarda identidad. Solo se lee, con
+confirmación explícita en la lista de tableros, para enviar una vez el trabajo de la
+versión 1.0 a `POST /import/local`; el backend usa `legacy_id` para que repetir no
+duplique y las claves se borran después de la respuesta correcta.
 
 ## 3. Backend: capas y responsabilidades
 
@@ -235,7 +237,7 @@ Producción:
 
 | Documento                                                                 | Para qué                                                      |
 | ------------------------------------------------------------------------- | ------------------------------------------------------------- |
-| [specs/002-shared-backend/tasks.md](../specs/002-shared-backend/tasks.md) | **Autoridad de fases y tareas** (T001–T074, fase 9 incluida). |
+| [specs/002-shared-backend/tasks.md](../specs/002-shared-backend/tasks.md) | **Autoridad de fases y tareas** (T001–T075, fase 9 incluida). |
 | [specs/002-shared-backend/spec.md](../specs/002-shared-backend/spec.md)   | Qué debe hacer el alcance y sus criterios de aceptación.      |
 | [specs/002-shared-backend/plan.md](../specs/002-shared-backend/plan.md)   | Diseño técnico y decisiones de implementación.                |
 | [PROGRESS.md](PROGRESS.md)                                                | Bitácora narrativa por sprint (S6.1–S6.5) y siguiente paso.   |

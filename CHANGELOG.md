@@ -19,9 +19,24 @@ versionado semántico.
 - Cliente HTTP `shared/api` con errores tipados y proxy de desarrollo hacia Go.
 - Acceso real con email y contraseña: `AuthService`, guards de sesión e invitado y
   pantalla de login/registro conectada a la API.
-- Job de backend en GitHub Actions con PostgreSQL real.
+- Repositorios HTTP para tableros y tarjetas; stores asíncronos, lienzo, formularios,
+  filtros y panel de personas adaptados a los datos del servidor.
+- Aviso **Importar mis datos** en la lista de tableros para traer una sola vez el
+  trabajo de la 1.0; las claves locales se borran tras la confirmación del servidor.
+- Job de backend en GitHub Actions con PostgreSQL real y job E2E con PostgreSQL 17,
+  migraciones y Go.
 - Dependencia fijada de Vite 8.3.5 mediante `overrides`; `npm audit` queda sin
   vulnerabilidades conocidas.
+
+### Cambiado
+
+- `MemberStore` recupera la identidad de `GET /me` y ya no la persiste en
+  `localStorage`.
+- Los E2E usan cuentas reales, cookie `HttpOnly` y PostgreSQL en lugar de sembrar el
+  navegador; la suite pasa a **33 tests**.
+- El límite de autenticación por IP se amplía solo en los entornos `test` y `e2e` para
+  no interferir con la suite; desarrollo y producción conservan el límite estricto.
+- El feedback de presión de los botones respeta `prefers-reduced-motion`.
 
 ### Documentación
 
@@ -29,12 +44,13 @@ versionado semántico.
   y lista de tareas.
 - `docs/ARQUITECTURA.md` con capas del frontend, backend Go, datos, seguridad y
   despliegue.
-- README y guía de despliegue actualizados para el destino Go + Neon.
+- README, plan maestro, progreso y guía de despliegue actualizados para el estado
+  HTTP + PostgreSQL.
 
 ### Pendiente
 
-- Conectar los repositorios de tableros, tarjetas y miembros con la API y retirar
-  `localStorage` del camino principal.
+- S6.5: desplegar la imagen Go con Neon, verificar cookies seguras y migraciones, y
+  retirar Vercel de producción.
 
 ## [1.0.0] - 2026-10-21
 

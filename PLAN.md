@@ -30,7 +30,7 @@ Verificado contra el registro de npm y angular.dev hoy.
 | Estilos               | **CSS nativo + custom properties**                      | Sin Tailwind ni SCSS: los tokens son el design system.                                                                                     |
 | Primitivas accesibles | **`@angular/cdk` + `@angular/aria`** (22.2.3)           | CDK da overlay/portal/drag&drop; Aria da tabs, menu, listbox, combobox, grid, tree **ya accesibles**. No reimplementamos teclado ni focus. |
 | Formularios           | **Signal Forms** (`@angular/forms/signals`)             | Estables en v22.                                                                                                                           |
-| Datos (1.0)           | **`resource()` + repositorios async**                   | localStorage con latencia simulada; se sustituye por HTTP en la fase 9 de Spec 002.                                                        |
+| Datos                 | **`resource()` + repositorios HTTP**                    | La API Go es la fuente de verdad; `localStorage` solo se lee para importar la 1.0.                                                         |
 | Backend               | **Go 1.27.3 + chi + pgx + goose**                       | API compartida, sesiones opacas y SQL explícito.                                                                                           |
 | Base de datos         | **PostgreSQL 17**                                       | Docker en local; Neon en staging y producción.                                                                                             |
 | Unit tests            | **Vitest + jsdom** (builder `@angular/build:unit-test`) | Es le default del CLI. `ng test`.                                                                                                          |
@@ -46,7 +46,7 @@ app vive en la raíz del workspace, no en `apps/taskflow/`.
 
 ### 1.2 Backend compartido (Spec 002)
 
-La versión 1.0 guarda todo en `localStorage`. La Spec 002 añade un servicio compartido:
+La versión 1.0 guardaba todo en `localStorage`. La Spec 002 añade un servicio compartido:
 
 - **Go** sirve la API y, en producción, también la build de Angular.
 - **PostgreSQL** es la fuente de verdad; Neon para staging y producción.
@@ -55,8 +55,10 @@ La versión 1.0 guarda todo en `localStorage`. La Spec 002 añade un servicio co
 - **Optimistic locking** con `version` en tarjetas para no sobrescribir cambios.
 - **Importación única** de los datos de 1.0 mediante `legacy_id`.
 
-La API está implementada y probada con PostgreSQL real. La interfaz todavía no la
-consume: esa integración es la fase 9 de `specs/002-shared-backend/tasks.md`.
+La interfaz ya consume la API: `BoardRepository` y `TaskRepository` hablan HTTP, la
+identidad de sesión llega de `/me` y los E2E arrancan Go + PostgreSQL. La fase 9 de
+`specs/002-shared-backend/tasks.md` está cerrada. `localStorage` solo se lee para
+ofrecer la importación única del trabajo heredado.
 
 ---
 
@@ -185,7 +187,8 @@ entities/board/
 │   ├── board.store.ts     # signals + computed + métodos
 │   └── board.store.spec.ts
 ├── api/
-│   └── board.repository.ts # HTTP o localStorage durante la transición
+│   ├── board.repository.ts # repositorio HTTP
+│   └── importador-local.ts # lectura única del trabajo de la 1.0
 └── ui/
     ├── board-card.ts      # componente presentacional
     └── board-card.spec.ts
@@ -437,6 +440,9 @@ Nada más. Un E2E que no representa un journey es un unit test lento.
 | **S6.4** | Integrar Angular con la API (repositorios HTTP, login/registro, guards) | `npm run verify` y E2E con Go + PostgreSQL            |
 | **S6.5** | Desplegar Go + Neon y retirar Vercel de producción                      | Dominio único, cookies seguras y migración en release |
 
+S6.1–S6.4 están cerrados: 189 tests unitarios, 33 E2E con Go + PostgreSQL y `verify`
+verde. Queda S6.5 (despliegue).
+
 **Total: ~37 sprints.** La estimación inicial de 24–29 horas ya no aplica: el proyecto
 incluye S4.4.1, la reconciliación, el laboratorio y el backend compartido. El calendario
 depende de la sesión.
@@ -547,14 +553,13 @@ Para que "todas las nuevas funcionalidades" sea verificable, no aspiracional.
    Fase 5; hasta ahora el seguimiento vive en `PLAN.md` y `PROGRESS.md`.
 4. Archivar tableros queda para después del 1.0: el dominio ya lo soporta, falta la UI.
 5. La 1.0 se publicó en Vercel. El destino de producción es una imagen Go que sirve
-   Angular y la API desde el mismo origen, con PostgreSQL en Neon; Vercel queda como
-   preview estática hasta completar la integración.
+   Angular y la API desde el mismo origen, con PostgreSQL en Neon. Mientras S6.5 no
+   cierre el despliegue, Vercel sigue publicando la SPA y sus previews.
 
 ## 13. Desviaciones conscientes
 
-- **Integración pendiente.** El backend existe y está probado, pero los repositorios de
-  Angular todavía leen `localStorage`. La fase 9 de Spec 002 los cambia a HTTP y conserva
-  la importación única de los datos locales.
+- **Importación heredada visible.** `localStorage` ya no es la fuente de datos. Solo se
+  lee para ofrecer la importación única de la 1.0; el aviso desaparece al confirmar.
 - **Archivar sin puerta.** `BoardStore.archivar()` y su test existen desde S2.1, pero no
   hay acción de UI ni vista de archivados.
 - **Spec 001 sin artefactos posteriores.** Solo hay `spec.md`; no se generaron `plan.md`,

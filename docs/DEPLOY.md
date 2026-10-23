@@ -2,14 +2,14 @@
 
 TaskFlow tiene dos etapas de despliegue:
 
-1. **Actual (1.0):** SPA de Angular con `localStorage`, publicada en Vercel.
+1. **Publicado (1.0):** SPA de Angular con `localStorage`, disponible en Vercel.
 2. **Destino (backend compartido):** Go sirve la build de Angular y la API desde el
    mismo origen, con PostgreSQL en Neon. Esta es la configuración de la rama
    `feature/002-shared-backend`.
 
-Vercel no se elimina de golpe: se queda como preview de la versión estática mientras
-la interfaz termina de conectarse a la API. Cuando el despliegue Go esté verificado, se
-cambia la rama de producción de Vercel o se retira el proyecto.
+Vercel no se elimina de golpe: sigue publicando la 1.0 y las previews mientras se
+completa **S6.5**, el despliegue de la imagen Go. Cuando ese despliegue esté verificado,
+se cambia la rama de producción de Vercel o se retira el proyecto.
 
 ## 1. Requisitos del destino
 
@@ -134,8 +134,8 @@ Cuando el backend esté en producción:
 
 ## 10. Limitaciones actuales
 
-- La interfaz sigue usando `localStorage`; la API ya existe, pero la integración HTTP
-  está en la fase 9 de [tasks.md](../specs/002-shared-backend/tasks.md).
+- La integración HTTP está cerrada; lo que falta es desplegar la imagen Go + Neon
+  (S6.5). Hasta entonces, Vercel mantiene publicada la SPA de 1.0.
 - No hay envío de correos, verificación de email ni recuperación de contraseña.
 - No hay colaboración en tiempo real: los cambios se ven al recargar.
 - `kitchen-sink` y el laboratorio HTTP siguen desactivados en producción.

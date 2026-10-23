@@ -770,10 +770,10 @@ registro → tablero → tarjeta → movimiento → logout, `npm run verify` com
 (180 tests unitarios, lint, fronteras y build), `npm audit` sin hallazgos y la imagen
 Docker construida y probada sirviendo la SPA, `/healthz` y 404 JSON para la API.
 
-**Pendiente consciente:** la interfaz todavía usa `localStorage` para tableros y
-tarjetas. La fase 9 de `specs/002-shared-backend/tasks.md` ya tiene el cliente HTTP, el
-proxy y la autenticación real (T069 y T071); queda migrar los repositorios y retirar la
-persistencia local (T070, T072–T074).
+**Pendiente consciente (resuelto en S6.4c):** en ese momento la interfaz todavía usaba
+`localStorage` para tableros y tarjetas. La fase 9 ya tenía el cliente HTTP, el proxy y
+la autenticación real (T069 y T071); faltaban los repositorios y retirar la persistencia
+local (T070, T072–T075).
 
 ---
 
@@ -793,32 +793,75 @@ contra la API.
 - **Cierre de sesión:** el botón del menú llama a `AuthService.salir()`, revoca la
   sesión en Go y limpia la identidad local.
 
-**Verificado:** `npm run verify` completo (197 tests, lint, fronteras y build). La UI
-de datos sigue leyendo `localStorage`; una cuenta nueva ve la lista vacía y puede crear
-tableros locales hasta que T070 los lleve al servidor.
+**Verificado:** `npm run verify` completo (197 tests, lint, fronteras y build). En ese
+punto la UI de datos seguía leyendo `localStorage`; S6.4c la llevó al servidor.
+
+---
+
+## Fase 6 — S6.4c — Integración de datos
+
+Los repositorios de `board` y `task` hablan HTTP y los stores pasan a estados
+asíncronos. El lienzo, los formularios, los filtros y el panel de personas usan los
+miembros que llegan del tablero, no la lista demo.
+
+- **Identidad:** `MemberStore` toma el usuario de `/me`; ya no guarda la sesión en
+  `localStorage`. Al recargar, la cookie `HttpOnly` la recupera.
+- **Mutaciones:** crear/renombrar tablero, invitar, crear/editar/mover tarjeta y
+  eliminar se confirman contra la API y refrescan el estado.
+- **Importación heredada:** `ImportadorLocal` lee `taskflow.tableros` y
+  `taskflow.tareas`; la lista muestra un aviso con **Importar mis datos**. Solo borra
+  las claves locales después de que `POST /import/local` confirma.
+- **Persistencia retirada:** `localStorage` deja de ser fuente de datos. Se conserva
+  únicamente la lectura de los datos de la 1.0 para esa importación.
+
+**Verificado:** `npm run verify` (189 tests, lint, fronteras, tokens y build) y
+`go test ./...` con PostgreSQL real. Bundle inicial 353,44 kB, dentro del aviso de
+360 kB.
+
+---
+
+## Fase 6 — S6.4d — E2E contra el backend real
+
+La suite de Playwright deja de sembrar `localStorage` y estrena cuentas en PostgreSQL.
+
+- **Apoyo (`e2e/apoyo.ts`):** registro y login por API para compartir la cookie con la
+  pestaña; creación de tableros, tarjetas e invitaciones por API. La UI se reserva para
+  el recorrido que se quiere probar.
+- **Cobertura:** autenticación, journeys 1–4, crear/editar, renombrar, accesibilidad con
+  axe, teclado, rendimiento, presión y laboratorio. **33 E2E** en verde.
+- **Arranque:** `playwright.config.ts` aplica migraciones y arranca Go + Angular. En CI
+  siempre parte limpio; en local reutiliza servidores ya levantados.
+- **CI:** el job E2E usa PostgreSQL 17 como servicio, `setup-go` y `DATABASE_URL`.
+- **Limitador:** solo en los entornos `test` y `e2e` se amplía el límite de
+  autenticación por IP para que la suite no se convierta en una prueba del limitador.
+  Desarrollo y producción conservan una petición cada 2 s con ráfaga 20.
+- **Importación:** un E2E siembra datos de la 1.0, confirma el aviso, importa, recarga y
+  comprueba que no se duplica ni reaparece el aviso.
 
 ---
 
 ## Siguiente fase
 
-**Fase 6 en curso.** S6.1–S6.4b entregados: especificación, API, Docker, CI, cliente
-HTTP y acceso real. Queda S6.4 completo con la migración de repositorios a HTTP
-(T070, T072) y S6.5 (desplegar Go + Neon). SSR y WebMCP siguen opcionales.
+**Fase 6 casi cerrada.** S6.1–S6.4d entregados: especificación, API, Docker, CI,
+autenticación real, migración de repositorios, importación heredada y E2E con Go +
+PostgreSQL. Queda **S6.5**: desplegar Go + Neon y retirar Vercel de producción. SSR y
+WebMCP siguen opcionales.
 
 ---
 
 ## Dónde me quedé
 
-El backend está implementado y probado de punta a punta con PostgreSQL. El navegador ya
-puede autenticarse contra él, pero tableros y tarjetas todavía se guardan en
-`localStorage`. La rama activa es `feature/002-shared-backend`.
+El frontend y el backend forman una sola aplicación: Angular consume `/api/v1`, la
+sesión vive en una cookie `HttpOnly` y los tableros se comparten en PostgreSQL. La fase
+9 de Spec 002 está cerrada (T069–T075). La rama activa es
+`feature/002-shared-backend`.
 
 ## Siguiente paso concreto
 
-Continuar la fase 9 con **T070**: convertir los repositorios de `board`, `task` y
-`member` a HTTP y adaptar stores, filtros, formularios y tests (T072). Después vienen
-T073 (E2E con Go + PostgreSQL) y T074 (retirar `localStorage` y cerrar la importación
-de datos de la versión 1.0).
+Cerrar **S6.5**: preparar Neon, configurar las variables de producción, construir y
+publicar la imagen Go, comprobar cookies seguras y migraciones, y actualizar
+`docs/DEPLOY.md` con el dominio final. Antes de eso, revisar el diff y publicar el
+commit de la integración.
 
 ---
 
@@ -866,3 +909,5 @@ Los E2E corren en CI y antes de un merge a `main`.
 | 2026-10-23 | S6.3   | Imagen Docker verificada; Vite 8.3.5 y `npm audit` sin vulnerabilidades.               |
 | 2026-10-23 | S6.4   | `shared/api`, errores tipados y proxy de desarrollo `/api` → Go.                       |
 | 2026-10-23 | S6.4b  | `AuthService`, guards y `/entrar` con login y registro reales; 197 tests.              |
+| 2026-10-23 | S6.4c  | Repositorios HTTP, stores asíncronos e importación del trabajo heredado; 189 tests.    |
+| 2026-10-23 | S6.4d  | E2E contra Go + PostgreSQL, CI con Postgres y cierre de la fase 9; 33 E2E.             |

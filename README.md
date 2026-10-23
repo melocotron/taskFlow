@@ -2,25 +2,14 @@
 
 **Versión 1.0.0 publicada.** Tableros kanban con equipos. Proyecto de aprendizaje
 **Angular 22** construido con Spec-Driven Development, Gitflow y design system propio.
-La rama actual incorpora la primera entrega del **backend compartido en Go**.
+La rama actual integra el **backend compartido en Go** con PostgreSQL.
 
 ## Empezar
 
-### Frontend 1.0 (localStorage)
-
-```bash
-npm install
-npm start        # http://localhost:4200
-npm test         # Vitest (watch)
-npm run e2e      # Playwright
-npm run verify   # format + lint + tests + build
-```
-
-### Backend (Go + PostgreSQL)
-
-Requiere Docker Desktop y Go 1.27.3 o superior.
+Requiere Node 24.15+, Go 1.27.3+ y Docker Desktop.
 
 ```powershell
+npm install
 Copy-Item .env.example .env
 docker compose up -d db
 
@@ -29,22 +18,39 @@ go run ./cmd/migrate
 go run ./cmd/api      # http://localhost:8080
 ```
 
-Comprobación rápida:
+En otra terminal:
+
+```powershell
+npm start             # http://localhost:4200
+```
+
+`proxy.conf.json` reenvía `/api`, `/healthz` y `/readyz` a Go, así que el navegador ve
+un solo origen también en desarrollo. En producción la imagen Docker sirve la build de
+Angular desde Go con `STATIC_DIR`.
+
+Comprobación rápida de la API:
 
 ```powershell
 curl.exe http://localhost:8080/healthz
 curl.exe http://localhost:8080/readyz
 ```
 
-`npm start` arranca Angular en `:4200`; `proxy.conf.json` reenvía `/api`, `/healthz` y
-`/readyz` a Go, así que el navegador ve un solo origen también en desarrollo.
-
 El recorrido completo —registro, tablero, tarjeta, movimiento, roles e importación—
 está en [specs/002-shared-backend/quickstart.md](specs/002-shared-backend/quickstart.md).
 El contrato HTTP vive en
 [specs/002-shared-backend/contracts/openapi.yaml](specs/002-shared-backend/contracts/openapi.yaml).
 
-Los tests de integración necesitan PostgreSQL:
+### Tests
+
+```powershell
+npm run verify        # formato, tokens, lint, 189 tests y build
+npm run e2e           # Playwright: arranca Go + Angular y usa PostgreSQL real
+```
+
+Los E2E necesitan la base `taskflow` migrada y disponible; `playwright.config.ts` aplica
+las migraciones antes de arrancar la API. En local reutiliza servidores ya levantados.
+
+Tests de integración de Go:
 
 ```powershell
 cd backend
@@ -56,16 +62,17 @@ go test ./...
 
 | Parte                   | Estado                                                                                            |
 | ----------------------- | ------------------------------------------------------------------------------------------------- |
-| Frontend Angular 22     | 1.0.0, usa `localStorage`; integración con la API pendiente                                       |
+| Frontend Angular 22     | Usa la API: cuentas, tableros, tarjetas, filtros, miembros y roles                                |
 | API Go `/api/v1`        | Implementada y probada: cuentas, sesiones, tableros, miembros, tarjetas, movimiento e importación |
 | PostgreSQL              | Local en Docker; Neon para staging/producción                                                     |
 | Servir Angular desde Go | Implementado con `STATIC_DIR`; se activa en la imagen Docker                                      |
-| Despliegue              | Vercel publica la 1.0; el destino es Go + Neon en un solo origen                                  |
+| Pruebas                 | 189 unitarios, 33 E2E con Go + PostgreSQL, `go test` y `npm run verify` verdes                    |
+| Despliegue              | Vercel publica la 1.0; el destino es Go + Neon en un solo origen (S6.5)                           |
 
-El cliente HTTP, el proxy de desarrollo y el acceso real con email y contraseña ya
-están listos. La interfaz todavía guarda tableros y tarjetas en `localStorage`: falta
-migrar los repositorios a la API y adaptar stores y tests. Queda registrado en
-[tasks.md](specs/002-shared-backend/tasks.md), fase 9 (T070 y T072–T074).
+La sesión es una cookie `HttpOnly`; `MemberStore` ya no persiste identidad en
+`localStorage`. Si este navegador conserva tableros o tarjetas de la 1.0, la lista de
+tableros ofrece **Importar mis datos**: se envían una sola vez a `POST /import/local`,
+el backend usa `legacy_id` para no duplicar y solo entonces se borran las claves locales.
 
 ## Documentos
 
@@ -90,7 +97,7 @@ Go 1.27.3 · chi · pgx · goose · PostgreSQL 17.
 
 ## Flujo de trabajo
 
-```
+```text
 main      ← solo merges de release/* y hotfix/*
 develop   ← integración, los PRs entran aquí
 feature/* ← una rama por sprint
