@@ -771,15 +771,16 @@ registro → tablero → tarjeta → movimiento → logout, `npm run verify` com
 Docker construida y probada sirviendo la SPA, `/healthz` y 404 JSON para la API.
 
 **Pendiente consciente:** la interfaz todavía usa `localStorage`. La fase 9 de
-`specs/002-shared-backend/tasks.md` conecta los repositorios de Angular con la API y
-sustituye `/entrar` por login y registro reales.
+`specs/002-shared-backend/tasks.md` ya tiene el cliente HTTP y el proxy (T069); quedan
+migrar los repositorios, añadir login/registro reales y retirar la persistencia local.
 
 ---
 
 ## Siguiente fase
 
-**Fase 6 en curso.** S6.1–S6.3 entregados: especificación, API, Docker y CI. Queda S6.4
-(integrar Angular) y S6.5 (desplegar Go + Neon). SSR y WebMCP siguen opcionales.
+**Fase 6 en curso.** S6.1-S6.3 entregados: especificación, API, Docker y CI. S6.4
+(integrar Angular) empieza con `shared/api` y el proxy; quedan S6.4 completo y S6.5
+(desplegar Go + Neon). SSR y WebMCP siguen opcionales.
 
 ---
 
@@ -790,9 +791,9 @@ navegador aún no lo consume. La rama activa es `feature/002-shared-backend`.
 
 ## Siguiente paso concreto
 
-Integrar Angular con la API: crear `shared/api`, migrar los repositorios de `board`,
-`task` y `member` a HTTP, añadir `AuthService` + guard y reemplazar la entrada de demo
-por login y registro.
+Migrar los repositorios de `board`, `task` y `member` a HTTP (T070), añadir
+`AuthService` + guard y reemplazar la entrada de demo por login y registro (T071), y
+adaptar stores, filtros y tests (T072). `shared/api` y el proxy ya están listos (T069).
 
 ---
 
@@ -838,3 +839,4 @@ Los E2E corren en CI y antes de un merge a `main`.
 | 2026-10-23 | S6.1   | Spec 002, PostgreSQL local, migraciones y API Go con tests de integración.             |
 | 2026-10-23 | S6.2   | Auth, tableros, roles, tarjetas, movimiento, importación y Dockerfile multi-stage.     |
 | 2026-10-23 | S6.3   | Imagen Docker verificada; Vite 8.3.5 y `npm audit` sin vulnerabilidades.               |
+| 2026-10-23 | S6.4   | `shared/api`, errores tipados y proxy de desarrollo `/api` → Go.                       |

@@ -16,6 +16,7 @@ versionado semántico.
 - Importación única de tableros y tarjetas de `localStorage` mediante `legacy_id`.
 - Docker Compose para PostgreSQL local y base `taskflow_test`.
 - Dockerfile multi-stage que sirve Angular y la API desde Go.
+- Cliente HTTP `shared/api` con errores tipados y proxy de desarrollo hacia Go.
 - Job de backend en GitHub Actions con PostgreSQL real.
 - Dependencia fijada de Vite 8.3.5 mediante `overrides`; `npm audit` queda sin
   vulnerabilidades conocidas.

@@ -227,7 +227,7 @@ crea duplicados y devuelve contadores coherentes.
 
 ## Phase 9: Integración Angular (siguiente rebanada, no bloquea la API)
 
-- [ ] T069 Añadir `shared/api` y el proxy de desarrollo
+- [x] T069 Añadir `shared/api` y el proxy de desarrollo
 - [ ] T070 Migrar repositorios de `board`, `task` y `member` a HTTP
 - [ ] T071 Sustituir `/entrar` por login/registro y añadir `AuthService`
 - [ ] T072 Adaptar stores, filtros, formularios y tests de UI

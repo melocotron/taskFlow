@@ -36,6 +36,9 @@ curl.exe http://localhost:8080/healthz
 curl.exe http://localhost:8080/readyz
 ```
 
+`npm start` arranca Angular en `:4200`; `proxy.conf.json` reenvía `/api`, `/healthz` y
+`/readyz` a Go, así que el navegador ve un solo origen también en desarrollo.
+
 El recorrido completo —registro, tablero, tarjeta, movimiento, roles e importación—
 está en [specs/002-shared-backend/quickstart.md](specs/002-shared-backend/quickstart.md).
 El contrato HTTP vive en
