@@ -62,9 +62,9 @@ go test ./...
 | Servir Angular desde Go | Implementado con `STATIC_DIR`; se activa en la imagen Docker                                      |
 | Despliegue              | Vercel publica la 1.0; el destino es Go + Neon en un solo origen                                  |
 
-La API y la interfaz todavía no están conectadas en el navegador. Esa es la siguiente
-rebanada: cambiar los repositorios de `localStorage` por HTTP, añadir la pantalla de
-acceso real y adaptar los tests. Queda registrada en
+El cliente HTTP (`shared/api`) y el proxy de desarrollo ya están listos, pero la
+interfaz todavía lee `localStorage`: falta cambiar los repositorios, añadir la pantalla
+de acceso real y adaptar los tests. Queda registrado en
 [tasks.md](specs/002-shared-backend/tasks.md), fase 9.
 
 ## Documentos
@@ -72,6 +72,7 @@ acceso real y adaptar los tests. Queda registrada en
 | Documento                                                              | Qué es                                                |
 | ---------------------------------------------------------------------- | ----------------------------------------------------- |
 | [PLAN.md](PLAN.md)                                                     | El plan maestro: stack, skills, arquitectura, sprints |
+| [docs/ARQUITECTURA.md](docs/ARQUITECTURA.md)                           | Diseño de capas, backend, datos y despliegue          |
 | [docs/PROGRESS.md](docs/PROGRESS.md)                                   | Dónde vamos y dónde me quedé                          |
 | [docs/IDEAS.md](docs/IDEAS.md)                                         | Ideas aparcadas (no se tocan a mitad de sprint)       |
 | [CHANGELOG.md](CHANGELOG.md)                                           | Qué entró en cada versión                             |

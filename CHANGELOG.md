@@ -25,6 +25,8 @@ versionado semántico.
 
 - Especificación 002, plan, investigación, modelo de datos, contrato OpenAPI, quickstart
   y lista de tareas.
+- `docs/ARQUITECTURA.md` con capas del frontend, backend Go, datos, seguridad y
+  despliegue.
 - README y guía de despliegue actualizados para el destino Go + Neon.
 
 ### Pendiente

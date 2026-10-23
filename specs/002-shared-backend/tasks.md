@@ -227,9 +227,13 @@ crea duplicados y devuelve contadores coherentes.
 
 ## Phase 9: Integración Angular (siguiente rebanada, no bloquea la API)
 
+> Orden práctico: T071 antes de T070. Sin `AuthService` y sesión real, los
+> repositorios HTTP reciben `401` al cargar. Los identificadores se mantienen para no
+> romper referencias.
+
 - [x] T069 Añadir `shared/api` y el proxy de desarrollo
-- [ ] T070 Migrar repositorios de `board`, `task` y `member` a HTTP
 - [ ] T071 Sustituir `/entrar` por login/registro y añadir `AuthService`
+- [ ] T070 Migrar repositorios de `board`, `task` y `member` a HTTP
 - [ ] T072 Adaptar stores, filtros, formularios y tests de UI
 - [ ] T073 Añadir E2E con Go + PostgreSQL
 - [ ] T074 Retirar la persistencia `localStorage` del camino de producción

@@ -791,9 +791,11 @@ navegador aún no lo consume. La rama activa es `feature/002-shared-backend`.
 
 ## Siguiente paso concreto
 
-Migrar los repositorios de `board`, `task` y `member` a HTTP (T070), añadir
-`AuthService` + guard y reemplazar la entrada de demo por login y registro (T071), y
-adaptar stores, filtros y tests (T072). `shared/api` y el proxy ya están listos (T069).
+Continuar la fase 9 con T071 + T070 como una sola rebanada: primero `AuthService`,
+guard y pantalla de login/registro, porque sin sesión cualquier repositorio HTTP
+recibiría `401`; después migrar los repositorios de `board`, `task` y `member` a HTTP.
+Cierran la rebanada T072 (stores, filtros y tests), T073 (E2E con Go + PostgreSQL) y
+T074 (retirar `localStorage`). `shared/api` y el proxy ya están listos (T069).
 
 ---
 
