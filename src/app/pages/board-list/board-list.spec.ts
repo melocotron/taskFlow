@@ -2,9 +2,18 @@ import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { Router, provideRouter } from '@angular/router';
 import { AuthService } from '@entities/auth';
-import { BoardStore } from '@entities/board';
+import { BoardRepository, BoardStore, ImportadorLocal } from '@entities/board';
+import type { Board, ResultadoImportacion } from '@entities/board';
 import { MemberStore, comoMemberId } from '@entities/member';
 import type { MemberId } from '@entities/member';
+import { ToastService } from '@shared/ui';
+import {
+  ALBA as ALBA_MIEMBRO,
+  BoardRepositoryFalso,
+  IVAN,
+  MARTA as MARTA_MIEMBRO,
+  tablero,
+} from '@testing/repositorios';
 import BoardListPage from './board-list';
 
 const MARTA = comoMemberId('marta');
@@ -15,16 +24,39 @@ const ALBA = comoMemberId('alba');
 class DestinoVacio {}
 
 describe('BoardListPage', () => {
-  async function montar(persona: MemberId = MARTA) {
+  async function montar(
+    persona: MemberId = MARTA,
+    boards: readonly Board[] = [],
+    conDatosLocales = false,
+  ) {
     const auth = {
       salir: async () => undefined,
       usuario: () => null,
+    };
+    const creador =
+      [MARTA_MIEMBRO, IVAN, ALBA_MIEMBRO].find((miembro) => miembro.memberId === persona) ??
+      MARTA_MIEMBRO;
+    const repositorio = new BoardRepositoryFalso(boards, creador);
+    let importaciones = 0;
+    const importador = {
+      hayDatos: () => conDatosLocales,
+      importar: async (): Promise<ResultadoImportacion> => {
+        importaciones += 1;
+        return {
+          tablerosImportados: 1,
+          tablerosOmitidos: 0,
+          tareasImportadas: 3,
+          tareasOmitidas: 0,
+        };
+      },
     };
 
     TestBed.configureTestingModule({
       imports: [BoardListPage],
       providers: [
         { provide: AuthService, useValue: auth },
+        { provide: BoardRepository, useValue: repositorio },
+        { provide: ImportadorLocal, useValue: importador },
         provideRouter([
           { path: 'tableros/:id', component: DestinoVacio },
           { path: 'entrar', component: DestinoVacio },
@@ -41,7 +73,14 @@ describe('BoardListPage', () => {
     await store.listo;
     fixture.detectChanges();
 
-    return { fixture, store, equipo, auth, elemento: fixture.nativeElement as HTMLElement };
+    return {
+      fixture,
+      store,
+      equipo,
+      auth,
+      importaciones: () => importaciones,
+      elemento: fixture.nativeElement as HTMLElement,
+    };
   }
 
   function botonNuevo(elemento: HTMLElement): HTMLButtonElement | null {
@@ -59,10 +98,16 @@ describe('BoardListPage', () => {
     campo.dispatchEvent(new Event('input'));
   }
 
-  function enviarFormulario(): void {
+  async function enviarFormulario(fixture: {
+    detectChanges(): void;
+    whenStable(): Promise<unknown>;
+  }): Promise<void> {
     const formulario = dialogo()?.querySelector('form');
 
     formulario?.dispatchEvent(new Event('submit', { cancelable: true }));
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
   }
 
   beforeEach(() => {
@@ -76,6 +121,29 @@ describe('BoardListPage', () => {
     expect(elemento.textContent).toContain('Marta Ruiz');
   });
 
+  it('ofrece importar el trabajo local una sola vez', async () => {
+    const { fixture, elemento, importaciones } = await montar(MARTA, [], true);
+
+    expect(elemento.textContent).toContain('Encontramos trabajo guardado en este navegador');
+
+    const importar = Array.from(elemento.querySelectorAll('button')).find((boton) =>
+      boton.textContent?.includes('Importar mis datos'),
+    );
+
+    importar?.click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(importaciones()).toBe(1);
+    expect(elemento.textContent).not.toContain('Encontramos trabajo guardado en este navegador');
+    expect(
+      TestBed.inject(ToastService)
+        .avisos()
+        .map((aviso) => aviso.mensaje),
+    ).toContain('Importados 1 tablero y 3 tarjetas');
+  });
+
   it('muestra el estado vacío cuando no hay tableros', async () => {
     const { elemento } = await montar();
 
@@ -85,7 +153,7 @@ describe('BoardListPage', () => {
   it('pinta una tarjeta por tablero, cuenta columnas y personas, y dice tu rol', async () => {
     const { fixture, store, elemento } = await montar();
 
-    store.crear('Producto', MARTA);
+    await store.crear('Producto');
     fixture.detectChanges();
 
     expect(elemento.querySelectorAll('app-card').length).toBe(1);
@@ -94,9 +162,8 @@ describe('BoardListPage', () => {
   });
 
   it('solo enseña los tableros a los que la persona tiene acceso', async () => {
-    const { fixture, store, elemento } = await montar(ALBA);
+    const { fixture, elemento } = await montar(ALBA, [tablero({ miembros: [MARTA_MIEMBRO] })]);
 
-    store.crear('Producto', MARTA);
     fixture.detectChanges();
 
     expect(elemento.querySelectorAll('app-card').length).toBe(0);
@@ -104,10 +171,11 @@ describe('BoardListPage', () => {
   });
 
   it('quien fue invitada ve el tablero con el rol que le dieron', async () => {
-    const { fixture, store, elemento } = await montar(ALBA);
-    const board = store.crear('Producto', MARTA);
+    const inicial = tablero({ miembros: [MARTA_MIEMBRO] });
+    const { fixture, store, elemento } = await montar(ALBA, [inicial]);
+    const board = store.buscar(inicial.id)!;
 
-    store.invitar(board.id, MARTA, ALBA, 'viewer');
+    await store.invitar(board.id, ALBA_MIEMBRO.email, 'viewer');
     fixture.detectChanges();
 
     expect(elemento.querySelectorAll('app-card').length).toBe(1);
@@ -124,11 +192,11 @@ describe('BoardListPage', () => {
       const campo = dialogo()?.querySelector('input') as HTMLInputElement;
       escribir(campo, 'Producto');
       fixture.detectChanges();
-      enviarFormulario();
+      await enviarFormulario(fixture);
       fixture.detectChanges();
 
       expect(store.activos().map((board) => board.titulo)).toEqual(['Producto']);
-      expect(store.activos()[0]?.miembros).toEqual([{ memberId: MARTA, rol: 'admin' }]);
+      expect(store.activos()[0]?.miembros).toEqual([MARTA_MIEMBRO]);
       expect(elemento.textContent).toContain('Producto');
     });
 
@@ -139,7 +207,7 @@ describe('BoardListPage', () => {
       fixture.detectChanges();
 
       escribir(dialogo()?.querySelector('input') as HTMLInputElement, 'Producto');
-      enviarFormulario();
+      await enviarFormulario(fixture);
       fixture.detectChanges();
 
       expect(dialogo()).toBeNull();
@@ -150,7 +218,7 @@ describe('BoardListPage', () => {
 
       botonNuevo(elemento)?.click();
       fixture.detectChanges();
-      enviarFormulario();
+      await enviarFormulario(fixture);
       fixture.detectChanges();
 
       expect(store.activos().length).toBe(0);
@@ -164,7 +232,7 @@ describe('BoardListPage', () => {
       fixture.detectChanges();
 
       escribir(dialogo()?.querySelector('input') as HTMLInputElement, '   ');
-      enviarFormulario();
+      await enviarFormulario(fixture);
       fixture.detectChanges();
 
       expect(store.activos().length).toBe(0);
@@ -179,16 +247,16 @@ describe('BoardListPage', () => {
     fixture.detectChanges();
 
     escribir(dialogo()?.querySelector('input') as HTMLInputElement, 'Marketing');
-    enviarFormulario();
+    await enviarFormulario(fixture);
     fixture.detectChanges();
 
-    expect(store.activos()[0]?.miembros).toEqual([{ memberId: ALBA, rol: 'admin' }]);
+    expect(store.activos()[0]?.miembros).toEqual([ALBA_MIEMBRO]);
     expect(elemento.textContent).toContain('Marketing');
   });
 
   it('cada tarjeta lleva al detalle de su tablero', async () => {
     const { fixture, store, elemento } = await montar();
-    const board = store.crear('Producto', MARTA);
+    const board = await store.crear('Producto');
     fixture.detectChanges();
 
     const enlace = elemento.querySelector('a.enlace-tablero') as HTMLAnchorElement;

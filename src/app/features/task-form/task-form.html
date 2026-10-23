@@ -24,10 +24,10 @@
   </app-field>
 
   <app-field label="Responsable" hint="Se puede cambiar más adelante." optional>
-    <select appInput [formField]="formulario.responsable">
+    <select appInput [formField]="formulario.responsableId">
       <option value="">Sin asignar</option>
-      @for (persona of miembros(); track persona.id) {
-        <option [value]="persona.nombre">{{ persona.nombre }}</option>
+      @for (persona of miembros(); track persona.memberId) {
+        <option [value]="persona.memberId">{{ persona.nombre }}</option>
       }
     </select>
   </app-field>

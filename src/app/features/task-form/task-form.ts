@@ -1,4 +1,4 @@
-import { Component, OnInit, computed, inject, input, output, signal } from '@angular/core';
+import { Component, OnInit, computed, input, output, signal } from '@angular/core';
 /**
  * Hay dos `FormField`: el envoltorio visual `app-field` de `shared/ui` y la directiva
  * de Signal Forms que ata un control nativo a un campo. Aquí se aliasa la segunda para
@@ -13,7 +13,9 @@ import {
   validate,
 } from '@angular/forms/signals';
 import type { ReadonlyFieldState } from '@angular/forms/signals';
-import { MemberStore } from '@entities/member';
+import type { BoardMember } from '@entities/board';
+import { comoMemberId } from '@entities/member';
+import type { MemberId } from '@entities/member';
 import { Button, FormField, TextInput } from '@shared/ui';
 
 /** Lo que sale del formulario: texto ya limpio, listo para el store. */
@@ -21,14 +23,14 @@ export interface DatosTarjeta {
   readonly titulo: string;
   readonly descripcion: string;
   /** `null` cuando no se asigna a nadie. */
-  readonly responsable: string | null;
+  readonly responsableId: MemberId | null;
 }
 
 /** Modelo del formulario: todo texto, para no arrastrar `null` por los controles. */
 interface ModeloTarjeta {
   titulo: string;
   descripcion: string;
-  responsable: string;
+  responsableId: string;
 }
 
 /** Topes del esquema. El del título también se cuenta en la ayuda del campo. */
@@ -52,12 +54,13 @@ const MAX_DESCRIPCION = 500;
   styleUrl: './task-form.css',
 })
 export class TaskForm implements OnInit {
-  private readonly equipo = inject(MemberStore);
-
   readonly modo = input<'crear' | 'editar'>('crear');
 
   /** Valores de partida al editar. Se aplican antes del primer pintado. */
   readonly inicial = input<DatosTarjeta | null>(null);
+
+  /** Personas del tablero; el formulario no conoce el store ni la sesión. */
+  readonly miembros = input.required<readonly BoardMember[]>();
 
   readonly guardado = output<DatosTarjeta>();
   readonly cancelado = output<void>();
@@ -65,10 +68,8 @@ export class TaskForm implements OnInit {
   private readonly modelo = signal<ModeloTarjeta>({
     titulo: '',
     descripcion: '',
-    responsable: '',
+    responsableId: '',
   });
-
-  protected readonly miembros = this.equipo.miembros;
 
   protected readonly etiquetaGuardar = computed(() =>
     this.modo() === 'crear' ? 'Crear tarjeta' : 'Guardar cambios',
@@ -128,18 +129,18 @@ export class TaskForm implements OnInit {
     this.modelo.set({
       titulo: inicial.titulo,
       descripcion: inicial.descripcion,
-      responsable: inicial.responsable ?? '',
+      responsableId: inicial.responsableId ?? '',
     });
   }
 
   /** Recorta antes de salir: quien recibe los datos no tiene que acordarse. */
   private datos(): DatosTarjeta {
-    const { titulo, descripcion, responsable } = this.modelo();
+    const { titulo, descripcion, responsableId } = this.modelo();
 
     return {
       titulo: titulo.trim(),
       descripcion: descripcion.trim(),
-      responsable: responsable.trim() === '' ? null : responsable,
+      responsableId: responsableId.trim() === '' ? null : comoMemberId(responsableId),
     };
   }
 

@@ -7,7 +7,7 @@ concepto: `board`, `task`, `member`.
 entities/board/
 ├── index.ts          # API pública del slice (lo único importable desde fuera)
 ├── model/            # board.model.ts, board.store.ts (+ .spec.ts)
-├── api/              # board.repository.ts (localStorage)
+├── api/              # board.repository.ts (HTTP) e importador local (1.0)
 └── ui/               # board-card.ts (presentacional)
 ```
 

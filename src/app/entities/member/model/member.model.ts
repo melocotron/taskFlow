@@ -28,19 +28,6 @@ export const MIEMBROS_DEMO: readonly Member[] = [
 ];
 
 /**
- * Roles con los que se abrieron los tableros de la demo antes de S3.7.
- *
- * El rol dejó de ser global: ahora vive en cada tablero. Esta tabla solo existe para
- * migrar los datos ya guardados en `localStorage`, de modo que quien ya tenía un
- * tablero no se quede fuera al actualizar. Los tableros nuevos no la usan.
- */
-export const ROLES_HEREDADOS: Readonly<Record<string, Rol>> = {
-  marta: 'admin',
-  ivan: 'editor',
-  alba: 'viewer',
-};
-
-/**
  * La regla de permisos, en un solo sitio.
  *
  * No vive en el componente que pinta el botón: si la interfaz esconde una acción pero

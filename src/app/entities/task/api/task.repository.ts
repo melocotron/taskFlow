@@ -1,38 +1,101 @@
 import { Injectable, inject } from '@angular/core';
-import { escribirLista, leerLista } from '@shared/lib/almacenamiento';
-import { LATENCIA_SIMULADA, esperar } from '@shared/lib/estado-carga';
-import { Task } from '../model/task.model';
+import type { MemberId } from '@entities/member';
+import { ApiClient } from '@shared/api';
+import type { DatosTask, Task } from '../model/task.model';
+import { comoTaskId } from '../model/task.model';
+import { comoMemberId } from '@entities/member';
 
-const CLAVE = 'taskflow.tareas';
-
-/** Persistencia de tarjetas. Un solo array: el orden lo da `columnaId` + `posicion`. */
-@Injectable({ providedIn: 'root' })
-export class TaskRepository {
-  private readonly latencia = inject(LATENCIA_SIMULADA);
-
-  async cargar(): Promise<readonly Task[]> {
-    await esperar(this.latencia);
-
-    return leerLista(CLAVE, esTask);
-  }
-
-  guardar(tareas: readonly Task[]): void {
-    escribirLista(CLAVE, tareas);
-  }
+interface TaskDto {
+  readonly id: string;
+  readonly boardId: string;
+  readonly columnaId: string;
+  readonly titulo: string;
+  readonly descripcion: string;
+  readonly responsableId: string | null;
+  readonly responsableNombre: string | null;
+  readonly posicion: number;
+  readonly version: number;
+  readonly creadoEn: string;
 }
 
-function esTask(valor: unknown): valor is Task {
-  if (typeof valor !== 'object' || valor === null) {
-    return false;
+interface BoardDetailDto {
+  readonly tareas: readonly TaskDto[];
+}
+
+/**
+ * Acceso HTTP a las tarjetas.
+ *
+ * La API entrega las tarjetas dentro del detalle del tablero: una sola consulta basta
+ * para pintar el lienzo y evita pedir una por una. Las mutaciones devuelven la tarjeta
+ * completa con su versión nueva, que el store publica sin inventar estados.
+ */
+@Injectable({ providedIn: 'root' })
+export class TaskRepository {
+  private readonly api = inject(ApiClient);
+
+  async cargar(boardId: string): Promise<readonly Task[]> {
+    const detalle = await this.api.get<BoardDetailDto>(`boards/${boardId}`);
+
+    return detalle.tareas.map((tarea) => this.aTask(tarea));
   }
 
-  const candidato = valor as Record<string, unknown>;
+  async crear(
+    boardId: string,
+    columnaId: string,
+    titulo: string,
+    datos: DatosTask = {},
+  ): Promise<Task> {
+    return this.aTask(
+      await this.api.post<TaskDto>(`boards/${boardId}/tasks`, {
+        columnaId,
+        titulo: titulo.trim(),
+        descripcion: datos.descripcion?.trim() ?? '',
+        responsableId: datos.responsableId ?? null,
+      }),
+    );
+  }
 
-  return (
-    typeof candidato['id'] === 'string' &&
-    typeof candidato['boardId'] === 'string' &&
-    typeof candidato['columnaId'] === 'string' &&
-    typeof candidato['titulo'] === 'string' &&
-    typeof candidato['posicion'] === 'number'
-  );
+  async editar(
+    id: string,
+    cambios: {
+      readonly titulo?: string;
+      readonly descripcion?: string;
+      readonly responsableId?: MemberId | null;
+    },
+    version: number,
+  ): Promise<Task> {
+    return this.aTask(
+      await this.api.patch<TaskDto>(`tasks/${id}`, {
+        titulo: cambios.titulo,
+        descripcion: cambios.descripcion,
+        responsableId: cambios.responsableId,
+        version,
+      }),
+    );
+  }
+
+  async mover(id: string, columnaId: string, posicion: number, version: number): Promise<Task> {
+    return this.aTask(
+      await this.api.post<TaskDto>(`tasks/${id}/move`, { columnaId, posicion, version }),
+    );
+  }
+
+  async eliminar(id: string): Promise<void> {
+    await this.api.delete(`tasks/${id}`);
+  }
+
+  private aTask(dto: TaskDto): Task {
+    return {
+      id: comoTaskId(dto.id),
+      boardId: dto.boardId,
+      columnaId: dto.columnaId,
+      titulo: dto.titulo,
+      descripcion: dto.descripcion,
+      responsableId: dto.responsableId ? comoMemberId(dto.responsableId) : null,
+      responsable: dto.responsableNombre,
+      posicion: dto.posicion,
+      version: dto.version,
+      creadoEn: dto.creadoEn,
+    };
+  }
 }

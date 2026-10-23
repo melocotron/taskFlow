@@ -19,7 +19,7 @@ export class App {
   constructor() {
     /*
      * La API es la fuente de verdad de la identidad; los tableros siguen hablando de
-     * `MemberId`. Este puente desaparece cuando T070 lleve los repositorios a HTTP.
+     * `MemberId`. Este efecto adapta la cuenta al modelo que ya usa el dominio.
      */
     effect(() => {
       const usuario = this.auth.usuario();

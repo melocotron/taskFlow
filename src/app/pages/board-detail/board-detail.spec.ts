@@ -1,9 +1,14 @@
 import { TestBed } from '@angular/core/testing';
 import { Router, provideRouter } from '@angular/router';
 import { vi } from 'vitest';
-import { BoardStore } from '@entities/board';
+import { BoardRepository, BoardStore } from '@entities/board';
 import { MemberStore, comoMemberId } from '@entities/member';
-import { TaskStore } from '@entities/task';
+import { TaskRepository, TaskStore } from '@entities/task';
+import {
+  ALBA as ALBA_MIEMBRO,
+  BoardRepositoryFalso,
+  TaskRepositoryFalso,
+} from '@testing/repositorios';
 import BoardDetailPage from './board-detail';
 
 const MARTA = comoMemberId('marta');
@@ -19,33 +24,42 @@ describe('BoardDetailPage', () => {
       persona?: string;
     } = {},
   ) {
+    const tableros = new BoardRepositoryFalso();
+    const tarjetas = new TaskRepositoryFalso();
+
     TestBed.configureTestingModule({
       imports: [BoardDetailPage],
-      providers: [provideRouter([])],
+      providers: [
+        provideRouter([]),
+        { provide: BoardRepository, useValue: tableros },
+        { provide: TaskRepository, useValue: tarjetas },
+      ],
     });
 
     const store = TestBed.inject(BoardStore);
     await store.listo;
+    TestBed.inject(MemberStore).cambiarSesion(MARTA);
 
     // El tablero siempre lo crea Marta; el rol decide qué hace la sesión con él.
-    const board = opciones.crear ? store.crear(opciones.crear, MARTA) : null;
+    const board = opciones.crear ? await store.crear(opciones.crear) : null;
 
     if (board && opciones.rol === 'viewer') {
-      store.invitar(board.id, MARTA, ALBA, 'viewer');
+      await store.invitar(board.id, ALBA_MIEMBRO.email, 'viewer');
     }
 
     if (opciones.rol === 'viewer' || opciones.rol === 'ninguno') {
       TestBed.inject(MemberStore).cambiarSesion(ALBA);
     }
 
-    // El lienzo pinta las columnas, pero sus tarjetas llegan con la carga del otro store.
+    // El lienzo pide las tarjetas al montarse; se espera a que la API responda.
     const tareas = TestBed.inject(TaskStore);
-    await tareas.listo;
 
     const fixture = TestBed.createComponent(BoardDetailPage);
     fixture.componentRef.setInput('id', board?.id ?? 'no-existe');
     fixture.componentRef.setInput('q', opciones.q ?? '');
     fixture.componentRef.setInput('persona', opciones.persona ?? '');
+    fixture.detectChanges();
+    await fixture.whenStable();
     fixture.detectChanges();
 
     return { fixture, store, tareas, elemento: fixture.nativeElement as HTMLElement };
@@ -140,7 +154,8 @@ describe('BoardDetailPage', () => {
 
       dialogo()?.querySelector('form')?.dispatchEvent(new Event('submit'));
       fixture.detectChanges();
-      await fixture.whenStable();
+      await vi.waitFor(() => expect(store.buscar(board.id)?.titulo).toBe('Producto digital'));
+      fixture.detectChanges();
 
       expect(elemento.querySelector('h1')?.textContent).toContain('Producto digital');
       expect(store.buscar(board.id)?.titulo).toBe('Producto digital');
@@ -188,8 +203,8 @@ describe('BoardDetailPage', () => {
       const { fixture, store, tareas, elemento } = await montar({ crear: 'Producto', q: 'copy' });
       const board = store.activos()[0]!;
 
-      tareas.crear(board.id, 'por-hacer', 'Revisar el copy');
-      tareas.crear(board.id, 'por-hacer', 'Preparar la demo');
+      await tareas.crear(board.id, 'por-hacer', 'Revisar el copy');
+      await tareas.crear(board.id, 'por-hacer', 'Preparar la demo');
       fixture.detectChanges();
 
       expect(campoBuscar(elemento).value).toBe('copy');

@@ -61,7 +61,10 @@
                 [cdkDragData]="tarea"
                 [cdkDragDisabled]="!puedeEditar() || hayFiltro()"
               >
-                <app-card [turno]="turnoDe(tarea.responsable)" [persona]="tarea.responsable ?? ''">
+                <app-card
+                  [turno]="turnoDe(tarea.responsableId)"
+                  [persona]="tarea.responsable ?? ''"
+                >
                   <div class="tarjeta-cabecera">
                     <p class="tarjeta-titulo">{{ tarea.titulo }}</p>
 
@@ -87,7 +90,11 @@
 
                   @if (tarea.responsable; as persona) {
                     <p class="tarjeta-responsable">
-                      <app-avatar [nombre]="persona" [turno]="turnoDe(persona)" size="sm" />
+                      <app-avatar
+                        [nombre]="persona"
+                        [turno]="turnoDe(tarea.responsableId)"
+                        size="sm"
+                      />
                       <span>{{ persona }}</span>
                     </p>
                   }
@@ -136,6 +143,7 @@
   <app-task-form
     [modo]="modoFormulario()"
     [inicial]="datosIniciales()"
+    [miembros]="board().miembros"
     (guardado)="guardarTarjeta($event)"
     (cancelado)="cerrarFormulario()"
   />

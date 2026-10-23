@@ -3,17 +3,12 @@ import { InjectionToken } from '@angular/core';
 /**
  * Estados por los que pasa una carga de datos.
  *
- * Existen aunque hoy el origen sea `localStorage`: en cuanto haya un backend, las
- * pantallas ya saben dibujar el esqueleto y el error sin cambiar una línea.
+ * Las pantallas dibujan el esqueleto y el error sin saber si el origen es HTTP u otro;
+ * los repositorios actuales responden desde la API.
  */
 export type EstadoCarga = 'cargando' | 'listo' | 'error';
 
-/**
- * Latencia simulada, en milisegundos.
- *
- * En la app son 350 ms para que los estados de carga sean visibles y se puedan
- * diseñar. En los tests se sobrescribe a 0 para que corran rápido y sin esperas.
- */
+/** Latencia simulada opcional para pruebas de UI; los tests la fijan a 0. */
 export const LATENCIA_SIMULADA = new InjectionToken<number>('LATENCIA_SIMULADA', {
   providedIn: 'root',
   factory: () => 350,

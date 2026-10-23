@@ -6,6 +6,7 @@ import {
   Signal,
   TemplateRef,
   computed,
+  effect,
   inject,
   input,
   signal,
@@ -107,9 +108,29 @@ export class BoardCanvas {
     const tarea = this.tareaEnEdicion();
 
     return tarea
-      ? { titulo: tarea.titulo, descripcion: tarea.descripcion, responsable: tarea.responsable }
+      ? {
+          titulo: tarea.titulo,
+          descripcion: tarea.descripcion,
+          responsableId: tarea.responsableId,
+        }
       : null;
   });
+
+  /** Id del tablero cuyas tarjetas están en el store; evita recargar al renombrar. */
+  private tableroCargado: string | null = null;
+
+  constructor() {
+    effect(() => {
+      const boardId = this.board().id;
+
+      if (boardId === this.tableroCargado) {
+        return;
+      }
+
+      this.tableroCargado = boardId;
+      void this.tareas.cargar(boardId);
+    });
+  }
 
   protected readonly cargando = this.tareas.cargando;
   protected readonly fallo = computed(() => this.tareas.carga() === 'error');
@@ -135,14 +156,13 @@ export class BoardCanvas {
   protected readonly columnas = computed(() => {
     const { texto, persona } = this.filtro();
     const buscado = normalizar(texto.trim());
-    const nombre = this.nombreFiltrado(persona);
 
     return this.board().columnas.map((columna) => ({
       id: columna.id,
       titulo: columna.titulo,
       tarjetas: this.tareas
         .deColumna(this.board().id, columna.id)()
-        .filter((tarea) => this.coincide(tarea, buscado, nombre)),
+        .filter((tarea) => this.coincide(tarea, buscado, persona)),
     }));
   });
 
@@ -150,23 +170,11 @@ export class BoardCanvas {
     this.columnas().reduce((cuantas, columna) => cuantas + columna.tarjetas.length, 0),
   );
 
-  /**
-   * Nombre de quien se está filtrando.
-   *
-   * `null` = sin filtro de persona. `undefined` = el id no es de nadie del equipo:
-   * entonces no coincide ninguna tarjeta, que es más honesto que enseñarlas todas.
-   */
-  private nombreFiltrado(persona: string): string | null | undefined {
-    if (persona.length === 0) {
-      return null;
-    }
+  private coincide(tarea: Task, buscado: string, persona: string): boolean {
+    if (persona.length > 0) {
+      const esDelTablero = this.board().miembros.some((miembro) => miembro.memberId === persona);
 
-    return this.equipo.miembros().find((miembro) => miembro.id === persona)?.nombre;
-  }
-
-  private coincide(tarea: Task, buscado: string, nombre: string | null | undefined): boolean {
-    if (nombre !== null) {
-      if (nombre === undefined || tarea.responsable !== nombre) {
+      if (!esDelTablero || tarea.responsableId !== persona) {
         return false;
       }
     }
@@ -183,13 +191,13 @@ export class BoardCanvas {
     return this.tareas.deColumna(this.board().id, columnaId);
   }
 
-  /** Turno de color de la persona responsable; `null` si no hay o no es del equipo. */
-  protected turnoDe(nombre: string | null): Turno | null {
-    if (!nombre) {
+  /** Turno de color de la persona responsable; `null` si no hay o no es del tablero. */
+  protected turnoDe(persona: string | null): Turno | null {
+    if (!persona) {
       return null;
     }
 
-    const indice = this.equipo.miembros().findIndex((miembro) => miembro.nombre === nombre);
+    const indice = this.board().miembros.findIndex((miembro) => miembro.memberId === persona);
 
     return indice === -1 ? null : turnoPorIndice(indice);
   }
@@ -201,7 +209,7 @@ export class BoardCanvas {
       return;
     }
 
-    this.moverA(evento.item.data, evento.container.data, evento.currentIndex);
+    void this.moverA(evento.item.data, evento.container.data, evento.currentIndex);
   }
 
   /**
@@ -209,7 +217,7 @@ export class BoardCanvas {
    *
    * Sin índice va al final de la columna, que es lo que espera quien elige «mover a…».
    */
-  protected moverA(tarea: Task, columnaDestino: string, indice?: number): void {
+  protected async moverA(tarea: Task, columnaDestino: string, indice?: number): Promise<void> {
     // Igual que al crear: la interfaz esconde la acción, pero el método la comprueba.
     if (!this.puedeEditar()) {
       this.avisos.mostrar('Tu rol no permite mover tarjetas', 'peligro');
@@ -222,12 +230,23 @@ export class BoardCanvas {
       return;
     }
 
-    this.tareas.mover(tarea.id, columnaDestino, indice ?? this.tareasDe(columnaDestino)().length);
-    this.avisos.mostrar(`«${tarea.titulo}» a ${destino.titulo}`, 'acento');
+    try {
+      await this.tareas.mover(
+        tarea.id,
+        columnaDestino,
+        indice ?? this.tareasDe(columnaDestino)().length,
+      );
+      this.avisos.mostrar(`«${tarea.titulo}» a ${destino.titulo}`, 'acento');
+    } catch (fallo) {
+      this.avisos.mostrar(
+        fallo instanceof Error ? fallo.message : 'No se pudo mover la tarjeta',
+        'peligro',
+      );
+    }
   }
 
   protected reintentar(): void {
-    void this.tareas.cargar();
+    void this.tareas.cargar(this.board().id);
   }
 
   /** Abre el formulario en blanco para la columna indicada. */
@@ -269,7 +288,7 @@ export class BoardCanvas {
    * cambio al store. Si el store rechaza algo, el aviso lo dice y el diálogo se
    * queda abierto para no perder lo escrito.
    */
-  protected guardarTarjeta(datos: DatosTarjeta): void {
+  protected async guardarTarjeta(datos: DatosTarjeta): Promise<void> {
     try {
       if (this.modoFormulario() === 'editar') {
         const tarea = this.tareaEnEdicion();
@@ -278,10 +297,10 @@ export class BoardCanvas {
           return;
         }
 
-        this.tareas.editar(tarea.id, {
+        await this.tareas.editar(tarea.id, {
           titulo: datos.titulo,
           descripcion: datos.descripcion,
-          responsable: datos.responsable,
+          responsableId: datos.responsableId,
         });
         this.avisos.mostrar(`«${datos.titulo}» actualizada`, 'acento');
       } else {
@@ -291,9 +310,9 @@ export class BoardCanvas {
           return;
         }
 
-        this.tareas.crear(this.board().id, columnaId, datos.titulo, {
+        await this.tareas.crear(this.board().id, columnaId, datos.titulo, {
           descripcion: datos.descripcion,
-          responsable: datos.responsable,
+          responsableId: datos.responsableId,
         });
         this.avisos.mostrar(`«${datos.titulo}» añadida`, 'acento');
       }

@@ -1,131 +1,111 @@
 import { Injectable, inject } from '@angular/core';
-import { MIEMBROS_DEMO, ROLES_HEREDADOS, comoMemberId } from '@entities/member';
+import { ApiClient } from '@shared/api';
 import type { Rol } from '@entities/member';
-import { escribirLista, leerLista } from '@shared/lib/almacenamiento';
-import { LATENCIA_SIMULADA, esperar } from '@shared/lib/estado-carga';
 import { Board, BoardMember, comoBoardId } from '../model/board.model';
+import { comoMemberId } from '@entities/member';
 
-const CLAVE = 'taskflow.tableros';
-
-/**
- * Persistencia de tableros en el propio navegador.
- *
- * Es el `api/` del slice: el store no sabe si esto es `localStorage`, un archivo o
- * un servidor. Cuando exista un backend, solo cambia este archivo.
- *
- * Los tableros anteriores a S3.7 no tienen `miembros`. Al cargarlos se les asignan los
- * roles que tenían en la demo y se reescribe el almacén: así nadie pierde acceso al
- * actualizar, y la migración ocurre una sola vez.
- */
-@Injectable({ providedIn: 'root' })
-export class BoardRepository {
-  private readonly latencia = inject(LATENCIA_SIMULADA);
-
-  async cargar(): Promise<readonly Board[]> {
-    await esperar(this.latencia);
-
-    const crudos = leerLista(CLAVE, esTablero);
-    let migrado = false;
-
-    const tableros = crudos.map((crudo) => {
-      const normalizado = normalizar(crudo);
-      migrado ||= normalizado.migrado;
-
-      return normalizado.board;
-    });
-
-    if (migrado) {
-      escribirLista(CLAVE, tableros);
-    }
-
-    return tableros;
-  }
-
-  guardar(tableros: readonly Board[]): void {
-    escribirLista(CLAVE, tableros);
-  }
-}
-
-/** Forma mínima de un tablero guardado; `miembros` puede faltar en datos antiguos. */
-interface TableroCrudo {
+interface BoardSummaryDto {
   readonly id: string;
   readonly titulo: string;
-  readonly columnas: readonly { readonly id: string; readonly titulo: string }[];
-  readonly miembros?: readonly unknown[];
   readonly archivado: boolean;
   readonly creadoEn: string;
 }
 
-function esTablero(valor: unknown): valor is TableroCrudo {
-  if (typeof valor !== 'object' || valor === null) {
-    return false;
-  }
-
-  const candidato = valor as Record<string, unknown>;
-
-  return (
-    typeof candidato['id'] === 'string' &&
-    typeof candidato['titulo'] === 'string' &&
-    Array.isArray(candidato['columnas']) &&
-    (candidato['miembros'] === undefined || Array.isArray(candidato['miembros'])) &&
-    typeof candidato['archivado'] === 'boolean' &&
-    typeof candidato['creadoEn'] === 'string'
-  );
+interface ColumnDto {
+  readonly id: string;
+  readonly titulo: string;
+  readonly posicion: number;
 }
 
-/** Acepta una pertenencia guardada y la devuelve con sus tipos de dominio. */
-function esMiembro(valor: unknown): valor is { memberId: string; rol: Rol } {
-  if (typeof valor !== 'object' || valor === null) {
-    return false;
-  }
-
-  const candidato = valor as Record<string, unknown>;
-
-  return (
-    typeof candidato['memberId'] === 'string' &&
-    (candidato['rol'] === 'admin' || candidato['rol'] === 'editor' || candidato['rol'] === 'viewer')
-  );
+interface MemberDto {
+  readonly memberId: string;
+  readonly nombre: string;
+  readonly email: string;
+  readonly rol: Rol;
 }
 
-function normalizar(crudo: TableroCrudo): { board: Board; migrado: boolean } {
-  const miembros: readonly BoardMember[] = Array.isArray(crudo.miembros)
-    ? crudo.miembros.filter(esMiembro).map((miembro) => ({
-        memberId: comoMemberId(miembro.memberId),
-        rol: miembro.rol,
-      }))
-    : [];
+interface BoardDetailDto {
+  readonly id: string;
+  readonly titulo: string;
+  readonly archivado: boolean;
+  readonly creadoEn: string;
+  readonly columnas: readonly ColumnDto[];
+  readonly miembros: readonly MemberDto[];
+}
 
-  if (miembros.length > 0) {
+/**
+ * Acceso HTTP a los tableros.
+ *
+ * La API no tiene un endpoint de «tablero completo» en la lista, así que se piden los
+ * detalles de cada tablero visible. La lista es pequeña y así el modelo de la interfaz
+ * conserva columnas y personas sin inventar datos parciales. El servidor sigue siendo
+ * la autoridad: un tablero ajeno responde `404` aunque la URL se escriba a mano.
+ */
+@Injectable({ providedIn: 'root' })
+export class BoardRepository {
+  private readonly api = inject(ApiClient);
+
+  async cargar(): Promise<readonly Board[]> {
+    const resumenes = await this.api.get<readonly BoardSummaryDto[]>('boards', {
+      archivados: true,
+    });
+
+    return Promise.all(resumenes.map((resumen) => this.detalle(resumen.id)));
+  }
+
+  async crear(titulo: string): Promise<Board> {
+    return this.aBoard(await this.api.post<BoardDetailDto>('boards', { titulo: titulo.trim() }));
+  }
+
+  async renombrar(id: string, titulo: string): Promise<Board> {
+    return this.aBoard(
+      await this.api.patch<BoardDetailDto>(`boards/${id}`, { titulo: titulo.trim() }),
+    );
+  }
+
+  async archivar(id: string): Promise<Board> {
+    return this.aBoard(await this.api.patch<BoardDetailDto>(`boards/${id}`, { archivado: true }));
+  }
+
+  async invitar(id: string, email: string, rol: Rol): Promise<BoardMember> {
+    return this.aMiembro(
+      await this.api.post<MemberDto>(`boards/${id}/members`, { email: email.trim(), rol }),
+    );
+  }
+
+  async cambiarRol(id: string, memberId: string, rol: Rol): Promise<BoardMember> {
+    return this.aMiembro(
+      await this.api.patch<MemberDto>(`boards/${id}/members/${memberId}`, { rol }),
+    );
+  }
+
+  async eliminarMiembro(id: string, memberId: string): Promise<void> {
+    await this.api.delete(`boards/${id}/members/${memberId}`);
+  }
+
+  private async detalle(id: string): Promise<Board> {
+    return this.aBoard(await this.api.get<BoardDetailDto>(`boards/${id}`));
+  }
+
+  private aBoard(dto: BoardDetailDto): Board {
     return {
-      board: {
-        id: comoBoardId(crudo.id),
-        titulo: crudo.titulo,
-        columnas: crudo.columnas,
-        miembros,
-        archivado: crudo.archivado,
-        creadoEn: crudo.creadoEn,
-      },
-      migrado: false,
+      id: comoBoardId(dto.id),
+      titulo: dto.titulo,
+      columnas: [...dto.columnas]
+        .sort((a, b) => a.posicion - b.posicion)
+        .map((columna) => ({ id: columna.id, titulo: columna.titulo })),
+      miembros: dto.miembros.map((miembro) => this.aMiembro(miembro)),
+      archivado: dto.archivado,
+      creadoEn: dto.creadoEn,
     };
   }
 
-  return {
-    board: {
-      id: comoBoardId(crudo.id),
-      titulo: crudo.titulo,
-      columnas: crudo.columnas,
-      miembros: miembrosHeredados(),
-      archivado: crudo.archivado,
-      creadoEn: crudo.creadoEn,
-    },
-    migrado: true,
-  };
-}
-
-/** Roles con los que la demo abría todos los tableros antes de existir las invitaciones. */
-function miembrosHeredados(): readonly BoardMember[] {
-  return MIEMBROS_DEMO.map((miembro) => ({
-    memberId: miembro.id,
-    rol: ROLES_HEREDADOS[miembro.id] ?? 'viewer',
-  }));
+  private aMiembro(dto: MemberDto): BoardMember {
+    return {
+      memberId: comoMemberId(dto.memberId),
+      nombre: dto.nombre,
+      email: dto.email,
+      rol: dto.rol,
+    };
+  }
 }

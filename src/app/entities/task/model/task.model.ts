@@ -1,3 +1,5 @@
+import type { MemberId } from '@entities/member';
+
 /**
  * Marca de tipo para los ids de tarjeta: no se confunden con los de tablero.
  */
@@ -16,23 +18,27 @@ export interface Task {
   readonly columnaId: string;
   readonly titulo: string;
   readonly descripcion: string;
-  /** Nombre de quien la tiene. Pasará a `MemberId` cuando exista `entities/member`. */
+  /** Cuenta asignada; `null` si no tiene responsable. */
+  readonly responsableId: MemberId | null;
+  /** Nombre desnormalizado que devuelve la API, para pintar sin otra consulta. */
   readonly responsable: string | null;
   /** Orden manual dentro de su columna. 0 es la primera. */
   readonly posicion: number;
+  /** Versión optimista: el servidor rechaza una edición con una versión vieja. */
+  readonly version: number;
   readonly creadoEn: string;
 }
 
 export interface DatosTask {
   readonly descripcion?: string;
-  readonly responsable?: string | null;
+  readonly responsableId?: MemberId | null;
 }
 
 /**
- * Crea una tarjeta válida.
+ * Crea una tarjeta válida en memoria.
  *
- * La posición la decide el store (va al final de su columna); aquí solo se valida
- * lo que define a la tarjeta: que tenga título.
+ * La usan los tests y la creación optimista; la API devuelve la tarjeta definitiva con
+ * su id, posición y versión reales.
  */
 export function crearTask(
   titulo: string,
@@ -54,8 +60,10 @@ export function crearTask(
     columnaId,
     titulo: limpio,
     descripcion: datos.descripcion?.trim() ?? '',
-    responsable: datos.responsable ?? null,
+    responsableId: datos.responsableId ?? null,
+    responsable: null,
     posicion: 0,
+    version: 1,
     creadoEn,
   };
 }

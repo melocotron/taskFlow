@@ -30,7 +30,11 @@
         </div>
       </header>
 
-      <app-board-filters [filtro]="filtro()" (cambios)="aplicarFiltro($event)" />
+      <app-board-filters
+        [filtro]="filtro()"
+        [miembros]="tablero.miembros"
+        (cambios)="aplicarFiltro($event)"
+      />
 
       <app-board-canvas [board]="tablero" [filtro]="filtro()" />
     }

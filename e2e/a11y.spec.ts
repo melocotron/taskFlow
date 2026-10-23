@@ -1,109 +1,14 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
 import type { Locator, Page } from '@playwright/test';
-
-type Rol = 'admin' | 'editor' | 'viewer';
-
-interface Pertenencia {
-  readonly memberId: string;
-  readonly rol: Rol;
-}
-
-interface Semilla {
-  readonly sesion?: string;
-  readonly conTablero?: boolean;
-  readonly miembros?: readonly Pertenencia[];
-}
-
-const EQUIPO: readonly Pertenencia[] = [
-  { memberId: 'marta', rol: 'admin' },
-  { memberId: 'ivan', rol: 'editor' },
-  { memberId: 'alba', rol: 'viewer' },
-];
+import { PASSWORD, crearTarea, crearTablero, entrar, invitar, registrar, salir } from './apoyo';
+import type { Cuenta, Tablero } from './apoyo';
 
 /**
- * Siembra el escenario. Sin sesión, la aplicación empieza en «¿Quién eres?».
+ * Auditoría de accesibilidad contra la aplicación real.
  *
- * La auditoría no modifica datos, así que no hace falta el guardado de «solo la
- * primera vez» que usan los journeys: cada prueba estrena contexto y almacenamiento.
- */
-async function sembrar(page: Page, semilla: Semilla = {}): Promise<void> {
-  const { sesion, conTablero = true, miembros = EQUIPO } = semilla;
-
-  await page.addInitScript(
-    ({
-      sesion: id,
-      conTablero: hayTablero,
-      miembros: equipo,
-    }: {
-      sesion?: string;
-      conTablero: boolean;
-      miembros: readonly Pertenencia[];
-    }) => {
-      if (!hayTablero) {
-        localStorage.setItem('taskflow.tableros', '[]');
-        localStorage.removeItem('taskflow.tareas');
-      } else {
-        localStorage.setItem(
-          'taskflow.tableros',
-          JSON.stringify([
-            {
-              id: 'producto',
-              titulo: 'Producto',
-              archivado: false,
-              creadoEn: '2026-10-18T00:00:00.000Z',
-              miembros: equipo,
-              columnas: [
-                { id: 'por-hacer', titulo: 'Por hacer' },
-                { id: 'en-curso', titulo: 'En curso' },
-                { id: 'hecho', titulo: 'Hecho' },
-              ],
-            },
-          ]),
-        );
-
-        localStorage.setItem(
-          'taskflow.tareas',
-          JSON.stringify([
-            {
-              id: 'a',
-              boardId: 'producto',
-              columnaId: 'por-hacer',
-              titulo: 'Revisar el copy del onboarding',
-              descripcion: 'Ajustar los tres primeros pasos',
-              responsable: 'Marta Ruiz',
-              posicion: 0,
-              creadoEn: '2026-10-18T00:00:00.000Z',
-            },
-            {
-              id: 'b',
-              boardId: 'producto',
-              columnaId: 'en-curso',
-              titulo: 'Preparar la demo del viernes',
-              descripcion: '',
-              responsable: 'Iván Soto',
-              posicion: 0,
-              creadoEn: '2026-10-18T00:00:00.000Z',
-            },
-          ]),
-        );
-      }
-
-      if (id) {
-        localStorage.setItem('taskflow.sesion', id);
-      } else {
-        localStorage.removeItem('taskflow.sesion');
-      }
-    },
-    { sesion, conTablero, miembros },
-  );
-}
-
-/**
- * Pasa axe con todas sus reglas por defecto, no solo por las etiquetas WCAG.
- *
- * El mensaje incluye solo lo necesario para saber qué regla y qué nodo fallan; el
- * volcado completo de axe en la consola de Playwright no cabe en una salida útil.
+ * Cada escenario se crea por API; la sesión es una cookie real. Axe se ejecuta con
+ * todas sus reglas por defecto.
  */
 async function sinViolaciones(page: Page, pantalla: string): Promise<void> {
   const { violations } = await new AxeBuilder({ page }).analyze();
@@ -135,7 +40,7 @@ async function comprobarFocoVisible(page: Page): Promise<void> {
 }
 
 /** Avanza con Tab hasta el control indicado, sin usar el ratón. */
-async function tabularHasta(page: Page, objetivo: Locator, maximo = 30): Promise<void> {
+async function tabularHasta(page: Page, objetivo: Locator, maximo = 40): Promise<void> {
   for (let paso = 0; paso < maximo; paso++) {
     if (await objetivo.evaluate((elemento) => elemento === document.activeElement)) {
       return;
@@ -167,17 +72,40 @@ async function abrirDialogoConTeclado(
   return dialogo;
 }
 
+async function tableroConTrabajo(page: Page): Promise<{
+  marta: Cuenta;
+  ivan: Cuenta;
+  tablero: Tablero;
+}> {
+  const marta = await registrar(page, 'Marta Ruiz');
+  const tablero = await crearTablero(page);
+
+  await crearTarea(page, tablero, 'Por hacer', 'Revisar el copy del onboarding', {
+    descripcion: 'Ajustar los tres primeros pasos',
+    responsableId: marta.id,
+  });
+
+  await salir(page);
+  const ivan = await registrar(page, 'Iván Soto');
+  await salir(page);
+  await entrar(page, marta);
+  await invitar(page, tablero, ivan, 'editor');
+  await crearTarea(page, tablero, 'En curso', 'Preparar la demo del viernes', {
+    responsableId: ivan.id,
+  });
+
+  return { marta, ivan, tablero };
+}
+
 test.describe('auditoría axe', () => {
   test('entrar: sin violaciones', async ({ page }) => {
-    await sembrar(page, { conTablero: false });
-    await page.goto('/');
-
-    await expect(page.getByRole('heading', { level: 1, name: '¿Quién eres?' })).toBeVisible();
+    await page.goto('/entrar');
+    await expect(page.getByRole('heading', { level: 1, name: 'Entra en TaskFlow' })).toBeVisible();
     await sinViolaciones(page, 'entrar');
   });
 
   test('lista vacía: sin violaciones', async ({ page }) => {
-    await sembrar(page, { sesion: 'marta', conTablero: false });
+    await registrar(page, 'Marta Ruiz');
     await page.goto('/');
 
     await expect(page.getByText('No tienes tableros todavía')).toBeVisible();
@@ -185,7 +113,8 @@ test.describe('auditoría axe', () => {
   });
 
   test('lista, menú de sesión y creación: sin violaciones', async ({ page }) => {
-    await sembrar(page, { sesion: 'marta' });
+    await registrar(page, 'Marta Ruiz');
+    await crearTablero(page);
     await page.goto('/');
 
     await expect(page.getByRole('link', { name: /Producto/ })).toBeVisible();
@@ -206,8 +135,8 @@ test.describe('auditoría axe', () => {
 
   test('detalle, acciones y formularios: sin violaciones', async ({ page }) => {
     test.setTimeout(60_000);
-    await sembrar(page, { sesion: 'marta' });
-    await page.goto('/tableros/producto');
+    const { tablero } = await tableroConTrabajo(page);
+    await page.goto(`/tableros/${tablero.id}`);
 
     await expect(page.getByRole('heading', { level: 1, name: 'Producto' })).toBeVisible();
     await expect(page.getByText('Revisar el copy del onboarding')).toBeVisible();
@@ -220,7 +149,7 @@ test.describe('auditoría axe', () => {
     await page.keyboard.press('Escape');
     await expect(renombrar).toBeHidden();
 
-    await page.getByRole('button', { name: /Personas \(3\)/ }).click();
+    await page.getByRole('button', { name: /Personas \(2\)/ }).click();
     const personas = page.getByRole('dialog', { name: 'Personas del tablero' });
     await expect(personas).toBeVisible();
     await sinViolaciones(page, 'diálogo personas');
@@ -248,13 +177,10 @@ test.describe('auditoría axe', () => {
     await page.keyboard.press('Escape');
     await expect(nueva).toBeHidden();
 
-    // Los avisos viven fuera de `main`; también tienen que estar dentro de un landmark.
     await page.getByRole('button', { name: 'Acciones de Preparar la demo del viernes' }).click();
     await page.getByRole('menuitem', { name: 'Mover a Por hacer' }).click();
     await expect(page.getByRole('status')).toContainText('Preparar la demo del viernes');
 
-    // La entrada del aviso anima la opacidad. Axe debe medirlo ya asentado; si no,
-    // calcula el contraste sobre un fotograma intermedio y denuncia un falso positivo.
     await page
       .locator('app-toast')
       .evaluate((elemento) =>
@@ -265,8 +191,17 @@ test.describe('auditoría axe', () => {
   });
 
   test('vista de observadora: sin violaciones', async ({ page }) => {
-    await sembrar(page, { sesion: 'alba' });
-    await page.goto('/tableros/producto');
+    const { marta, tablero } = await tableroConTrabajo(page);
+
+    await salir(page);
+    const alba = await registrar(page, 'Alba Sanz');
+    await salir(page);
+    await entrar(page, marta);
+    await invitar(page, tablero, alba, 'viewer');
+    await salir(page);
+    await entrar(page, alba);
+
+    await page.goto(`/tableros/${tablero.id}`);
 
     await expect(page.getByRole('heading', { level: 1, name: 'Producto' })).toBeVisible();
     await expect(page.getByRole('region', { name: 'Por hacer' })).toBeVisible();
@@ -280,16 +215,20 @@ test.describe('auditoría axe', () => {
   });
 
   test('acceso denegado: sin violaciones', async ({ page }) => {
-    await sembrar(page, { sesion: 'ivan', miembros: [{ memberId: 'marta', rol: 'admin' }] });
-    await page.goto('/tableros/producto');
+    await registrar(page, 'Marta Ruiz');
+    const tablero = await crearTablero(page);
 
-    await expect(page.getByText('No tienes acceso a este tablero')).toBeVisible();
+    await salir(page);
+    await registrar(page, 'Iván Soto');
+    await page.goto(`/tableros/${tablero.id}`);
+
+    await expect(page.getByText('No se encontró ese tablero.')).toBeVisible();
     await sinViolaciones(page, 'acceso denegado');
   });
 
   test('tablero inexistente: sin violaciones', async ({ page }) => {
-    await sembrar(page, { sesion: 'marta', conTablero: false });
-    await page.goto('/tableros/producto');
+    await registrar(page, 'Marta Ruiz');
+    await page.goto(`/tableros/${crypto.randomUUID()}`);
 
     await expect(page.getByText('No se encontró ese tablero.')).toBeVisible();
     await sinViolaciones(page, 'tablero inexistente');
@@ -297,8 +236,8 @@ test.describe('auditoría axe', () => {
 
   test('detalle en móvil: sin violaciones', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
-    await sembrar(page, { sesion: 'marta' });
-    await page.goto('/tableros/producto');
+    const { tablero } = await tableroConTrabajo(page);
+    await page.goto(`/tableros/${tablero.id}`);
 
     await expect(page.getByRole('heading', { level: 1, name: 'Producto' })).toBeVisible();
     await expect(page.getByText('Revisar el copy del onboarding')).toBeVisible();
@@ -316,19 +255,25 @@ test.describe('auditoría axe', () => {
 
 test('recorrido completo sin ratón, con foco visible', async ({ page }) => {
   test.setTimeout(60_000);
-  await sembrar(page);
+  const { marta } = await tableroConTrabajo(page);
+  await salir(page);
+  await page.goto('/entrar');
 
-  // Entrar: el primer Tab llega a la primera persona y Enter abre la sesión.
-  await page.goto('/');
-  await expect(page.getByRole('heading', { level: 1, name: '¿Quién eres?' })).toBeVisible();
+  const email = page.getByRole('textbox', { name: 'Email' });
+  await tabularHasta(page, email);
+  await comprobarFocoVisible(page);
+  await page.keyboard.type(marta.email);
 
-  const marta = page.getByRole('button', { name: /Marta Ruiz/ });
-  await tabularHasta(page, marta);
+  const password = page.getByLabel('Contraseña');
+  await tabularHasta(page, password);
+  await page.keyboard.type(PASSWORD);
+
+  const enviar = page.locator('form').getByRole('button', { name: 'Entrar', exact: true });
+  await tabularHasta(page, enviar);
   await comprobarFocoVisible(page);
   await page.keyboard.press('Enter');
   await expect(page.getByRole('heading', { level: 1, name: 'TaskFlow' })).toBeVisible();
 
-  // Lista: Tab recorre «Nuevo tablero», la sesión y el enlace al tablero.
   const producto = page.getByRole('link', { name: /Producto/ });
   await expect(producto).toBeVisible();
   await tabularHasta(page, producto);
@@ -338,21 +283,18 @@ test('recorrido completo sin ratón, con foco visible', async ({ page }) => {
   await expect(page.getByRole('heading', { level: 1, name: 'Producto' })).toBeVisible();
   await expect(page.getByText('Revisar el copy del onboarding')).toBeVisible();
 
-  // Renombrar: el diálogo enfoca su primer campo y Escape devuelve el foco.
   const renombrar = page.getByRole('button', { name: 'Renombrar' });
   const dialogoRenombrar = await abrirDialogoConTeclado(page, renombrar, 'Renombrar tablero');
   await page.keyboard.press('Escape');
   await expect(dialogoRenombrar).toBeHidden();
   await expect(renombrar).toBeFocused();
 
-  // Personas: mismo contrato de foco, también desde el botón de la cabecera.
-  const personas = page.getByRole('button', { name: /Personas \(3\)/ });
+  const personas = page.getByRole('button', { name: /Personas \(2\)/ });
   const dialogoPersonas = await abrirDialogoConTeclado(page, personas, 'Personas del tablero');
   await page.keyboard.press('Escape');
   await expect(dialogoPersonas).toBeHidden();
   await expect(personas).toBeFocused();
 
-  // Menú de una tarjeta: el foco entra en la primera opción y Escape vuelve al disparador.
   const acciones = page.getByRole('button', {
     name: 'Acciones de Preparar la demo del viernes',
   });
@@ -368,7 +310,6 @@ test('recorrido completo sin ratón, con foco visible', async ({ page }) => {
   await expect(menu).toBeHidden();
   await expect(acciones).toBeFocused();
 
-  // Crear: se llega con Tab al botón de la columna y el formulario recibe el foco.
   const anadir = page
     .getByRole('region', { name: 'Por hacer' })
     .getByRole('button', { name: 'Añadir tarjeta' });

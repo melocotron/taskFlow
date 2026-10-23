@@ -1,18 +1,16 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import type { MemberId, Rol } from '@entities/member';
 import { EstadoCarga } from '@shared/lib/estado-carga';
-import { nuevoId } from '@shared/lib/id';
 import { BoardRepository } from '../api/board.repository';
-import { Board, BoardId, crearBoard, puedeEn } from './board.model';
+import { Board, BoardId, BoardMember } from './board.model';
 
 /**
  * Estado de los tableros.
  *
- * Una sola fuente de verdad con signals: leer es barato, derivar es gratis y no hay
- * suscripciones que olvidar. Toda mutación persiste antes de publicar el cambio.
- *
- * Quién puede hacer qué no es global: se pregunta al tablero concreto. Invitar o
- * cambiar un rol exige administrarlo, y esa comprobación vive aquí, no solo en la UI.
+ * Una sola fuente de verdad con signals: leer es barato y derivar es gratis. Toda
+ * mutación espera la respuesta del servidor antes de publicar el cambio; si la API
+ * falla, el estado local no miente. El servidor comprueba los roles aunque la interfaz
+ * esconda el botón.
  */
 @Injectable({ providedIn: 'root' })
 export class BoardStore {
@@ -60,115 +58,76 @@ export class BoardStore {
     return this.estado().find((board) => board.id === id);
   }
 
-  /** Quien crea el tablero entra como administrador. */
-  crear(titulo: string, creador: MemberId, ahora = new Date()): Board {
-    const board = crearBoard(titulo, nuevoId(), ahora.toISOString(), creador);
-
-    this.actualizar([...this.estado(), board]);
-
-    return board;
-  }
-
-  renombrar(id: BoardId, titulo: string): void {
+  /** Quien crea el tablero entra como administrador; lo decide el servidor. */
+  async crear(titulo: string): Promise<Board> {
     const limpio = titulo.trim();
 
     if (limpio.length === 0) {
       throw new Error('Un tablero necesita un título');
     }
 
-    this.actualizar(
-      this.estado().map((board) => (board.id === id ? { ...board, titulo: limpio } : board)),
-    );
-  }
+    const board = await this.repositorio.crear(limpio);
 
-  /**
-   * Invita a una persona con un rol concreto.
-   *
-   * El actor se pasa desde fuera y se comprueba aquí: esconder el botón no es la
-   * puerta. Tampoco se puede invitar dos veces a la misma persona.
-   */
-  invitar(id: BoardId, actor: MemberId, nuevo: MemberId, rol: Rol): void {
-    const board = this.exigirTablero(id);
-    this.exigirAdministracion(board, actor);
-
-    if (board.miembros.some((miembro) => miembro.memberId === nuevo)) {
-      throw new Error('Esa persona ya está en el tablero');
-    }
-
-    this.actualizar(
-      this.estado().map((candidato) =>
-        candidato.id === id
-          ? { ...candidato, miembros: [...candidato.miembros, { memberId: nuevo, rol }] }
-          : candidato,
-      ),
-    );
-  }
-
-  /**
-   * Cambia el rol de alguien que ya está en el tablero.
-   *
-   * Se impide dejar el tablero sin administración: sería un callejón sin salida para
-   * invitar, cambiar roles o, en el futuro, archivar.
-   */
-  cambiarRol(id: BoardId, actor: MemberId, memberId: MemberId, rol: Rol): void {
-    const board = this.exigirTablero(id);
-    this.exigirAdministracion(board, actor);
-
-    const actual = board.miembros.find((miembro) => miembro.memberId === memberId);
-
-    if (!actual) {
-      throw new Error('Esa persona no está en el tablero');
-    }
-
-    if (actual.rol === rol) {
-      return;
-    }
-
-    const administradores = board.miembros.filter((miembro) => miembro.rol === 'admin').length;
-
-    if (actual.rol === 'admin' && administradores === 1) {
-      throw new Error('El tablero necesita al menos una persona que lo administre');
-    }
-
-    this.actualizar(
-      this.estado().map((candidato) =>
-        candidato.id === id
-          ? {
-              ...candidato,
-              miembros: candidato.miembros.map((miembro) =>
-                miembro.memberId === memberId ? { ...miembro, rol } : miembro,
-              ),
-            }
-          : candidato,
-      ),
-    );
-  }
-
-  archivar(id: BoardId): void {
-    this.actualizar(
-      this.estado().map((board) => (board.id === id ? { ...board, archivado: true } : board)),
-    );
-  }
-
-  private exigirTablero(id: BoardId): Board {
-    const board = this.buscar(id);
-
-    if (!board) {
-      throw new Error('Ese tablero no existe');
-    }
+    this.estado.update((tableros) => [...tableros, board]);
 
     return board;
   }
 
-  private exigirAdministracion(board: Board, actor: MemberId): void {
-    if (!puedeEn(board, actor, 'administrar')) {
-      throw new Error('Solo quien administra puede gestionar las personas del tablero');
+  async renombrar(id: BoardId, titulo: string): Promise<Board> {
+    const limpio = titulo.trim();
+
+    if (limpio.length === 0) {
+      throw new Error('Un tablero necesita un título');
     }
+
+    const board = await this.repositorio.renombrar(id, limpio);
+
+    this.reemplazar(board);
+
+    return board;
   }
 
-  /** Único punto de escritura: así es imposible guardar en un sitio y olvidar el otro. */
-  private actualizar(tableros: readonly Board[]): void {
-    this.repositorio.guardar(tableros);
-    this.estado.set(tableros);
+  /** Invita a una cuenta real por email. El rol es de este tablero. */
+  async invitar(id: BoardId, email: string, rol: Rol): Promise<BoardMember> {
+    const member = await this.repositorio.invitar(id, email, rol);
+
+    this.estado.update((tableros) =>
+      tableros.map((board) =>
+        board.id === id && !board.miembros.some((actual) => actual.memberId === member.memberId)
+          ? { ...board, miembros: [...board.miembros, member] }
+          : board,
+      ),
+    );
+
+    return member;
+  }
+
+  async cambiarRol(id: BoardId, memberId: MemberId, rol: Rol): Promise<BoardMember> {
+    const member = await this.repositorio.cambiarRol(id, memberId, rol);
+
+    this.estado.update((tableros) =>
+      tableros.map((board) =>
+        board.id === id
+          ? {
+              ...board,
+              miembros: board.miembros.map((actual) =>
+                actual.memberId === member.memberId ? member : actual,
+              ),
+            }
+          : board,
+      ),
+    );
+
+    return member;
+  }
+
+  async archivar(id: BoardId): Promise<void> {
+    this.reemplazar(await this.repositorio.archivar(id));
+  }
+
+  private reemplazar(board: Board): void {
+    this.estado.update((tableros) =>
+      tableros.map((candidato) => (candidato.id === board.id ? board : candidato)),
+    );
   }
 }

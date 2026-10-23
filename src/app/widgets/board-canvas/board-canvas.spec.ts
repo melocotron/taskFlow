@@ -1,29 +1,20 @@
 import { TestBed } from '@angular/core/testing';
-import { COLUMNAS_POR_DEFECTO, comoBoardId } from '@entities/board';
-import type { Board } from '@entities/board';
-import { MemberStore, comoMemberId } from '@entities/member';
-import { TaskStore } from '@entities/task';
+import { vi } from 'vitest';
+import { MemberStore } from '@entities/member';
+import type { MemberId } from '@entities/member';
+import { TaskRepository, TaskStore } from '@entities/task';
 import type { FiltroTablero } from '@features/board-filters';
 import { ToastService } from '@shared/ui';
+import { ALBA, IVAN, MARTA, TaskRepositoryFalso, tablero } from '@testing/repositorios';
 import { BoardCanvas } from './board-canvas';
 
-const TABLERO: Board = {
-  id: comoBoardId('producto'),
-  titulo: 'Producto',
-  columnas: COLUMNAS_POR_DEFECTO,
-  miembros: [
-    { memberId: comoMemberId('marta'), rol: 'admin' },
-    { memberId: comoMemberId('alba'), rol: 'viewer' },
-  ],
-  archivado: false,
-  creadoEn: '2026-10-18T00:00:00.000Z',
-};
+const TABLERO = tablero();
 
 interface TareaDePrueba {
   readonly columna: string;
   readonly titulo: string;
   readonly descripcion?: string;
-  readonly responsable?: string;
+  readonly responsableId?: MemberId;
 }
 
 describe('BoardCanvas', () => {
@@ -32,19 +23,23 @@ describe('BoardCanvas', () => {
     rol: 'admin' | 'viewer' = 'admin',
     filtro?: FiltroTablero,
   ) {
-    TestBed.configureTestingModule({ imports: [BoardCanvas] });
+    const repositorio = new TaskRepositoryFalso();
+
+    TestBed.configureTestingModule({
+      imports: [BoardCanvas],
+      providers: [{ provide: TaskRepository, useValue: repositorio }],
+    });
 
     if (rol === 'viewer') {
-      TestBed.inject(MemberStore).cambiarSesion(comoMemberId('alba'));
+      TestBed.inject(MemberStore).cambiarSesion(ALBA.memberId);
     }
 
     const store = TestBed.inject(TaskStore);
-    await store.listo;
 
     for (const tarea of tareas) {
-      store.crear(TABLERO.id, tarea.columna, tarea.titulo, {
+      await store.crear(TABLERO.id, tarea.columna, tarea.titulo, {
         descripcion: tarea.descripcion,
-        responsable: tarea.responsable ?? null,
+        responsableId: tarea.responsableId ?? null,
       });
     }
 
@@ -55,6 +50,8 @@ describe('BoardCanvas', () => {
       fixture.componentRef.setInput('filtro', filtro);
     }
 
+    fixture.detectChanges();
+    await fixture.whenStable();
     fixture.detectChanges();
 
     return { fixture, store, elemento: fixture.nativeElement as HTMLElement };
@@ -114,10 +111,16 @@ describe('BoardCanvas', () => {
     control.dispatchEvent(new Event('input'));
   }
 
-  function enviarFormulario(): void {
+  async function enviarFormulario(fixture: {
+    detectChanges(): void;
+    whenStable(): Promise<unknown>;
+  }): Promise<void> {
     dialogo()
       ?.querySelector('form')
       ?.dispatchEvent(new Event('submit', { cancelable: true }));
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
   }
 
   function avisos(): string[] {
@@ -182,7 +185,7 @@ describe('BoardCanvas', () => {
 
   it('muestra a quien tiene la tarjeta, con su turno de color', async () => {
     const { elemento } = await montar([
-      { columna: 'en-curso', titulo: 'Migrar el buscador', responsable: 'Marta Ruiz' },
+      { columna: 'en-curso', titulo: 'Migrar el buscador', responsableId: MARTA.memberId },
     ]);
 
     const tarjeta = columna(elemento, 1).querySelector('.tarjeta-responsable') as HTMLElement;
@@ -236,6 +239,8 @@ describe('BoardCanvas', () => {
       fixture.detectChanges();
       opcion('Mover a En curso')!.click();
       fixture.detectChanges();
+      await fixture.whenStable();
+      fixture.detectChanges();
 
       expect(titulosDe(columna(elemento, 0))).toEqual([]);
       expect(titulosDe(columna(elemento, 1))).toEqual(['Revisar el copy']);
@@ -251,6 +256,8 @@ describe('BoardCanvas', () => {
       fixture.detectChanges();
       opcion('Mover a En curso')!.click();
       fixture.detectChanges();
+      await fixture.whenStable();
+      fixture.detectChanges();
 
       expect(titulosDe(columna(elemento, 1))).toEqual(['Migrar el buscador', 'Revisar el copy']);
     });
@@ -264,8 +271,10 @@ describe('BoardCanvas', () => {
       fixture.detectChanges();
       opcion('Mover a En curso')!.click();
       fixture.detectChanges();
+      await fixture.whenStable();
+      fixture.detectChanges();
 
-      expect(avisos()).toContain('«Revisar el copy» a En curso');
+      await vi.waitFor(() => expect(avisos()).toContain('«Revisar el copy» a En curso'));
     });
   });
 
@@ -289,8 +298,7 @@ describe('BoardCanvas', () => {
       fixture.detectChanges();
 
       escribir(campoDelDialogo('Título'), 'Preparar la demo');
-      enviarFormulario();
-      fixture.detectChanges();
+      await enviarFormulario(fixture);
 
       expect(titulosDe(columna(elemento, 0))).toEqual(['Revisar el copy', 'Preparar la demo']);
       expect(dialogo()).toBeNull();
@@ -302,8 +310,7 @@ describe('BoardCanvas', () => {
 
       botonAnadir(elemento, 0)!.click();
       fixture.detectChanges();
-      enviarFormulario();
-      fixture.detectChanges();
+      await enviarFormulario(fixture);
 
       expect(store.tareas()).toEqual([]);
       expect(dialogo()?.textContent).toContain('Escribe qué hay que hacer');
@@ -317,7 +324,7 @@ describe('BoardCanvas', () => {
           columna: 'en-curso',
           titulo: 'Revisar el copy',
           descripcion: 'Texto viejo',
-          responsable: 'Marta Ruiz',
+          responsableId: MARTA.memberId,
         },
       ]);
 
@@ -330,8 +337,7 @@ describe('BoardCanvas', () => {
       expect((campoDelDialogo('Título') as HTMLInputElement).value).toBe('Revisar el copy');
 
       escribir(campoDelDialogo('Título'), 'Revisar el copy final');
-      enviarFormulario();
-      fixture.detectChanges();
+      await enviarFormulario(fixture);
 
       expect(titulosDe(columna(elemento, 1))).toEqual(['Revisar el copy final']);
       expect(avisos()).toContain('«Revisar el copy final» actualizada');
@@ -357,13 +363,13 @@ describe('BoardCanvas', () => {
 
   describe('filtrar tarjetas', () => {
     const TARJETAS: TareaDePrueba[] = [
-      { columna: 'por-hacer', titulo: 'Revisar el copy', responsable: 'Marta Ruiz' },
-      { columna: 'por-hacer', titulo: 'Preparar la demo', responsable: 'Iván Soto' },
+      { columna: 'por-hacer', titulo: 'Revisar el copy', responsableId: MARTA.memberId },
+      { columna: 'por-hacer', titulo: 'Preparar la demo', responsableId: IVAN.memberId },
       {
         columna: 'en-curso',
         titulo: 'Migrar el buscador',
         descripcion: 'Revisión de los textos',
-        responsable: 'Iván Soto',
+        responsableId: IVAN.memberId,
       },
       { columna: 'hecho', titulo: 'Cerrar el sprint' },
     ];
