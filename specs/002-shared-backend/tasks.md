@@ -225,7 +225,7 @@ crea duplicados y devuelve contadores coherentes.
 - [x] T067 Ejecutar `go test ./...`, `npm run verify` y revisar el diff
 - [x] T068 Commit convencional y push de la rama
 
-## Phase 9: Integración Angular (siguiente rebanada, no bloquea la API)
+## Phase 9: Integración Angular (completada)
 
 > Orden práctico: T071 antes de T070. Sin `AuthService` y sesión real, los
 > repositorios HTTP reciben `401` al cargar. Los identificadores se mantienen para no

@@ -144,7 +144,8 @@ producción, Go sirve la build de Angular y la API desde el mismo origen. Postgr
 Neon y el contenedor en Fly.io (Render como alternativa).
 
 **Rationale**: evita CORS, permite cookies `SameSite=Lax` y simplifica la seguridad.
-Vercel deja de ser producción; puede quedarse para previews estáticas o retirarse.
+Vercel deja de ser producción y queda como redirección; el proyecto puede retirarse
+cuando ya no se necesite.
 
 ## D-010 — Pruebas
 

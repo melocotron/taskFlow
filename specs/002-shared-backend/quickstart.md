@@ -3,7 +3,7 @@
 **Feature**: `002-shared-backend`  
 **Date**: 2026-10-23
 
-Esta guía valida la API sin depender todavía de la interfaz Angular.
+Esta guía valida la API y el frontend Angular contra PostgreSQL en local.
 
 ## Requisitos
 
@@ -182,16 +182,17 @@ ejecutándose.
 
 ## 10. Frontend
 
-El frontend 1.0 sigue funcionando con `localStorage`:
+Angular usa la API HTTP; no hay persistencia de negocio en `localStorage`:
 
 ```powershell
 npm start
 ```
 
-La integración con la API se hará en la siguiente rebanada. Cuando exista, el proxy de
-desarrollo enviará `/api` a `http://localhost:8080` y no hará falta CORS.
+El proxy de desarrollo envía `/api`, `/healthz` y `/readyz` a `http://localhost:8080`,
+así que el navegador ve un solo origen y no hace falta CORS. En producción, Go sirve la
+build de Angular y la API desde el mismo puerto.
 
-## Criterio de aceptación de esta rebanada
+## Criterio de aceptación
 
 - La API arranca contra PostgreSQL y responde a salud.
 - Registro, login, logout y `/me` funcionan.
@@ -200,4 +201,6 @@ desarrollo enviará `/api` a `http://localhost:8080` y no hará falta CORS.
 - Un observador recibe `403` al intentar editar.
 - Un tablero ajeno responde `404`.
 - La importación local es idempotente.
-- `go test ./...` y `npm run verify` pasan.
+- `go test ./...`, `npm run verify` y los E2E pasan.
+
+**Estado:** cumplido en staging y producción.

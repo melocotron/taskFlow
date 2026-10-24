@@ -10,7 +10,7 @@ La 1.0 quedó como antecedente. El proyecto de Vercel se conserva solo como
 redirección a producción; puede eliminarse manualmente desde su panel cuando ya no se
 necesite.
 
-## 1. Requisitos del destino
+## 1. Requisitos del despliegue
 
 - Docker Desktop para desarrollo y para construir la imagen.
 - Cuenta de Neon con una base PostgreSQL 17.
@@ -145,7 +145,7 @@ conexión pooled para la API, añade una variable separada para las migraciones 
 cambiar la cadena. Para staging, usa una base o rama de Neon distinta. No uses la misma
 base para staging y producción.
 
-## 7. Vercel (etapa actual)
+## 7. Vercel (redirección)
 
 Producción ya está en Fly.io. `vercel.json` redirige cualquier ruta del proyecto de
 Vercel a `https://taskflow-prod-melocotron.fly.dev`; así el dominio antiguo no sirve

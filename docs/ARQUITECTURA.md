@@ -236,14 +236,14 @@ Producción:
 
 ## 8. Dónde se sigue el trabajo
 
-| Documento                                                                 | Para qué                                                      |
-| ------------------------------------------------------------------------- | ------------------------------------------------------------- |
-| [specs/002-shared-backend/tasks.md](../specs/002-shared-backend/tasks.md) | **Autoridad de fases y tareas** (T001–T075, fase 9 incluida). |
-| [specs/002-shared-backend/spec.md](../specs/002-shared-backend/spec.md)   | Qué debe hacer el alcance y sus criterios de aceptación.      |
-| [specs/002-shared-backend/plan.md](../specs/002-shared-backend/plan.md)   | Diseño técnico y decisiones de implementación.                |
-| [PROGRESS.md](PROGRESS.md)                                                | Bitácora narrativa por sprint (S6.1–S6.5) y siguiente paso.   |
-| [PLAN.md](../PLAN.md)                                                     | Plan maestro del producto y roadmap general.                  |
-| [CHANGELOG.md](../CHANGELOG.md)                                           | Qué entró en cada versión.                                    |
+| Documento                                                                 | Para qué                                                                                                          |
+| ------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| [specs/002-shared-backend/tasks.md](../specs/002-shared-backend/tasks.md) | **Autoridad de fases y tareas** (T001–T075, fase 9 incluida). El despliegue S6.5b se registra en PROGRESS y PLAN. |
+| [specs/002-shared-backend/spec.md](../specs/002-shared-backend/spec.md)   | Qué debe hacer el alcance y sus criterios de aceptación.                                                          |
+| [specs/002-shared-backend/plan.md](../specs/002-shared-backend/plan.md)   | Diseño técnico y decisiones de implementación.                                                                    |
+| [PROGRESS.md](PROGRESS.md)                                                | Bitácora narrativa por sprint (S6.1–S6.5b) y siguiente paso.                                                      |
+| [PLAN.md](../PLAN.md)                                                     | Plan maestro del producto y roadmap general.                                                                      |
+| [CHANGELOG.md](../CHANGELOG.md)                                           | Qué entró en cada versión.                                                                                        |
 
 `ARQUITECTURA.md` describe el diseño; no duplica el estado de las tareas. Si hay
 conflicto entre un diagrama y `tasks.md`, manda `tasks.md` para el estado y este

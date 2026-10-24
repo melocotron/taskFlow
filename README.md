@@ -1,8 +1,9 @@
 # TaskFlow
 
-**Versión 1.0.0 publicada.** Tableros kanban con equipos. Proyecto de aprendizaje
+**Producción en vivo.** Tableros kanban con equipos. Proyecto de aprendizaje
 **Angular 22** construido con Spec-Driven Development, Gitflow y design system propio.
-La rama actual integra el **backend compartido en Go** con PostgreSQL.
+La aplicación usa el **backend compartido en Go** con PostgreSQL; producción y staging
+están en Fly.io + Neon.
 
 ## Empezar
 
@@ -83,7 +84,7 @@ el backend usa `legacy_id` para no duplicar y solo entonces se borran las claves
 | [docs/PROGRESS.md](docs/PROGRESS.md)                                   | Dónde vamos y dónde me quedé                          |
 | [docs/IDEAS.md](docs/IDEAS.md)                                         | Ideas aparcadas (no se tocan a mitad de sprint)       |
 | [CHANGELOG.md](CHANGELOG.md)                                           | Qué entró en cada versión                             |
-| [docs/DEPLOY.md](docs/DEPLOY.md)                                       | Despliegue actual y destino Go + Neon                 |
+| [docs/DEPLOY.md](docs/DEPLOY.md)                                       | Despliegue en Fly.io + Neon                           |
 | [CLAUDE.md](CLAUDE.md)                                                 | Reglas de código para el agente                       |
 | [specs/002-shared-backend/spec.md](specs/002-shared-backend/spec.md)   | Qué debe hacer el backend compartido                  |
 | [specs/002-shared-backend/plan.md](specs/002-shared-backend/plan.md)   | Cómo se implementa                                    |

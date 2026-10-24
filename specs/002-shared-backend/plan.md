@@ -13,9 +13,8 @@ de los datos locales de 1.0.
 
 El backend se implementa en Go con PostgreSQL. En desarrollo, Angular sigue en `:4200`
 con un proxy hacia Go en `:8080`; en producción, Go sirve la build de Angular y la API
-desde el mismo origen. La integración de la interfaz con la API se hará en una rebanada
-posterior sobre el mismo contrato, para no mezclar la migración de datos con la
-construcción del servidor.
+desde el mismo origen. La integración de la interfaz con la API se completó en la fase
+9 sobre el mismo contrato.
 
 ## Technical Context
 
@@ -181,7 +180,7 @@ dominio real. La configuración falla al arrancar si falta `DATABASE_URL`.
 - El usuario actual entra como admin; los responsables con nombre de demo se ignoran.
 - Devuelve contadores de importados/omitidos.
 
-### 8. Frontend (siguiente rebanada)
+### 8. Frontend (fase 9, completada)
 
 - `shared/api` con cliente HTTP y manejo de errores.
 - Repositorios `board`, `task` y `member` pasan de `localStorage` a HTTP.
@@ -189,14 +188,14 @@ dominio real. La configuración falla al arrancar si falta `DATABASE_URL`.
 - Stores conservan signals; mutaciones optimistas con reversión.
 - Playwright arranca Go + PostgreSQL y usa datos propios.
 
-### 9. Despliegue
+### 9. Despliegue (S6.5, completado)
 
 - `compose.yaml` para PostgreSQL local.
 - Dockerfile multi-stage: build de Angular, build de Go, imagen final mínima.
 - Go sirve `dist/taskflow/browser` y `/api/v1` en el mismo puerto.
 - Fly.io + Neon; migración como paso de release.
-- Vercel deja de ser producción; el `vercel.json` actual queda para previews o se
-  retira en una tarea de limpieza.
+- Vercel queda como redirección a producción; el proyecto se puede retirar en una
+  tarea de limpieza.
 
 ## Phase 0 — Research
 
