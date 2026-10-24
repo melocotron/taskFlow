@@ -846,7 +846,7 @@ La imagen Go + Angular está publicada en staging con Neon PostgreSQL 17.
 
 - **URL:** `https://taskflow-stg-melocotron.fly.dev`
 - **Infraestructura:** app Fly.io `taskflow-stg-melocotron`, región `iad`, una máquina
-  `shared-cpu-1x` de 512 MB; rama `staging` de Neon en `us-east-2`.
+  `shared-cpu-1x` de 512 MB; rama `Stagging` de Neon en `us-east-2`.
 - **Migraciones:** se ejecutan como `release_command` con `taskflow-migrate`. El
   Dockerfile usa `CMD` en lugar de `ENTRYPOINT` para que Fly no arranque la API al
   ejecutar el release.
@@ -860,12 +860,32 @@ La imagen Go + Angular está publicada en staging con Neon PostgreSQL 17.
 
 ---
 
+## Fase 6 — S6.5b — Producción en Fly.io
+
+La rama `main` se fusionó en `develop` y `main`, el CI quedó verde y producción está
+publicada con una base distinta de staging.
+
+- **URL:** `https://taskflow-prod-melocotron.fly.dev`
+- **Infraestructura:** app Fly.io `taskflow-prod-melocotron`, región `iad`, una máquina
+  `shared-cpu-1x` de 512 MB; rama `Production` (default) de Neon.
+- **Migraciones:** `taskflow-migrate` creó las 7 tablas; la base arrancó sin usuarios.
+- **Smoke tests:** `/healthz` y `/readyz` en 200; registro, login, cookie
+  `__Host-taskflow_session` con `HttpOnly`, `Secure` y `SameSite=Lax`; tablero,
+  tarjeta y movimiento; `viewer` recibe 403; `/api/v1` inexistente devuelve JSON 404;
+  logout invalida la sesión.
+- **Vercel:** `vercel.json` redirige a producción. El proyecto se puede eliminar
+  manualmente cuando ya no se necesite.
+
+---
+
 ## Siguiente fase
 
-**Fase 6 casi cerrada.** S6.1–S6.5a entregados: especificación, API, Docker, CI,
-autenticación real, migración de repositorios, importación heredada, E2E y staging en
-Fly.io + Neon. Queda **S6.5b**: desplegar producción y retirar Vercel de producción.
-SSR y WebMCP siguen opcionales.
+**Fase 6 cerrada.** S6.1–S6.5b entregados: especificación, API, Docker, CI,
+autenticación real, migración de repositorios, importación heredada, E2E, staging y
+producción en Fly.io + Neon.
+
+El siguiente trabajo no es una feature nueva: es una revisión acotada de simplicidad
+para evitar seguir acumulando capas. SSR y WebMCP siguen opcionales.
 
 ---
 
@@ -873,15 +893,14 @@ SSR y WebMCP siguen opcionales.
 
 El frontend y el backend forman una sola aplicación: Angular consume `/api/v1`, la
 sesión vive en una cookie `HttpOnly` y los tableros se comparten en PostgreSQL. La fase
-9 de Spec 002 está cerrada (T069–T075) y staging está publicado en
-`https://taskflow-stg-melocotron.fly.dev`. La rama activa es
-`feature/002-shared-backend`.
+9 de Spec 002 está cerrada (T069–T075) y producción está publicada en
+`https://taskflow-prod-melocotron.fly.dev`. La rama activa es `main`.
 
 ## Siguiente paso concreto
 
-Cerrar **S6.5b**: añadir método de pago en Fly si staging debe quedar encendido,
-fusionar la rama a `main` con CI verde, crear la app de producción con la rama `main`
-de Neon, verificar el origen `*.fly.dev` y retirar Vercel de producción.
+Hacer una revisión de simplicidad de una o dos sesiones, sin añadir features: revisar
+el puente de identidad de `MemberStore`, el N+1 de `BoardRepository.cargar()`, el
+código de importación heredada y las capas que no estén justificadas por un requisito.
 
 ---
 
@@ -932,3 +951,4 @@ Los E2E corren en CI y antes de un merge a `main`.
 | 2026-10-23 | S6.4c  | Repositorios HTTP, stores asíncronos e importación del trabajo heredado; 189 tests.    |
 | 2026-10-23 | S6.4d  | E2E contra Go + PostgreSQL, CI con Postgres y cierre de la fase 9; 33 E2E.             |
 | 2026-10-23 | S6.5a  | Staging en Fly.io + Neon, release de migraciones, smoke tests y cookie segura.         |
+| 2026-10-23 | S6.5b  | Producción en Fly.io + Neon, CI verde, smoke tests y Vercel como redirección.          |

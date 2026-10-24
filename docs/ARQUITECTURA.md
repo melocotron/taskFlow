@@ -219,8 +219,9 @@ Producción:
 - `DATABASE_URL` apunta a Neon; `COOKIE_SECURE=true` y
   `COOKIE_NAME=__Host-taskflow_session`.
 - `ALLOWED_ORIGINS` limita los orígenes permitidos para peticiones mutables.
-- Vercel publica la versión 1.0 estática; el destino de la versión compartida es
-  Go + Neon. Los detalles están en [DEPLOY.md](DEPLOY.md).
+- Producción: `https://taskflow-prod-melocotron.fly.dev`; staging:
+  `https://taskflow-stg-melocotron.fly.dev`. Vercel solo redirige a producción. Los
+  detalles están en [DEPLOY.md](DEPLOY.md).
 
 ## 7. Decisiones que no se cambian a mitad de una rebanada
 

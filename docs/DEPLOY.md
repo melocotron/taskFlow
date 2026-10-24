@@ -1,15 +1,14 @@
 # Despliegue
 
-TaskFlow tiene dos etapas de despliegue:
+TaskFlow se publica como una sola imagen Go que sirve Angular y la API desde el mismo
+origen, con PostgreSQL en Neon. Hay dos entornos:
 
-1. **Publicado (1.0):** SPA de Angular con `localStorage`, disponible en Vercel.
-2. **Destino (backend compartido):** Go sirve la build de Angular y la API desde el
-   mismo origen, con PostgreSQL en Neon. Esta es la configuración de la rama
-   `feature/002-shared-backend`.
+1. **Staging:** `https://taskflow-stg-melocotron.fly.dev`.
+2. **Producción:** `https://taskflow-prod-melocotron.fly.dev`.
 
-Vercel no se elimina de golpe: sigue publicando la 1.0 y las previews mientras se
-completa **S6.5**, el despliegue de la imagen Go. Cuando ese despliegue esté verificado,
-se cambia la rama de producción de Vercel o se retira el proyecto.
+La 1.0 quedó como antecedente. El proyecto de Vercel se conserva solo como
+redirección a producción; puede eliminarse manualmente desde su panel cuando ya no se
+necesite.
 
 ## 1. Requisitos del destino
 
@@ -84,12 +83,15 @@ El repositorio incluye `fly.toml` con el Dockerfile, el puerto interno, el relea
 command y un health check. El binario se llama `flyctl`; si la instalación creó el
 alias `fly`, ambos son equivalentes.
 
-Staging actual:
+Entornos actuales:
 
-- App: `taskflow-stg-melocotron`
-- URL: `https://taskflow-stg-melocotron.fly.dev`
-- Región: `iad`
-- Base: rama `staging` de Neon en `us-east-2`
+| Entorno    | App                        | URL                                        | Rama de Neon           |
+| ---------- | -------------------------- | ------------------------------------------ | ---------------------- |
+| Staging    | `taskflow-stg-melocotron`  | `https://taskflow-stg-melocotron.fly.dev`  | `Stagging`             |
+| Producción | `taskflow-prod-melocotron` | `https://taskflow-prod-melocotron.fly.dev` | `Production` (default) |
+
+Ambas apps usan la región `iad`. `fly.toml` contiene la configuración de staging; para
+producción se cambia la app con `-a`:
 
 ```bash
 flyctl apps create taskflow-stg-melocotron
@@ -97,16 +99,24 @@ flyctl secrets set DATABASE_URL="postgres://..." \
   ALLOWED_ORIGINS="https://taskflow-stg-melocotron.fly.dev" \
   -a taskflow-stg-melocotron
 flyctl deploy -a taskflow-stg-melocotron --ha=false
+
+flyctl apps create taskflow-prod-melocotron
+flyctl secrets set DATABASE_URL="postgres://..." \
+  ALLOWED_ORIGINS="https://taskflow-prod-melocotron.fly.dev" \
+  -a taskflow-prod-melocotron
+flyctl deploy -a taskflow-prod-melocotron --ha=false
 ```
 
-Para producción se repite con otra app y la URL pública definitiva. Mantén una app y
-una base por entorno; no reutilices la base de staging.
+Mantén una app y una base por entorno; no reutilices la base de staging.
 
 Comprobaciones:
 
 ```bash
 curl https://taskflow-stg-melocotron.fly.dev/healthz
 curl https://taskflow-stg-melocotron.fly.dev/readyz
+
+curl https://taskflow-prod-melocotron.fly.dev/healthz
+curl https://taskflow-prod-melocotron.fly.dev/readyz
 ```
 
 `/readyz` comprueba PostgreSQL; si falla, no envíes tráfico a la instancia. El health
@@ -120,9 +130,12 @@ mantenerla siempre encendida y evitar ese arranque hay que añadir un método de
 ## 6. Neon
 
 1. Crea un proyecto PostgreSQL 17.
-2. Crea una rama `staging` y deja `main` para producción.
+2. Deja `Production` como rama principal y crea `Stagging` para staging. El nombre
+   `Stagging` es el que existe hoy en Neon; se puede renombrar a `staging` sin cambiar
+   la cadena.
 3. Copia la cadena de **conexión directa** con `sslmode=require`; evita la cadena
-   `-pooler` para el release command.
+   `-pooler` para el release command. Neon añade `channel_binding=require`; pgx lo
+   acepta.
 4. Configúrala como secreto del proveedor; no la escribas en el repositorio.
 5. Ejecuta `taskflow-migrate` una vez por release.
 6. Programa una copia de seguridad o usa la retención de Neon.
@@ -134,16 +147,15 @@ base para staging y producción.
 
 ## 7. Vercel (etapa actual)
 
-El repositorio conserva `vercel.json` para la SPA de 1.0. La rama de producción de
-Vercel es `main`; los pushes a `develop` generan previews. La línea `$schema` de
-`vercel.json` se mantiene aunque el editor muestre un aviso: no afecta al despliegue.
+Producción ya está en Fly.io. `vercel.json` redirige cualquier ruta del proyecto de
+Vercel a `https://taskflow-prod-melocotron.fly.dev`; así el dominio antiguo no sirve
+una SPA sin API.
 
-Staging ya está en Fly.io; Vercel sigue publicando la 1.0 hasta que producción esté
-verificada. Cuando el backend esté en producción:
+Cuando ya no se necesite:
 
-- Si Vercel se conserva para previews, mantén solo ramas de preview.
-- Si se retira, elimina el proyecto y la integración de GitHub.
+- Elimina el proyecto de Vercel y su integración con GitHub.
 - No mantengas dos producciones con datos distintos.
+- No borres el proyecto de Fly ni la rama `Production` de Neon.
 
 ## 8. Verificación posterior
 
@@ -158,17 +170,17 @@ verificada. Cuando el backend esté en producción:
 
 ## 9. Rollback
 
-- En Fly.io: `fly releases` y `fly deploy --image <imagen-anterior>`.
+- En Fly.io: `flyctl releases` y `flyctl deploy --image <imagen-anterior>`.
 - En Neon: restaura la rama o el punto de recuperación anterior.
 - Si una migración es incompatible, no la deshagas a ciegas: prepara una migración
   correctiva y vuelve a desplegar. Las migraciones destructivas requieren copia previa.
 
 ## 10. Limitaciones actuales
 
-- Staging está desplegado en `https://taskflow-stg-melocotron.fly.dev` con Fly.io +
-  Neon. Falta producción (S6.5b) y retirar Vercel de producción; Vercel mantiene
-  publicada la SPA de 1.0 hasta entonces.
-- El staging usa el subdominio `*.fly.dev`, no un dominio propio.
+- Staging y producción están desplegados en Fly.io + Neon. Producción usa
+  `https://taskflow-prod-melocotron.fly.dev`.
+- Vercel redirige a producción; el proyecto se puede eliminar manualmente.
+- Ambos entornos usan subdominios `*.fly.dev`, no un dominio propio.
 - No hay envío de correos, verificación de email ni recuperación de contraseña.
 - No hay colaboración en tiempo real: los cambios se ven al recargar.
 - `kitchen-sink` y el laboratorio HTTP siguen desactivados en producción.

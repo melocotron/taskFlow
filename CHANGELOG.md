@@ -29,6 +29,9 @@ versionado semántico.
   vulnerabilidades conocidas.
 - Despliegue staging en Fly.io (`taskflow-stg-melocotron.fly.dev`) con Neon PostgreSQL
   17, migraciones de release y health checks.
+- Despliegue producción en Fly.io (`taskflow-prod-melocotron.fly.dev`) con una rama de
+  Neon separada.
+- Redirección de Vercel a producción para no servir una SPA sin API.
 
 ### Cambiado
 
@@ -53,9 +56,9 @@ versionado semántico.
 
 ### Pendiente
 
-- S6.5b: desplegar producción en Fly.io + Neon y retirar Vercel de producción. Staging
-  ya está verificado; en el plan trial de Fly la máquina se apaga por inactividad y
-  despierta con la primera petición.
+- Eliminar manualmente el proyecto de Vercel cuando ya no se necesite. Hasta entonces,
+  `vercel.json` redirige a producción; en el plan trial de Fly la máquina se apaga por
+  inactividad y despierta con la primera petición.
 
 ## [1.0.0] - 2026-10-21
 
