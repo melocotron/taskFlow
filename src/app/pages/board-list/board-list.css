@@ -96,3 +96,26 @@
   background-color: var(--surface-raised);
   color: var(--danger);
 }
+
+.importar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-4);
+  border: var(--border-width) solid var(--border-color-strong);
+  border-radius: var(--card-radius);
+  background-color: var(--surface-raised);
+}
+
+.importar h2 {
+  font-size: var(--text-body);
+  font-weight: var(--weight-medium);
+}
+
+.importar p {
+  margin-top: var(--space-1);
+  color: var(--text-muted);
+  font-size: var(--text-caption);
+}

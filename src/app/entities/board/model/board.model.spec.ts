@@ -1,29 +1,32 @@
 import { comoMemberId } from '@entities/member';
-import { crearBoard, esMiembro, puedeEn, rolEn } from './board.model';
+import { esMiembro, puedeEn, rolEn } from './board.model';
 import type { Board } from './board.model';
+import { COLUMNAS_POR_DEFECTO, comoBoardId } from './board.model';
 
 const MARTA = comoMemberId('marta');
 const IVAN = comoMemberId('ivan');
 const ALBA = comoMemberId('alba');
 
-function tableroConRoles(): Board {
+function tablero(titulo: string, miembros: Board['miembros']): Board {
   return {
-    ...crearBoard('Producto', 'producto', '2026-10-19T00:00:00.000Z', MARTA),
-    miembros: [
-      { memberId: MARTA, rol: 'admin' },
-      { memberId: IVAN, rol: 'editor' },
-      { memberId: ALBA, rol: 'viewer' },
-    ],
+    id: comoBoardId(titulo.toLowerCase()),
+    titulo,
+    columnas: COLUMNAS_POR_DEFECTO,
+    miembros,
+    archivado: false,
+    creadoEn: '2026-10-19T00:00:00.000Z',
   };
 }
 
+function tableroConRoles(): Board {
+  return tablero('Producto', [
+    { memberId: MARTA, nombre: 'Marta Ruiz', email: 'marta@example.com', rol: 'admin' },
+    { memberId: IVAN, nombre: 'Iván Soto', email: 'ivan@example.com', rol: 'editor' },
+    { memberId: ALBA, nombre: 'Alba Sanz', email: 'alba@example.com', rol: 'viewer' },
+  ]);
+}
+
 describe('miembros del tablero', () => {
-  it('quien crea el tablero entra como administrador', () => {
-    const board = crearBoard('Producto', 'producto', '2026-10-19T00:00:00.000Z', MARTA);
-
-    expect(board.miembros).toEqual([{ memberId: MARTA, rol: 'admin' }]);
-  });
-
   it('el rol se lee del tablero concreto', () => {
     const board = tableroConRoles();
 
@@ -52,7 +55,9 @@ describe('miembros del tablero', () => {
 
   it('la misma persona puede tener roles distintos en tableros distintos', () => {
     const deMarta = tableroConRoles();
-    const deAlba = crearBoard('Marketing', 'marketing', '2026-10-19T00:00:00.000Z', ALBA);
+    const deAlba = tablero('Marketing', [
+      { memberId: ALBA, nombre: 'Alba Sanz', email: 'alba@example.com', rol: 'admin' },
+    ]);
 
     expect(rolEn(deMarta, ALBA)).toBe('viewer');
     expect(rolEn(deAlba, ALBA)).toBe('admin');

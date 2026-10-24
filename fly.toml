@@ -1,0 +1,34 @@
+# fly.toml app configuration file generated for taskflow-stg-melocotron on 2026-10-23T14:05:12-06:00
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
+
+app = 'taskflow-stg-melocotron'
+primary_region = 'iad'
+
+[build]
+  dockerfile = 'backend/Dockerfile'
+
+[deploy]
+  release_command = 'taskflow-migrate'
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = 'stop'
+  auto_start_machines = true
+  min_machines_running = 0
+  processes = ['app']
+
+  [[http_service.checks]]
+    grace_period = '10s'
+    interval = '15s'
+    method = 'GET'
+    path = '/healthz'
+    timeout = '5s'
+
+[[vm]]
+  memory = '512mb'
+  cpu_kind = 'shared'
+  cpus = 1
+  memory_mb = 512

@@ -1,21 +1,34 @@
 import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
-import { MemberStore } from '@entities/member';
+import { AuthService } from '@entities/auth';
 
 /**
  * Protege las rutas de producto.
  *
- * Sin sesión elegida, redirige a `/entrar`. Ojo: esto **no** es autorización. Un guard
- * decide si se puede *llegar* a una pantalla; que se pueda *hacer* algo lo decide el
- * dominio (`puede(rol, accion)`), y se comprueba en el store aunque la interfaz oculte
- * el botón.
+ * Espera a que `AuthService` termine de preguntar por la cookie de sesión. Sin sesión
+ * redirige a `/entrar`. Ojo: esto **no** es autorización. Un guard decide si se puede
+ * *llegar* a una pantalla; que se pueda *hacer* algo lo decide el servidor (y, para la
+ * interfaz, `puede(rol, accion)`), aunque se oculte el botón.
  */
-export const sesionGuard: CanActivateFn = () => {
-  const miembros = inject(MemberStore);
+export const sesionGuard: CanActivateFn = async () => {
+  const auth = inject(AuthService);
+  const router = inject(Router);
 
-  if (miembros.haySesion()) {
-    return true;
-  }
+  await auth.listo;
 
-  return inject(Router).createUrlTree(['/entrar']);
+  return auth.haySesion() ? true : router.createUrlTree(['/entrar']);
+};
+
+/**
+ * Evita que una cuenta ya autenticada vuelva a la pantalla de acceso.
+ *
+ * Si la cookie sigue viva, entrar a `/entrar` no tiene sentido: se vuelve al inicio.
+ */
+export const invitadoGuard: CanActivateFn = async () => {
+  const auth = inject(AuthService);
+  const router = inject(Router);
+
+  await auth.listo;
+
+  return auth.haySesion() ? router.createUrlTree(['/']) : true;
 };

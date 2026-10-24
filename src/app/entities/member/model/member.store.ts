@@ -1,15 +1,16 @@
 import { Injectable, signal } from '@angular/core';
-import { borrarTexto, escribirTexto, leerTexto } from '@shared/lib/almacenamiento';
 import { Member, MemberId, MIEMBROS_DEMO, comoMemberId } from '../model/member.model';
 
-const CLAVE_SESION = 'taskflow.sesion';
-
 /**
- * Personas del equipo y quién está usando la app ahora mismo.
+ * Identidad adaptada al modelo de tableros.
  *
- * No hay login: se elige una persona de la lista, tal como fijó el spec 001. El rol no
- * vive aquí: cada tablero guarda quién entra y con qué permiso, así que la misma persona
- * puede administrar un tablero y solo mirar otro.
+ * `AuthService` es la fuente de verdad de la sesión. Este store conserva la interfaz
+ * que ya usan los tableros y sincroniza la cuenta autenticada desde `App`. El rol no
+ * vive aquí: cada tablero guarda quién entra y con qué permiso.
+ *
+ * No hay persistencia local: al recargar, `AuthService` pregunta a `/me` y vuelve a
+ * sincronizar la identidad. La lista de demostración solo existe para los tests y
+ * para tener un valor por defecto antes de que llegue la sesión.
  */
 @Injectable({ providedIn: 'root' })
 export class MemberStore {
@@ -19,28 +20,15 @@ export class MemberStore {
   private readonly elegida = signal(false);
 
   /**
-   * `true` solo si alguien eligió persona (ahora o en una visita anterior).
+   * `true` solo si hay una cuenta autenticada o alguien llamó a `cambiarSesion`.
    *
    * Es lo que hace útil al guard: distingue "entré" de "esto es el valor por defecto".
-   * Sin esta señal la sesión siempre existiría y proteger rutas sería un adorno.
    */
   readonly haySesion = this.elegida.asReadonly();
 
   readonly sesion = this.actual.asReadonly();
 
-  constructor() {
-    const guardada = leerTexto(CLAVE_SESION);
-    const encontrada = guardada
-      ? this.miembros().find((miembro) => miembro.id === guardada)
-      : undefined;
-
-    if (encontrada) {
-      this.actual.set(encontrada);
-      this.elegida.set(true);
-    }
-  }
-
-  /** Elegir persona es entrar: a partir de aquí hay sesión. */
+  /** Elegir persona abre la sesión en memoria; ya no se guarda en el navegador. */
   cambiarSesion(id: MemberId): void {
     const elegida = this.miembros().find((miembro) => miembro.id === id);
 
@@ -48,13 +36,31 @@ export class MemberStore {
       return;
     }
 
-    escribirTexto(CLAVE_SESION, id);
     this.actual.set(elegida);
     this.elegida.set(true);
   }
 
+  /**
+   * Sincroniza el store con la cuenta que devuelve la API.
+   *
+   * La autenticación real vive en `AuthService`; este método solo adapta la identidad
+   * al modelo de miembro que ya usan los tableros. Al cerrar sesión se vuelve a la
+   * lista de demostración para no conservar una identidad obsoleta.
+   */
+  sincronizarSesion(miembro: Member | null): void {
+    if (miembro) {
+      this.miembros.set([miembro]);
+      this.actual.set(miembro);
+      this.elegida.set(true);
+      return;
+    }
+
+    this.miembros.set(MIEMBROS_DEMO);
+    this.actual.set(MIEMBROS_DEMO[0]!);
+    this.elegida.set(false);
+  }
+
   salir(): void {
-    borrarTexto(CLAVE_SESION);
     this.actual.set(this.miembros()[0]!);
     this.elegida.set(false);
   }

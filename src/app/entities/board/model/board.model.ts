@@ -31,6 +31,8 @@ export interface Columna {
  */
 export interface BoardMember {
   readonly memberId: MemberId;
+  readonly nombre: string;
+  readonly email: string;
   readonly rol: Rol;
 }
 
@@ -51,30 +53,6 @@ export const COLUMNAS_POR_DEFECTO: readonly Columna[] = [
   { id: 'en-curso', titulo: 'En curso' },
   { id: 'hecho', titulo: 'Hecho' },
 ];
-
-/**
- * Crea un tablero válido.
- *
- * La regla de negocio vive aquí, no en el store: un tablero sin título no debería
- * poder construirse, venga de donde venga la petición. Quien lo crea entra como
- * administrador; invitar al resto es un paso explícito de la historia 4.
- */
-export function crearBoard(titulo: string, id: string, creadoEn: string, creador: MemberId): Board {
-  const limpio = titulo.trim();
-
-  if (limpio.length === 0) {
-    throw new Error('Un tablero necesita un título');
-  }
-
-  return {
-    id: comoBoardId(id),
-    titulo: limpio,
-    columnas: COLUMNAS_POR_DEFECTO,
-    miembros: [{ memberId: creador, rol: 'admin' }],
-    archivado: false,
-    creadoEn,
-  };
-}
 
 /** Rol de una persona en un tablero concreto; `null` si no tiene acceso. */
 export function rolEn(board: Board, memberId: MemberId | string | null | undefined): Rol | null {

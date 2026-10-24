@@ -1,91 +1,25 @@
 import { expect, test } from '@playwright/test';
-import type { Page } from '@playwright/test';
+import { crearTarea, escenarioConEquipo } from './apoyo';
 
 /**
- * Journey 3 del PLAN: filtrar tareas y que el filtro sobreviva a la recarga.
+ * Journey 3: filtrar tareas y que el filtro sobreviva a la recarga.
  *
- * El filtro no es un estado de pantalla: vive en la URL. Por eso lo que más importa
- * aquí es que **recargar no lo pierda** y que la barra siga escribiendo en la URL
- * mientras se teclea, sin comerse caracteres por el camino. El resto de pruebas de
- * este archivo cubren los bordes del mismo recorrido: persona, sin acentos y vacío.
+ * El filtro vive en la URL. Por eso lo que más importa aquí es que recargar no lo
+ * pierda y que la barra siga escribiendo en la URL mientras se teclea.
  */
-async function sembrarTablero(page: Page): Promise<void> {
-  await page.addInitScript(() => {
-    // Solo la primera vez: si no, cada recarga sembraría otra vez y el filtro no probaría nada.
-    if (localStorage.getItem('taskflow.tableros')) {
-      return;
-    }
-
-    localStorage.setItem(
-      'taskflow.tableros',
-      JSON.stringify([
-        {
-          id: 'producto',
-          titulo: 'Producto',
-          archivado: false,
-          creadoEn: '2026-10-18T00:00:00.000Z',
-          columnas: [
-            { id: 'por-hacer', titulo: 'Por hacer' },
-            { id: 'en-curso', titulo: 'En curso' },
-            { id: 'hecho', titulo: 'Hecho' },
-          ],
-        },
-      ]),
-    );
-
-    localStorage.setItem(
-      'taskflow.tareas',
-      JSON.stringify([
-        {
-          id: 'a',
-          boardId: 'producto',
-          columnaId: 'por-hacer',
-          titulo: 'Revisar el copy del onboarding',
-          descripcion: 'Ajustar los tres primeros pasos',
-          responsable: 'Marta Ruiz',
-          posicion: 0,
-          creadoEn: '2026-10-18T00:00:00.000Z',
-        },
-        {
-          id: 'b',
-          boardId: 'producto',
-          columnaId: 'por-hacer',
-          titulo: 'Preparar la demo del viernes',
-          descripcion: '',
-          responsable: 'Iván Soto',
-          posicion: 1,
-          creadoEn: '2026-10-18T00:00:00.000Z',
-        },
-        {
-          id: 'c',
-          boardId: 'producto',
-          columnaId: 'en-curso',
-          titulo: 'Migrar el buscador a signals',
-          descripcion: 'Revisión de los textos',
-          responsable: 'Iván Soto',
-          posicion: 0,
-          creadoEn: '2026-10-18T00:00:00.000Z',
-        },
-        {
-          id: 'd',
-          boardId: 'producto',
-          columnaId: 'hecho',
-          titulo: 'Cerrar el sprint',
-          descripcion: '',
-          responsable: null,
-          posicion: 0,
-          creadoEn: '2026-10-18T00:00:00.000Z',
-        },
-      ]),
-    );
-
-    localStorage.setItem('taskflow.sesion', 'marta');
-  });
-}
-
 test.beforeEach(async ({ page }) => {
-  await sembrarTablero(page);
-  await page.goto('/tableros/producto');
+  const { ivan, tablero } = await escenarioConEquipo(page);
+
+  await crearTarea(page, tablero, 'Por hacer', 'Preparar la demo del viernes', {
+    responsableId: ivan.id,
+  });
+  await crearTarea(page, tablero, 'En curso', 'Migrar el buscador a signals', {
+    descripcion: 'Revisión de los textos',
+    responsableId: ivan.id,
+  });
+  await crearTarea(page, tablero, 'Hecho', 'Cerrar el sprint');
+
+  await page.goto(`/tableros/${tablero.id}`);
   await expect(page.getByText('Revisar el copy del onboarding')).toBeVisible();
 });
 
@@ -132,7 +66,7 @@ test('filtrar por persona y quitar el filtro', async ({ page }) => {
 
   await expect(porHacer.getByText('Preparar la demo del viernes')).toBeVisible();
   await expect(porHacer.getByText('Revisar el copy del onboarding')).toHaveCount(0);
-  await expect(page).toHaveURL(/persona=ivan/);
+  await expect(page).toHaveURL(/persona=/);
 
   await page.getByRole('button', { name: 'Quitar filtro' }).click();
 

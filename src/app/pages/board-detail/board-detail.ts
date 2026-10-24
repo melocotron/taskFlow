@@ -137,7 +137,7 @@ export default class BoardDetailPage {
   }
 
   /** Recibe el nombre ya validado y recortado por el formulario. */
-  protected guardarNombre(datos: DatosTablero): void {
+  protected async guardarNombre(datos: DatosTablero): Promise<void> {
     const tablero = this.tablero();
 
     if (!tablero) {
@@ -145,7 +145,7 @@ export default class BoardDetailPage {
     }
 
     try {
-      this.tableros.renombrar(tablero.id, datos.titulo);
+      await this.tableros.renombrar(tablero.id, datos.titulo);
       this.avisos.mostrar(`El tablero ahora se llama «${datos.titulo}»`, 'acento');
       this.cerrarRenombrar();
     } catch (fallo) {

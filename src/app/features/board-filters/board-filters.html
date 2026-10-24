@@ -17,8 +17,8 @@
     -->
     <select appInput (change)="cambiarPersona($event)">
       <option value="" [selected]="filtro().persona === ''">Todas las personas</option>
-      @for (persona of miembros(); track persona.id) {
-        <option [value]="persona.id" [selected]="persona.id === filtro().persona">
+      @for (persona of miembros(); track persona.memberId) {
+        <option [value]="persona.memberId" [selected]="persona.memberId === filtro().persona">
           {{ persona.nombre }}
         </option>
       }

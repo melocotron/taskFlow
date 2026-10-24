@@ -22,7 +22,8 @@
       "@widgets/*": ["./src/app/widgets/*"],
       "@features/*": ["./src/app/features/*"],
       "@entities/*": ["./src/app/entities/*"],
-      "@shared/*": ["./src/app/shared/*"]
+      "@shared/*": ["./src/app/shared/*"],
+      "@testing/*": ["./src/testing/*"]
     }
   },
   "angularCompilerOptions": {

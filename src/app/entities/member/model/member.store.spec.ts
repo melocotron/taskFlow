@@ -28,10 +28,6 @@ describe('MemberStore', () => {
     return TestBed.inject(MemberStore);
   }
 
-  beforeEach(() => {
-    localStorage.clear();
-  });
-
   it('trae las tres personas de ejemplo del spec', () => {
     const store = montar();
 
@@ -55,7 +51,7 @@ describe('MemberStore', () => {
     expect(store.haySesion()).toBe(true);
   });
 
-  it('recuerda la sesión entre recargas', () => {
+  it('no persiste la identidad: al recargar manda la sesión de la API', () => {
     const store = montar();
     store.cambiarSesion(comoMemberId('alba'));
 
@@ -63,15 +59,8 @@ describe('MemberStore', () => {
     TestBed.configureTestingModule({});
     const recargado = TestBed.inject(MemberStore);
 
-    expect(recargado.sesion().nombre).toBe('Alba Sanz');
-  });
-
-  it('si la sesión guardada no existe, cae a la primera persona', () => {
-    localStorage.setItem('taskflow.sesion', 'fantasma');
-
-    const store = montar();
-
-    expect(store.sesion().nombre).toBe('Marta Ruiz');
+    expect(recargado.sesion().nombre).toBe('Marta Ruiz');
+    expect(recargado.haySesion()).toBe(false);
   });
 
   it('ignora un cambio a una persona inexistente', () => {

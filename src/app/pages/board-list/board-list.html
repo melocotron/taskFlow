@@ -9,11 +9,24 @@
       <button appButton variant="primary" (click)="nuevoTablero()">Nuevo tablero</button>
 
       <button appButton variant="ghost" [cdkMenuTriggerFor]="menuSesion">
-        <app-avatar [nombre]="sesion().nombre" [turno]="turnoActual()" size="sm" />
+        <app-avatar [nombre]="sesion().nombre" [turno]="turno(0)" size="sm" />
         <span class="nombre-sesion">{{ sesion().nombre }}</span>
       </button>
     </div>
   </header>
+
+  @if (datosLocales()) {
+    <section class="importar" aria-labelledby="titulo-importar">
+      <div>
+        <h2 id="titulo-importar">Encontramos trabajo guardado en este navegador</h2>
+        <p>
+          Son los tableros y tarjetas de antes de tener cuenta. Puedes traerlos una sola vez; si
+          repites, no se duplican.
+        </p>
+      </div>
+      <button appButton variant="secondary" (click)="importarDatos()">Importar mis datos</button>
+    </section>
+  }
 
   @if (cargando()) {
     <div class="cargando" aria-busy="true" aria-live="polite">
@@ -32,7 +45,7 @@
   } @else if (cuantos() === 0) {
     <app-empty-state
       titulo="No tienes tableros todavía"
-      descripcion="Crea el primero: entrarás como administrador y podrás invitar a quien quieras. Si alguien ya te invitó, cambia de persona o pídele acceso."
+      descripcion="Crea el primero: entrarás como administrador y podrás invitar a quien quieras. Si alguien ya te invitó, pídele que revise tu email."
     >
       <button appButton variant="primary" (click)="nuevoTablero()">Crear mi primer tablero</button>
     </app-empty-state>
@@ -64,11 +77,6 @@
 
 <ng-template #menuSesion>
   <app-menu>
-    @for (persona of miembros(); track persona.id) {
-      <button appMenuItem (click)="cambiarSesion(persona.id)">
-        {{ persona.nombre }}
-      </button>
-    }
     <button appMenuItem (click)="salir()">Salir</button>
   </app-menu>
 </ng-template>

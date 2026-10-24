@@ -1,37 +1,41 @@
 import { TestBed } from '@angular/core/testing';
-import { comoMemberId } from '@entities/member';
 import { BoardRepository } from '../api/board.repository';
+import { ALBA, BoardRepositoryFalso, IVAN, MARTA, tablero } from '@testing/repositorios';
 import { BoardStore } from './board.store';
 
-const MARTA = comoMemberId('marta');
-const IVAN = comoMemberId('ivan');
-const ALBA = comoMemberId('alba');
-
 describe('BoardStore', () => {
-  async function montar() {
-    TestBed.configureTestingModule({});
-    const store = TestBed.inject(BoardStore);
+  async function montar(boards = [] as ReturnType<typeof tablero>[]) {
+    const repositorio = new BoardRepositoryFalso(boards);
 
+    TestBed.configureTestingModule({
+      providers: [{ provide: BoardRepository, useValue: repositorio }],
+    });
+
+    const store = TestBed.inject(BoardStore);
     await store.listo;
 
-    return { store, repositorio: TestBed.inject(BoardRepository) };
+    return { store, repositorio };
   }
 
-  beforeEach(() => {
-    localStorage.clear();
-  });
-
-  it('arranca vacío cuando no hay nada guardado', async () => {
+  it('arranca vacío cuando la API no devuelve tableros', async () => {
     const { store } = await montar();
 
     expect(store.tableros()).toEqual([]);
     expect(store.cuantosActivos()).toBe(0);
   });
 
-  it('crea un tablero con sus columnas por defecto y al creador como administrador', async () => {
+  it('carga los tableros que devuelve el servidor', async () => {
+    const { store } = await montar([tablero()]);
+
+    expect(store.tableros().length).toBe(1);
+    expect(store.tableros()[0]?.titulo).toBe('Producto');
+    expect(store.tableros()[0]?.miembros).toContainEqual(MARTA);
+  });
+
+  it('crea un tablero y lo añade al estado', async () => {
     const { store } = await montar();
 
-    const board = store.crear('Producto', MARTA);
+    const board = await store.crear('Producto');
 
     expect(board.titulo).toBe('Producto');
     expect(board.columnas.map((columna) => columna.titulo)).toEqual([
@@ -39,29 +43,29 @@ describe('BoardStore', () => {
       'En curso',
       'Hecho',
     ]);
-    expect(board.miembros).toEqual([{ memberId: MARTA, rol: 'admin' }]);
+    expect(board.miembros).toEqual([MARTA]);
     expect(store.activos().length).toBe(1);
   });
 
   it('recorta los espacios del título al crear', async () => {
     const { store } = await montar();
 
-    expect(store.crear('   Producto   ', MARTA).titulo).toBe('Producto');
+    expect((await store.crear('   Producto   ')).titulo).toBe('Producto');
   });
 
   it('se niega a crear un tablero sin título', async () => {
     const { store } = await montar();
 
-    expect(() => store.crear('   ', MARTA)).toThrow(/necesita un título/);
+    await expect(store.crear('   ')).rejects.toThrow(/necesita un título/);
     expect(store.tableros().length).toBe(0);
   });
 
   it('renombra solo el tablero indicado', async () => {
     const { store } = await montar();
-    const producto = store.crear('Producto', MARTA);
-    store.crear('Marketing', MARTA);
+    const producto = await store.crear('Producto');
+    await store.crear('Marketing');
 
-    store.renombrar(producto.id, 'Producto digital');
+    await store.renombrar(producto.id, 'Producto digital');
 
     expect(store.buscar(producto.id)?.titulo).toBe('Producto digital');
     expect(store.activos().length).toBe(2);
@@ -69,214 +73,89 @@ describe('BoardStore', () => {
 
   it('archivar lo saca de la lista visible pero no lo borra', async () => {
     const { store } = await montar();
-    const board = store.crear('Producto', MARTA);
+    const board = await store.crear('Producto');
 
-    store.archivar(board.id);
+    await store.archivar(board.id);
 
     expect(store.activos().length).toBe(0);
     expect(store.tableros().length).toBe(1);
     expect(store.buscar(board.id)?.archivado).toBe(true);
   });
 
-  it('persiste cada cambio: un store nuevo recupera lo guardado', async () => {
-    const { store } = await montar();
-    store.crear('Producto', MARTA);
-
-    // Simula un recargado: se descarta el store y se construye otro sobre el mismo almacén.
-    TestBed.resetTestingModule();
-    TestBed.configureTestingModule({});
-    const recargado = TestBed.inject(BoardStore);
-    await recargado.listo;
-
-    expect(recargado.tableros().length).toBe(1);
-    expect(recargado.tableros()[0]?.titulo).toBe('Producto');
-  });
-
-  it('no se rompe si el almacén tiene basura', async () => {
-    localStorage.setItem('taskflow.tableros', 'esto no es json');
-
-    const { store } = await montar();
-
-    expect(store.tableros()).toEqual([]);
-  });
-
-  it('ignora entradas que no tienen forma de tablero', async () => {
-    localStorage.setItem(
-      'taskflow.tableros',
-      JSON.stringify([
-        { id: 'x' },
-        { id: 'b', titulo: 'Bueno', columnas: [], archivado: false, creadoEn: '2026-01-01' },
-      ]),
-    );
-
-    const { store } = await montar();
-
-    expect(store.tableros().length).toBe(1);
-    expect(store.tableros()[0]?.titulo).toBe('Bueno');
-  });
-
   describe('invitaciones y roles por tablero', () => {
-    it('invita a una persona con el rol elegido y lo persiste', async () => {
+    it('invita por email con el rol elegido', async () => {
       const { store } = await montar();
-      const board = store.crear('Producto', MARTA);
+      const board = await store.crear('Producto');
 
-      store.invitar(board.id, MARTA, ALBA, 'viewer');
+      const member = await store.invitar(board.id, ALBA.email, 'viewer');
 
-      expect(store.buscar(board.id)?.miembros).toContainEqual({
-        memberId: ALBA,
-        rol: 'viewer',
-      });
-
-      TestBed.resetTestingModule();
-      TestBed.configureTestingModule({});
-      const recargado = TestBed.inject(BoardStore);
-      await recargado.listo;
-
-      expect(recargado.tableros()[0]?.miembros).toContainEqual({
-        memberId: ALBA,
-        rol: 'viewer',
-      });
+      expect(member).toEqual(ALBA);
+      expect(store.buscar(board.id)?.miembros).toContainEqual(ALBA);
     });
 
-    it('no invita dos veces a la misma persona', async () => {
+    it('no invita dos veces a la misma cuenta', async () => {
       const { store } = await montar();
-      const board = store.crear('Producto', MARTA);
-      store.invitar(board.id, MARTA, ALBA, 'viewer');
+      const board = await store.crear('Producto');
+      await store.invitar(board.id, ALBA.email, 'viewer');
 
-      expect(() => store.invitar(board.id, MARTA, ALBA, 'editor')).toThrow(/ya está en el tablero/);
-    });
-
-    it('solo quien administra puede invitar', async () => {
-      const { store } = await montar();
-      const board = store.crear('Producto', MARTA);
-      store.invitar(board.id, MARTA, IVAN, 'editor');
-
-      expect(() => store.invitar(board.id, IVAN, ALBA, 'viewer')).toThrow(/Solo quien administra/);
-      expect(() => store.invitar(board.id, ALBA, ALBA, 'viewer')).toThrow(/Solo quien administra/);
-      expect(store.buscar(board.id)?.miembros.length).toBe(2);
+      await expect(store.invitar(board.id, ALBA.email, 'editor')).rejects.toThrow(
+        /ya está en el tablero/,
+      );
     });
 
     it('cambia el rol de alguien que ya está en el tablero', async () => {
       const { store } = await montar();
-      const board = store.crear('Producto', MARTA);
-      store.invitar(board.id, MARTA, ALBA, 'viewer');
+      const board = await store.crear('Producto');
+      await store.invitar(board.id, ALBA.email, 'viewer');
 
-      store.cambiarRol(board.id, MARTA, ALBA, 'editor');
+      await store.cambiarRol(board.id, ALBA.memberId, 'editor');
 
-      expect(store.buscar(board.id)?.miembros).toContainEqual({
-        memberId: ALBA,
-        rol: 'editor',
-      });
-    });
-
-    it('no deja el tablero sin administración', async () => {
-      const { store } = await montar();
-      const board = store.crear('Producto', MARTA);
-
-      expect(() => store.cambiarRol(board.id, MARTA, MARTA, 'viewer')).toThrow(
-        /al menos una persona que lo administre/,
-      );
-      expect(store.buscar(board.id)?.miembros).toEqual([{ memberId: MARTA, rol: 'admin' }]);
-    });
-
-    it('permite rebajar a una persona administradora si queda otra', async () => {
-      const { store } = await montar();
-      const board = store.crear('Producto', MARTA);
-      store.invitar(board.id, MARTA, IVAN, 'admin');
-
-      store.cambiarRol(board.id, MARTA, MARTA, 'viewer');
-
-      expect(store.buscar(board.id)?.miembros).toContainEqual({
-        memberId: MARTA,
-        rol: 'viewer',
-      });
+      expect(store.buscar(board.id)?.miembros).toContainEqual({ ...ALBA, rol: 'editor' });
     });
 
     it('no cambia el rol de quien no está en el tablero', async () => {
       const { store } = await montar();
-      const board = store.crear('Producto', MARTA);
+      const board = await store.crear('Producto');
 
-      expect(() => store.cambiarRol(board.id, MARTA, ALBA, 'editor')).toThrow(
+      await expect(store.cambiarRol(board.id, IVAN.memberId, 'editor')).rejects.toThrow(
         /no está en el tablero/,
       );
     });
   });
 
-  describe('migración de datos anteriores a S3.7', () => {
-    it('da acceso a la demo con los roles que tenía y reescribe el almacén', async () => {
-      localStorage.setItem(
-        'taskflow.tableros',
-        JSON.stringify([
-          {
-            id: 'viejo',
-            titulo: 'Viejo',
-            columnas: [],
-            archivado: false,
-            creadoEn: '2026-10-18T00:00:00.000Z',
-          },
-        ]),
-      );
-
-      const { store } = await montar();
-      const board = store.tableros()[0]!;
-
-      expect(board.miembros).toEqual([
-        { memberId: MARTA, rol: 'admin' },
-        { memberId: IVAN, rol: 'editor' },
-        { memberId: ALBA, rol: 'viewer' },
-      ]);
-
-      const guardado = JSON.parse(localStorage.getItem('taskflow.tableros')!) as {
-        miembros: unknown[];
-      }[];
-
-      expect(guardado[0]?.miembros.length).toBe(3);
-    });
-
-    it('respeta los tableros que ya tienen miembros', async () => {
-      localStorage.setItem(
-        'taskflow.tableros',
-        JSON.stringify([
-          {
-            id: 'nuevo',
-            titulo: 'Nuevo',
-            columnas: [],
-            miembros: [{ memberId: 'ivan', rol: 'admin' }],
-            archivado: false,
-            creadoEn: '2026-10-18T00:00:00.000Z',
-          },
-        ]),
-      );
-
-      const { store } = await montar();
-
-      expect(store.tableros()[0]?.miembros).toEqual([{ memberId: IVAN, rol: 'admin' }]);
-    });
-  });
-
   describe('estados de carga', () => {
     it('empieza en cargando y termina en listo', async () => {
-      TestBed.configureTestingModule({});
+      let resolver: (boards: readonly ReturnType<typeof tablero>[]) => void = () => undefined;
+      const repositorio = {
+        cargar: () =>
+          new Promise<readonly ReturnType<typeof tablero>[]>((resolve) => {
+            resolver = resolve;
+          }),
+      };
+
+      TestBed.configureTestingModule({
+        providers: [{ provide: BoardRepository, useValue: repositorio }],
+      });
+
       const store = TestBed.inject(BoardStore);
 
-      // La carga arranca en el constructor; en este instante todavía no ha resuelto.
       expect(store.carga()).toBe('cargando');
       expect(store.cargando()).toBe(true);
 
+      resolver([]);
       await store.listo;
 
       expect(store.carga()).toBe('listo');
       expect(store.cargando()).toBe(false);
     });
 
-    it('si el origen falla, queda en error con un motivo legible', async () => {
+    it('si la API falla, queda en error con un motivo legible', async () => {
       TestBed.configureTestingModule({
         providers: [
           {
             provide: BoardRepository,
             useValue: {
-              cargar: () => Promise.reject(new Error('Sin conexión con el almacén')),
-              guardar: () => undefined,
+              cargar: () => Promise.reject(new Error('Sin conexión con la API')),
             },
           },
         ],
@@ -287,12 +166,11 @@ describe('BoardStore', () => {
 
       expect(store.carga()).toBe('error');
       expect(store.conFallo()).toBe(true);
-      expect(store.error()).toBe('Sin conexión con el almacén');
+      expect(store.error()).toBe('Sin conexión con la API');
     });
 
     it('recargar vuelve a pasar por cargando y deja el estado en listo', async () => {
       const { store } = await montar();
-      store.crear('Producto', MARTA);
 
       const recarga = store.cargar();
       expect(store.cargando()).toBe(true);

@@ -1,4 +1,5 @@
 import { TestBed } from '@angular/core/testing';
+import { ALBA, IVAN, MARTA } from '@testing/repositorios';
 import { BoardFilters } from './board-filters';
 import type { FiltroTablero } from './filtro';
 
@@ -8,6 +9,7 @@ describe('BoardFilters', () => {
 
     const fixture = TestBed.createComponent(BoardFilters);
     fixture.componentRef.setInput('filtro', filtro);
+    fixture.componentRef.setInput('miembros', [MARTA, IVAN, ALBA]);
     fixture.detectChanges();
 
     const cambios: FiltroTablero[] = [];

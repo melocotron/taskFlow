@@ -1,8 +1,8 @@
 .entrar {
   display: flex;
   flex-direction: column;
-  gap: var(--space-6);
-  max-width: 560px;
+  gap: var(--space-4);
+  max-width: 480px;
   margin: 0 auto;
   padding: var(--board-padding);
 }
@@ -24,46 +24,64 @@
   color: var(--text-muted);
 }
 
-.equipo {
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+/* Dos opciones excluyentes, con el estado visible sin depender solo del color. */
+.conmutador {
   display: grid;
-  gap: var(--card-gap);
-}
-
-/* Toda la tarjeta es el botón: un solo blanco de clic y un solo foco. */
-.persona {
-  width: 100%;
-  border-radius: var(--card-radius);
-  text-align: left;
-}
-
-/* La tarjeta entera responde: mismo filete que las tarjetas de tablero al pasar o enfocar. */
-.persona:hover app-card,
-.persona:focus-visible app-card {
-  border-color: var(--border-color-strong);
-}
-
-.persona:active app-card {
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-1);
+  padding: var(--space-1);
+  border: var(--border-width) solid var(--border-color);
+  border-radius: var(--control-radius);
   background-color: var(--surface-sunken);
-  transition: none;
 }
 
-.persona:focus-visible {
+.opcion {
+  padding: var(--space-2) var(--space-3);
+  border: 0;
+  border-radius: calc(var(--control-radius) - var(--border-width));
+  background-color: transparent;
+  color: var(--text-muted);
+  font: inherit;
+  font-weight: var(--weight-medium);
+  cursor: pointer;
+}
+
+.opcion:hover {
+  color: var(--text-primary);
+}
+
+.opcion--activa {
+  background-color: var(--surface-raised);
+  color: var(--text-primary);
+  box-shadow: inset 0 0 0 var(--border-width) var(--border-color);
+}
+
+.opcion:focus-visible {
   outline: var(--focus-ring-width) solid var(--focus-ring);
   outline-offset: var(--focus-ring-offset);
 }
 
-.fila {
+form {
   display: flex;
-  gap: var(--space-3);
-  align-items: center;
+  flex-direction: column;
+  gap: var(--space-4);
 }
 
-.datos {
-  display: flex;
-  gap: var(--space-2);
-  align-items: center;
+.alerta {
+  padding: var(--space-3);
+  border-left: var(--focus-ring-width) solid var(--danger);
+  background-color: var(--surface-sunken);
+  color: var(--danger);
 }
 
-.nombre {
-  font-weight: var(--weight-medium);
+.pie {
+  color: var(--text-muted);
+  font-size: var(--text-caption);
+  text-align: center;
 }

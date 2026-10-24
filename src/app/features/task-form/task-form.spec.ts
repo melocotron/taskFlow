@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { MemberStore } from '@entities/member';
+import { ALBA, IVAN, MARTA } from '@testing/repositorios';
 import { TaskForm } from './task-form';
 import type { DatosTarjeta } from './task-form';
 
@@ -10,6 +10,7 @@ describe('TaskForm', () => {
     const fixture = TestBed.createComponent(TaskForm);
     fixture.componentRef.setInput('modo', modo);
     fixture.componentRef.setInput('inicial', inicial);
+    fixture.componentRef.setInput('miembros', [MARTA, IVAN, ALBA]);
     fixture.detectChanges();
 
     const guardados: DatosTarjeta[] = [];
@@ -105,20 +106,19 @@ describe('TaskForm', () => {
       {
         titulo: 'Revisar el copy',
         descripcion: 'Ajustar los tres primeros pasos',
-        responsable: null,
+        responsableId: null,
       },
     ]);
   });
 
-  it('entrega la persona elegida como responsable', async () => {
+  it('entrega el identificador de la persona elegida como responsable', async () => {
     const { fixture, elemento, guardados } = montar();
-    const miembros = TestBed.inject(MemberStore).miembros();
 
     escribir(fixture, campo(elemento, 'Título'), 'Migrar el buscador');
-    escribir(fixture, campo(elemento, 'Responsable'), miembros[1]!.nombre);
+    escribir(fixture, campo(elemento, 'Responsable'), IVAN.memberId);
     await enviar(fixture, elemento);
 
-    expect(guardados[0]?.responsable).toBe(miembros[1]!.nombre);
+    expect(guardados[0]?.responsableId).toBe(IVAN.memberId);
   });
 
   it('al editar arranca con los valores de la tarjeta', async () => {
@@ -126,7 +126,7 @@ describe('TaskForm', () => {
       {
         titulo: 'Cerrar el sprint',
         descripcion: 'Revisar los pendientes',
-        responsable: 'Marta Ruiz',
+        responsableId: MARTA.memberId,
       },
       'editar',
     );
@@ -138,13 +138,13 @@ describe('TaskForm', () => {
     expect((campo(elemento, 'Descripción') as HTMLTextAreaElement).value).toBe(
       'Revisar los pendientes',
     );
-    expect((campo(elemento, 'Responsable') as HTMLSelectElement).value).toBe('Marta Ruiz');
+    expect((campo(elemento, 'Responsable') as HTMLSelectElement).value).toBe(MARTA.memberId);
     expect(fixture.componentInstance.modo()).toBe('editar');
   });
 
   it('al editar entrega solo lo que cambió', async () => {
     const { fixture, elemento, guardados } = montar(
-      { titulo: 'Cerrar el sprint', descripcion: '', responsable: null },
+      { titulo: 'Cerrar el sprint', descripcion: '', responsableId: null },
       'editar',
     );
 
@@ -152,7 +152,7 @@ describe('TaskForm', () => {
     await enviar(fixture, elemento);
 
     expect(guardados).toEqual([
-      { titulo: 'Cerrar el sprint 3', descripcion: '', responsable: null },
+      { titulo: 'Cerrar el sprint 3', descripcion: '', responsableId: null },
     ]);
   });
 

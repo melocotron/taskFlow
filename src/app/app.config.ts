@@ -1,4 +1,5 @@
 import { OVERLAY_DEFAULT_CONFIG, OverlayContainer } from '@angular/cdk/overlay';
+import { provideHttpClient, withFetch } from '@angular/common/http';
 import { ApplicationConfig, provideBrowserGlobalErrorListeners } from '@angular/core';
 import { provideRouter, withComponentInputBinding } from '@angular/router';
 import { OverlayContainerAccesible } from '@shared/ui/overlay/overlay-container';
@@ -16,6 +17,7 @@ import { routes } from './app.routes';
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
+    provideHttpClient(withFetch()),
     provideRouter(routes, withComponentInputBinding()),
     /*
      * El CDK 22 monta los overlays en la capa superior del navegador (Popover API),

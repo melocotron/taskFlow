@@ -1,5 +1,5 @@
-import { Component, computed, inject, input, output } from '@angular/core';
-import { MemberStore } from '@entities/member';
+import { Component, computed, input, output } from '@angular/core';
+import type { BoardMember } from '@entities/board';
 import { Button, FormField, TextInput } from '@shared/ui';
 import { filtroActivo } from './filtro';
 import type { FiltroTablero } from './filtro';
@@ -21,13 +21,10 @@ import type { FiltroTablero } from './filtro';
   styleUrl: './board-filters.css',
 })
 export class BoardFilters {
-  private readonly equipo = inject(MemberStore);
-
   readonly filtro = input.required<FiltroTablero>();
+  readonly miembros = input.required<readonly BoardMember[]>();
 
   readonly cambios = output<FiltroTablero>();
-
-  protected readonly miembros = this.equipo.miembros;
 
   /** Con un filtro puesto aparece la salida rápida; sin él, sería ruido. */
   protected readonly filtrando = computed(() => filtroActivo(this.filtro()));

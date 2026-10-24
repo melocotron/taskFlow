@@ -1,0 +1,755 @@
+openapi: 3.1.0
+info:
+  title: TaskFlow API
+  version: 0.1.0
+  description: |
+    API compartida de TaskFlow. Las rutas privadas usan una cookie de sesión
+    `HttpOnly`. Los errores tienen forma `{ "error": { "codigo", "mensaje" } }`.
+servers:
+  - url: http://localhost:8080/api/v1
+    description: Desarrollo local
+  - url: https://taskflow.example.com/api/v1
+    description: Producción (ejemplo)
+tags:
+  - name: auth
+  - name: boards
+  - name: tasks
+  - name: import
+  - name: health
+
+paths:
+  /healthz:
+    get:
+      tags: [health]
+      summary: Comprueba que el proceso está vivo
+      security: []
+      responses:
+        '200':
+          description: Proceso vivo
+  /readyz:
+    get:
+      tags: [health]
+      summary: Comprueba la conexión con la base de datos
+      security: []
+      responses:
+        '200':
+          description: Listo para recibir tráfico
+        '503':
+          description: Base de datos no disponible
+
+  /auth/register:
+    post:
+      tags: [auth]
+      summary: Crea una cuenta
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '201':
+          description: Cuenta creada y sesión iniciada
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /auth/login:
+    post:
+      tags: [auth]
+      summary: Inicia sesión
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Sesión iniciada
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /auth/logout:
+    post:
+      tags: [auth]
+      summary: Cierra la sesión actual
+      responses:
+        '204':
+          description: Sesión cerrada
+
+  /me:
+    get:
+      tags: [auth]
+      summary: Devuelve la cuenta autenticada
+      responses:
+        '200':
+          description: Cuenta actual
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /boards:
+    get:
+      tags: [boards]
+      summary: Lista los tableros a los que pertenece la cuenta
+      parameters:
+        - in: query
+          name: archivados
+          schema:
+            type: boolean
+            default: false
+      responses:
+        '200':
+          description: Tableros visibles
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BoardSummary'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+    post:
+      tags: [boards]
+      summary: Crea un tablero con las columnas iniciales
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateBoardRequest'
+      responses:
+        '201':
+          description: Tablero creado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BoardDetail'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /boards/{boardId}:
+    parameters:
+      - $ref: '#/components/parameters/BoardId'
+    get:
+      tags: [boards]
+      summary: Devuelve un tablero con columnas, miembros y tarjetas
+      responses:
+        '200':
+          description: Tablero completo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BoardDetail'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    patch:
+      tags: [boards]
+      summary: Cambia el título o el estado de archivo
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateBoardRequest'
+      responses:
+        '200':
+          description: Tablero actualizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BoardDetail'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /boards/{boardId}/members:
+    parameters:
+      - $ref: '#/components/parameters/BoardId'
+    post:
+      tags: [boards]
+      summary: Añade una cuenta registrada al tablero
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddMemberRequest'
+      responses:
+        '201':
+          description: Membresía creada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BoardMember'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /boards/{boardId}/members/{userId}:
+    parameters:
+      - $ref: '#/components/parameters/BoardId'
+      - $ref: '#/components/parameters/UserId'
+    patch:
+      tags: [boards]
+      summary: Cambia el rol de una persona del tablero
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateMemberRequest'
+      responses:
+        '200':
+          description: Membresía actualizada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BoardMember'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+    delete:
+      tags: [boards]
+      summary: Elimina a una persona del tablero
+      responses:
+        '204':
+          description: Membresía eliminada
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /boards/{boardId}/tasks:
+    parameters:
+      - $ref: '#/components/parameters/BoardId'
+    post:
+      tags: [tasks]
+      summary: Crea una tarjeta al final de una columna
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTaskRequest'
+      responses:
+        '201':
+          description: Tarjeta creada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /tasks/{taskId}:
+    parameters:
+      - $ref: '#/components/parameters/TaskId'
+    patch:
+      tags: [tasks]
+      summary: Edita título, descripción o responsable
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateTaskRequest'
+      responses:
+        '200':
+          description: Tarjeta actualizada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+    delete:
+      tags: [tasks]
+      summary: Elimina una tarjeta
+      responses:
+        '204':
+          description: Tarjeta eliminada
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /tasks/{taskId}/move:
+    parameters:
+      - $ref: '#/components/parameters/TaskId'
+    post:
+      tags: [tasks]
+      summary: Mueve una tarjeta a otra columna o posición
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MoveTaskRequest'
+      responses:
+        '200':
+          description: Tarjeta movida
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /import/local:
+    post:
+      tags: [import]
+      summary: Importa tableros del formato local de la versión 1.0
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ImportLocalRequest'
+      responses:
+        '200':
+          description: Resultado de la importación
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ImportResult'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+components:
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: taskflow_session
+  parameters:
+    BoardId:
+      in: path
+      name: boardId
+      required: true
+      schema:
+        type: string
+        format: uuid
+    TaskId:
+      in: path
+      name: taskId
+      required: true
+      schema:
+        type: string
+        format: uuid
+    UserId:
+      in: path
+      name: userId
+      required: true
+      schema:
+        type: string
+        format: uuid
+  responses:
+    Unauthorized:
+      description: Sesión ausente, inválida o caducada
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Forbidden:
+      description: La cuenta no tiene permiso para la acción
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    NotFound:
+      description: El recurso no existe o no es visible para la cuenta
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Conflict:
+      description: Conflicto de estado o de versión
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    ValidationError:
+      description: Datos inválidos
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+  schemas:
+    User:
+      type: object
+      required: [id, nombre, email, creadoEn]
+      properties:
+        id:
+          type: string
+          format: uuid
+        nombre:
+          type: string
+        email:
+          type: string
+          format: email
+        creadoEn:
+          type: string
+          format: date-time
+    RegisterRequest:
+      type: object
+      required: [nombre, email, password]
+      properties:
+        nombre:
+          type: string
+          minLength: 1
+          maxLength: 120
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          minLength: 8
+          maxLength: 200
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+    BoardSummary:
+      type: object
+      required: [id, titulo, archivado, rol, creadoEn, totalColumnas, totalTarjetas]
+      properties:
+        id:
+          type: string
+          format: uuid
+        titulo:
+          type: string
+        archivado:
+          type: boolean
+        rol:
+          $ref: '#/components/schemas/Role'
+        creadoEn:
+          type: string
+          format: date-time
+        totalColumnas:
+          type: integer
+        totalTarjetas:
+          type: integer
+    BoardDetail:
+      type: object
+      required: [id, titulo, archivado, rol, creadoEn, actualizadoEn, columnas, miembros, tareas]
+      properties:
+        id:
+          type: string
+          format: uuid
+        titulo:
+          type: string
+        archivado:
+          type: boolean
+        rol:
+          $ref: '#/components/schemas/Role'
+        creadoEn:
+          type: string
+          format: date-time
+        actualizadoEn:
+          type: string
+          format: date-time
+        columnas:
+          type: array
+          items:
+            $ref: '#/components/schemas/Column'
+        miembros:
+          type: array
+          items:
+            $ref: '#/components/schemas/BoardMember'
+        tareas:
+          type: array
+          items:
+            $ref: '#/components/schemas/Task'
+    CreateBoardRequest:
+      type: object
+      required: [titulo]
+      properties:
+        titulo:
+          type: string
+          minLength: 1
+          maxLength: 160
+    UpdateBoardRequest:
+      type: object
+      properties:
+        titulo:
+          type: string
+          minLength: 1
+          maxLength: 160
+        archivado:
+          type: boolean
+    Column:
+      type: object
+      required: [id, titulo, posicion]
+      properties:
+        id:
+          type: string
+          format: uuid
+        titulo:
+          type: string
+        posicion:
+          type: integer
+          minimum: 0
+    BoardMember:
+      type: object
+      required: [memberId, nombre, email, rol]
+      properties:
+        memberId:
+          type: string
+          format: uuid
+        nombre:
+          type: string
+        email:
+          type: string
+          format: email
+        rol:
+          $ref: '#/components/schemas/Role'
+    AddMemberRequest:
+      type: object
+      required: [email, rol]
+      properties:
+        email:
+          type: string
+          format: email
+        rol:
+          $ref: '#/components/schemas/Role'
+    UpdateMemberRequest:
+      type: object
+      required: [rol]
+      properties:
+        rol:
+          $ref: '#/components/schemas/Role'
+    Task:
+      type: object
+      required:
+        [
+          id,
+          boardId,
+          columnaId,
+          titulo,
+          descripcion,
+          responsableId,
+          responsableNombre,
+          posicion,
+          version,
+          creadoEn,
+          actualizadoEn,
+        ]
+      properties:
+        id:
+          type: string
+          format: uuid
+        boardId:
+          type: string
+          format: uuid
+        columnaId:
+          type: string
+          format: uuid
+        titulo:
+          type: string
+        descripcion:
+          type: string
+        responsableId:
+          type: string
+          format: uuid
+          nullable: true
+        responsableNombre:
+          type: string
+          nullable: true
+        posicion:
+          type: integer
+          minimum: 0
+        version:
+          type: integer
+          minimum: 1
+        creadoEn:
+          type: string
+          format: date-time
+        actualizadoEn:
+          type: string
+          format: date-time
+    CreateTaskRequest:
+      type: object
+      required: [columnaId, titulo]
+      properties:
+        columnaId:
+          type: string
+          format: uuid
+        titulo:
+          type: string
+          minLength: 1
+          maxLength: 240
+        descripcion:
+          type: string
+          maxLength: 10000
+        responsableId:
+          type: string
+          format: uuid
+          nullable: true
+    UpdateTaskRequest:
+      type: object
+      properties:
+        titulo:
+          type: string
+          minLength: 1
+          maxLength: 240
+        descripcion:
+          type: string
+          maxLength: 10000
+        responsableId:
+          type: string
+          format: uuid
+          nullable: true
+        version:
+          type: integer
+          minimum: 1
+    MoveTaskRequest:
+      type: object
+      required: [columnaId, posicion]
+      properties:
+        columnaId:
+          type: string
+          format: uuid
+        posicion:
+          type: integer
+          minimum: 0
+        version:
+          type: integer
+          minimum: 1
+    Role:
+      type: string
+      enum: [admin, editor, viewer]
+    ImportLocalRequest:
+      type: object
+      required: [tableros, tareas]
+      properties:
+        tableros:
+          type: array
+          items:
+            $ref: '#/components/schemas/LocalBoard'
+        tareas:
+          type: array
+          items:
+            $ref: '#/components/schemas/LocalTask'
+    LocalBoard:
+      type: object
+      required: [id, titulo, columnas, creadoEn]
+      properties:
+        id:
+          type: string
+        titulo:
+          type: string
+        columnas:
+          type: array
+          items:
+            type: object
+            required: [id, titulo]
+            properties:
+              id:
+                type: string
+              titulo:
+                type: string
+        creadoEn:
+          type: string
+    LocalTask:
+      type: object
+      required: [id, boardId, columnaId, titulo, posicion]
+      properties:
+        id:
+          type: string
+        boardId:
+          type: string
+        columnaId:
+          type: string
+        titulo:
+          type: string
+        descripcion:
+          type: string
+        responsable:
+          type: string
+          nullable: true
+        posicion:
+          type: integer
+        creadoEn:
+          type: string
+    ImportResult:
+      type: object
+      required: [tablerosImportados, tablerosOmitidos, tareasImportadas, tareasOmitidas]
+      properties:
+        tablerosImportados:
+          type: integer
+        tablerosOmitidos:
+          type: integer
+        tareasImportadas:
+          type: integer
+        tareasOmitidas:
+          type: integer
+    Error:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [codigo, mensaje]
+          properties:
+            codigo:
+              type: string
+            mensaje:
+              type: string
+security:
+  - cookieAuth: []

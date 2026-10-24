@@ -31,6 +31,16 @@
   transform: scale(0.97);
 }
 
+@media (prefers-reduced-motion: reduce) {
+  :host {
+    transition: none;
+  }
+
+  :host(:active:not(:disabled)) {
+    transform: none;
+  }
+}
+
 :host(:disabled) {
   opacity: 0.55;
   cursor: not-allowed;

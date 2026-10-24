@@ -1,10 +1,17 @@
 import { defineConfig, devices } from '@playwright/test';
 
+const baseURL = 'http://localhost:4200';
+const apiURL = 'http://localhost:8080';
+const databaseURL =
+  process.env['DATABASE_URL'] ??
+  'postgres://taskflow:taskflow@localhost:5432/taskflow?sslmode=disable';
+
 /**
  * Configuración de E2E.
  *
- * - `webServer` arranca `ng serve` por su cuenta: un solo comando levanta todo.
- * - `reuseExistingServer` evita relanzar el servidor si ya está corriendo en local.
+ * - Arranca la API Go y `ng serve`; los recorridos usan PostgreSQL de verdad.
+ * - En local reutiliza los servidores que ya estén levantados.
+ * - En CI siempre arranca limpio y aplica las migraciones antes de la API.
  * - Un solo proyecto (Chromium) hasta que haya journeys que justifiquen más.
  */
 export default defineConfig({
@@ -16,7 +23,7 @@ export default defineConfig({
   reporter: process.env['CI'] ? [['github'], ['html', { open: 'never' }]] : [['list']],
 
   use: {
-    baseURL: 'http://localhost:4200',
+    baseURL,
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
   },
@@ -28,12 +35,28 @@ export default defineConfig({
     },
   ],
 
-  webServer: {
-    command: 'npm start -- --port 4200',
-    url: 'http://localhost:4200',
-    // Siempre un servidor nuevo. Reutilizar uno viejo sirvió un bundle obsoleto y me
-    // hizo diagnosticar un bug de CSS que no existía: mejor 5 s más de arranque.
-    reuseExistingServer: false,
-    timeout: 120_000,
-  },
+  webServer: [
+    {
+      command: 'go run ./cmd/migrate up && go run ./cmd/api',
+      cwd: './backend',
+      url: `${apiURL}/healthz`,
+      reuseExistingServer: !process.env['CI'],
+      timeout: 180_000,
+      env: {
+        DATABASE_URL: databaseURL,
+        HTTP_ADDR: ':8080',
+        APP_ENV: 'e2e',
+        COOKIE_SECURE: 'false',
+        COOKIE_NAME: 'taskflow_session',
+        ALLOWED_ORIGINS: `${baseURL},${apiURL}`,
+      },
+    },
+    {
+      command: 'npm start -- --port 4200',
+      url: baseURL,
+      // En local se reutiliza el bundle que ya está sirviendo; en CI siempre es nuevo.
+      reuseExistingServer: !process.env['CI'],
+      timeout: 120_000,
+    },
+  ],
 });

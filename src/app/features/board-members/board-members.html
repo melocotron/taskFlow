@@ -20,6 +20,7 @@
                 <span class="tu">tú</span>
               }
             </p>
+            <p class="email">{{ miembro.email }}</p>
           </div>
         </div>
 
@@ -45,36 +46,36 @@
 
   @if (puedeAdministrar()) {
     <section class="invitar">
-      @if (disponibles().length > 0) {
-        <h3>Invitar a alguien</h3>
+      <h3>Invitar a una cuenta</h3>
+      <p class="nota">La persona tiene que haberse registrado antes con ese email.</p>
 
-        <form [formRoot]="formulario">
-          <div class="campos">
-            <app-field label="Persona" [error]="errorPersona()">
-              <select appInput [formField]="formulario.persona">
-                <option value="">Elige una persona</option>
-                @for (persona of disponibles(); track persona.id) {
-                  <option [value]="persona.id">{{ persona.nombre }}</option>
-                }
-              </select>
-            </app-field>
+      <form [formRoot]="formulario">
+        <div class="campos">
+          <app-field label="Email" [error]="errorEmail()">
+            <input
+              appInput
+              type="email"
+              inputmode="email"
+              autocomplete="off"
+              spellcheck="false"
+              [formField]="formulario.email"
+              placeholder="persona@email.com"
+            />
+          </app-field>
 
-            <app-field label="Rol" hint="Se puede cambiar después.">
-              <select appInput [formField]="formulario.rol">
-                @for (rol of roles; track rol.valor) {
-                  <option [value]="rol.valor">{{ rol.etiqueta }}</option>
-                }
-              </select>
-            </app-field>
-          </div>
+          <app-field label="Rol" hint="Se puede cambiar después.">
+            <select appInput [formField]="formulario.rol">
+              @for (rol of roles; track rol.valor) {
+                <option [value]="rol.valor">{{ rol.etiqueta }}</option>
+              }
+            </select>
+          </app-field>
+        </div>
 
-          <div class="acciones">
-            <button appButton type="submit" variant="primary">Invitar</button>
-          </div>
-        </form>
-      } @else {
-        <p class="nota">Todo el equipo ya está en este tablero.</p>
-      }
+        <div class="acciones">
+          <button appButton type="submit" variant="primary">Invitar</button>
+        </div>
+      </form>
     </section>
   }
 </div>

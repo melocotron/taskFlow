@@ -721,22 +721,167 @@ del presupuesto 350/370 kB.
 
 ---
 
+## ✅ Fase 5 · S5.1 — Entrega 1.0
+
+TaskFlow ya tiene repositorio remoto y una release publicada:
+
+- `main` y `develop` están en GitHub:
+  `https://github.com/melocotron/taskFlow`.
+- CI verde en ambas ramas, con los jobs de calidad y E2E.
+- Se sincronizó el lockfile con `@types/node` para que `npm ci` funcione en un
+  entorno limpio; el fallo inicial de CI fue exactamente ese.
+- `release/1.0.0` sube la versión, añade `CHANGELOG.md` y actualiza el README.
+- Tag `v1.0.0` y GitHub Release:
+  `https://github.com/melocotron/taskFlow/releases/tag/v1.0.0`.
+- `develop` recibió el back-merge de la release.
+
+**Verificado:** 180 tests unitarios, 32 E2E, `npm run verify` verde y CI verde en
+`main` y `develop`. Bundle inicial **333,88 kB**.
+
+---
+
+## ✅ Fase 6 · S6.1 — Backend compartido (Spec 002)
+
+La aplicación deja de ser solo un ejercicio de frontend: se añadió la primera entrega
+del servicio compartido, con especificación, plan, modelo de datos y contrato antes del
+código.
+
+- **Spec 002 aprobada** con cuatro historias: cuenta y sesión, tableros persistentes,
+  roles por tablero e importación local. Artefactos en `specs/002-shared-backend/`.
+- **PostgreSQL 17 local** con `compose.yaml`, base `taskflow_test` y migraciones
+  embebidas con `goose` (`00001` usuarios/sesiones, `00002` tableros/columnas/miembros,
+  `00003` tarjetas).
+- **API Go** bajo `/api/v1`: registro, login, logout, `/me`, tableros, miembros,
+  tarjetas, movimiento transaccional e importación idempotente.
+- **Seguridad:** Argon2id, sesiones opacas con solo el SHA-256 en base de datos, cookie
+  `HttpOnly`, comprobación de `Origin` y límite básico de peticiones de autenticación.
+- **Permisos en servidor:** `admin`, `editor`, `viewer`; un `viewer` recibe `403`, un
+  tablero ajeno responde `404`, y el último administrador no puede desaparecer.
+- **Concurrencia:** `version` en tarjetas; una edición con versión vieja recibe `409`.
+- **Importación:** conserva tableros y tarjetas de 1.0 con `legacy_id`; repetirla no
+  duplica tableros.
+- **Operación:** Dockerfile multi-stage que compila Angular y Go, sirve estáticos con
+  `STATIC_DIR`, y job `backend` en GitHub Actions con PostgreSQL real.
+- **Seguridad de dependencias:** Vite fijado a 8.3.5 con `overrides`; `npm audit`
+  queda en cero vulnerabilidades conocidas.
+
+**Verificado:** `go vet ./...`, `go test ./...` con PostgreSQL real, recorrido manual
+registro → tablero → tarjeta → movimiento → logout, `npm run verify` completo
+(180 tests unitarios, lint, fronteras y build), `npm audit` sin hallazgos y la imagen
+Docker construida y probada sirviendo la SPA, `/healthz` y 404 JSON para la API.
+
+**Pendiente consciente (resuelto en S6.4c):** en ese momento la interfaz todavía usaba
+`localStorage` para tableros y tarjetas. La fase 9 ya tenía el cliente HTTP, el proxy y
+la autenticación real (T069 y T071); faltaban los repositorios y retirar la persistencia
+local (T070, T072–T075).
+
+---
+
+## Fase 6 · S6.4b — Acceso real
+
+La aplicación deja de elegir una persona de la demo: ahora pide email y contraseña
+contra la API.
+
+- **`entities/auth`** contiene `AuthService`, el modelo `Usuario` y la comprobación
+  inicial de `GET /me`. Un `401` se interpreta como “sin sesión”, no como fallo.
+- **Login y registro** comparten la pantalla `/entrar`; Signal Forms valida email,
+  contraseña y nombre antes de enviar, y muestra el mensaje de la API si falla.
+- **Guards:** `sesionGuard` espera a que termine la comprobación de sesión;
+  `invitadoGuard` saca de `/entrar` a quien ya está autenticado.
+- **Puente de identidad:** `App` sincroniza `AuthService.usuario` con `MemberStore`
+  para que los tableros locales sigan usando `MemberId` mientras llega T070.
+- **Cierre de sesión:** el botón del menú llama a `AuthService.salir()`, revoca la
+  sesión en Go y limpia la identidad local.
+
+**Verificado:** `npm run verify` completo (197 tests, lint, fronteras y build). En ese
+punto la UI de datos seguía leyendo `localStorage`; S6.4c la llevó al servidor.
+
+---
+
+## Fase 6 — S6.4c — Integración de datos
+
+Los repositorios de `board` y `task` hablan HTTP y los stores pasan a estados
+asíncronos. El lienzo, los formularios, los filtros y el panel de personas usan los
+miembros que llegan del tablero, no la lista demo.
+
+- **Identidad:** `MemberStore` toma el usuario de `/me`; ya no guarda la sesión en
+  `localStorage`. Al recargar, la cookie `HttpOnly` la recupera.
+- **Mutaciones:** crear/renombrar tablero, invitar, crear/editar/mover tarjeta y
+  eliminar se confirman contra la API y refrescan el estado.
+- **Importación heredada:** `ImportadorLocal` lee `taskflow.tableros` y
+  `taskflow.tareas`; la lista muestra un aviso con **Importar mis datos**. Solo borra
+  las claves locales después de que `POST /import/local` confirma.
+- **Persistencia retirada:** `localStorage` deja de ser fuente de datos. Se conserva
+  únicamente la lectura de los datos de la 1.0 para esa importación.
+
+**Verificado:** `npm run verify` (189 tests, lint, fronteras, tokens y build) y
+`go test ./...` con PostgreSQL real. Bundle inicial 353,44 kB, dentro del aviso de
+360 kB.
+
+---
+
+## Fase 6 — S6.4d — E2E contra el backend real
+
+La suite de Playwright deja de sembrar `localStorage` y estrena cuentas en PostgreSQL.
+
+- **Apoyo (`e2e/apoyo.ts`):** registro y login por API para compartir la cookie con la
+  pestaña; creación de tableros, tarjetas e invitaciones por API. La UI se reserva para
+  el recorrido que se quiere probar.
+- **Cobertura:** autenticación, journeys 1–4, crear/editar, renombrar, accesibilidad con
+  axe, teclado, rendimiento, presión y laboratorio. **33 E2E** en verde.
+- **Arranque:** `playwright.config.ts` aplica migraciones y arranca Go + Angular. En CI
+  siempre parte limpio; en local reutiliza servidores ya levantados.
+- **CI:** el job E2E usa PostgreSQL 17 como servicio, `setup-go` y `DATABASE_URL`.
+- **Limitador:** solo en los entornos `test` y `e2e` se amplía el límite de
+  autenticación por IP para que la suite no se convierta en una prueba del limitador.
+  Desarrollo y producción conservan una petición cada 2 s con ráfaga 20.
+- **Importación:** un E2E siembra datos de la 1.0, confirma el aviso, importa, recarga y
+  comprueba que no se duplica ni reaparece el aviso.
+
+---
+
+## Fase 6 — S6.5a — Staging en Fly.io
+
+La imagen Go + Angular está publicada en staging con Neon PostgreSQL 17.
+
+- **URL:** `https://taskflow-stg-melocotron.fly.dev`
+- **Infraestructura:** app Fly.io `taskflow-stg-melocotron`, región `iad`, una máquina
+  `shared-cpu-1x` de 512 MB; rama `staging` de Neon en `us-east-2`.
+- **Migraciones:** se ejecutan como `release_command` con `taskflow-migrate`. El
+  Dockerfile usa `CMD` en lugar de `ENTRYPOINT` para que Fly no arranque la API al
+  ejecutar el release.
+- **Smoke tests:** `/healthz` y `/readyz` en 200; registro, login, cookie
+  `__Host-taskflow_session` con `HttpOnly`, `Secure` y `SameSite=Lax`; tablero,
+  tarjeta y movimiento; `viewer` recibe 403; `/api/v1` inexistente devuelve JSON 404;
+  logout invalida la sesión.
+- **Límite:** el plan trial de Fly detiene la máquina a los 5 minutos de inactividad;
+  se reactiva con la primera petición. Para evitar el cold start hay que añadir un
+  método de pago.
+
+---
+
 ## Siguiente fase
 
-**Fase 4.5 cerrada.** S4.5 y S4.6 completos. Sigue S5.1: publicar `main`/`develop` en
-GitHub, comprobar CI real, actualizar versión y changelog, y etiquetar `v1.0.0`.
+**Fase 6 casi cerrada.** S6.1–S6.5a entregados: especificación, API, Docker, CI,
+autenticación real, migración de repositorios, importación heredada, E2E y staging en
+Fly.io + Neon. Queda **S6.5b**: desplegar producción y retirar Vercel de producción.
+SSR y WebMCP siguen opcionales.
 
 ---
 
 ## Dónde me quedé
 
-S4.6 terminado en `feature/S4.6-laboratorio-v22`: laboratorio dev-only de `@Service`,
-`injectAsync` y `httpResource`, con 32 E2E. Siguiente: S5.1, entrega real en GitHub.
+El frontend y el backend forman una sola aplicación: Angular consume `/api/v1`, la
+sesión vive en una cookie `HttpOnly` y los tableros se comparten en PostgreSQL. La fase
+9 de Spec 002 está cerrada (T069–T075) y staging está publicado en
+`https://taskflow-stg-melocotron.fly.dev`. La rama activa es
+`feature/002-shared-backend`.
 
 ## Siguiente paso concreto
 
-Ejecutar S5.1: push de `main` y `develop`, verificar CI, preparar `release/1.0.0`,
-changelog, tag `v1.0.0` y back-merge a `develop`.
+Cerrar **S6.5b**: añadir método de pago en Fly si staging debe quedar encendido,
+fusionar la rama a `main` con CI verde, crear la app de producción con la rama `main`
+de Neon, verificar el origen `*.fly.dev` y retirar Vercel de producción.
 
 ---
 
@@ -778,3 +923,12 @@ Los E2E corren en CI y antes de un merge a `main`.
 | 2026-10-21 | S4.4.1 | Hundido global `.presionable`; F7 explicaba el cursor de texto.                        |
 | 2026-10-21 | S4.5   | Plan y READMEs alineados; npm, S4.6 y release 1.0 registrados.                         |
 | 2026-10-21 | S4.6   | Laboratorio dev-only de @Service, injectAsync y httpResource; 32 E2E.                  |
+| 2026-10-21 | S5.1   | GitHub, CI verde, release 1.0.0 y tag v1.0.0.                                          |
+| 2026-10-23 | S6.1   | Spec 002, PostgreSQL local, migraciones y API Go con tests de integración.             |
+| 2026-10-23 | S6.2   | Auth, tableros, roles, tarjetas, movimiento, importación y Dockerfile multi-stage.     |
+| 2026-10-23 | S6.3   | Imagen Docker verificada; Vite 8.3.5 y `npm audit` sin vulnerabilidades.               |
+| 2026-10-23 | S6.4   | `shared/api`, errores tipados y proxy de desarrollo `/api` → Go.                       |
+| 2026-10-23 | S6.4b  | `AuthService`, guards y `/entrar` con login y registro reales; 197 tests.              |
+| 2026-10-23 | S6.4c  | Repositorios HTTP, stores asíncronos e importación del trabajo heredado; 189 tests.    |
+| 2026-10-23 | S6.4d  | E2E contra Go + PostgreSQL, CI con Postgres y cierre de la fase 9; 33 E2E.             |
+| 2026-10-23 | S6.5a  | Staging en Fly.io + Neon, release de migraciones, smoke tests y cookie segura.         |
